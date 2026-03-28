@@ -29,7 +29,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       subtitle: 'Uma colecao de lancamento com tecidos macios e essenciais inspirados no arco-iris.',
       cta: 'Comprar novidades',
       backgroundImage:
-        'https://images.unsplash.com/photo-1618375531912-867984bdfd87?auto=format&fit=crop&w=1600&q=80'
+        'https://plus.unsplash.com/premium_photo-1773087816035-97634663a926?q=80&w=1170&auto=format'
     },
     {
       title: 'Tons pasteis e looks felizes para aventuras de todos os dias',
@@ -43,7 +43,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       subtitle: 'Descubra moda infantil moderna, com detalhes arredondados e identidade colorida.',
       cta: 'Ver promocoes',
       backgroundImage:
-        'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=1600&q=80'
+        'https://plus.unsplash.com/premium_photo-1772784452662-08b64c0bd038?q=80&w=1170&auto=format'
+        //'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=1600&q=80'
     }
   ];
 
