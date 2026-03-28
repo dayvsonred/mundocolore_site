@@ -16,70 +16,70 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly logoPath = 'assets/images/logo-mundo-colore.jpg';
 
   readonly menuItems: ReadonlyArray<MenuItem> = [
-    { id: 'home', label: 'Home' },
-    { id: 'collections', label: 'Collections' },
-    { id: 'arrivals', label: 'New Arrivals' },
-    { id: 'promotions', label: 'Promotions' },
-    { id: 'contact', label: 'Contact' }
+    { id: 'home', label: 'Inicio' },
+    { id: 'collections', label: 'Colecoes' },
+    { id: 'arrivals', label: 'Novidades' },
+    { id: 'promotions', label: 'Promocoes' },
+    { id: 'contact', label: 'Contato' }
   ];
 
   readonly heroSlides: ReadonlyArray<HeroSlide> = [
     {
-      title: 'Color, comfort and joy for every childhood moment',
-      subtitle: 'A playful launch collection with soft fabrics and rainbow inspired essentials.',
-      cta: 'Shop New Arrivals',
+      title: 'Cor, conforto e alegria em cada momento da infancia',
+      subtitle: 'Uma colecao de lancamento com tecidos macios e essenciais inspirados no arco-iris.',
+      cta: 'Comprar novidades',
       backgroundImage:
-        'https://images.unsplash.com/photo-1519238359922-989348752efb?auto=format&fit=crop&w=1600&q=80'
+        'https://images.unsplash.com/photo-1618375531912-867984bdfd87?auto=format&fit=crop&w=1600&q=80'
     },
     {
-      title: 'Pastel tones and happy outfits for everyday adventures',
-      subtitle: 'Designed for movement, made for smiles, ready for school and weekend fun.',
-      cta: 'Explore Collections',
+      title: 'Tons pasteis e looks felizes para aventuras de todos os dias',
+      subtitle: 'Criado para movimento, feito para sorrisos e pronto para escola e fim de semana.',
+      cta: 'Explorar colecoes',
       backgroundImage:
-        'https://images.unsplash.com/photo-1542838687-8f3d93d6f105?auto=format&fit=crop&w=1600&q=80'
+        'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?auto=format&fit=crop&w=1600&q=80'
     },
     {
-      title: 'Mundo Colore Store is now live',
-      subtitle: 'Discover modern kidswear with rounded details and a gentle colorful identity.',
-      cta: 'View Promotions',
+      title: 'Mundo Colore Store ja esta no ar',
+      subtitle: 'Descubra moda infantil moderna, com detalhes arredondados e identidade colorida.',
+      cta: 'Ver promocoes',
       backgroundImage:
-        'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=1600&q=80'
+        'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=1600&q=80'
     }
   ];
 
   readonly featuredCards: ReadonlyArray<FeaturedCard> = [
     {
-      title: 'New Arrivals',
-      description: 'Fresh drops for babies and kids with breathable cotton and pastel finishes.',
+      title: 'Novidades',
+      description: 'Lancamentos para bebes e criancas com algodao respiravel e acabamento pastel.',
       badgeColor: 'var(--primary-red)'
     },
     {
-      title: 'Color Collection',
-      description: 'Rainbow inspired looks curated by color mood and playful combinations.',
+      title: 'Colecao Colorida',
+      description: 'Looks inspirados no arco-iris, com combinacoes leves e divertidas.',
       badgeColor: 'var(--primary-blue)'
     },
     {
-      title: 'Sales',
-      description: 'Special prices for selected looks, bundles and seasonal combos.',
+      title: 'Promocoes',
+      description: 'Precos especiais em looks selecionados, kits e combos sazonais.',
       badgeColor: 'var(--primary-orange)'
     }
   ];
 
   readonly products: ReadonlyArray<ProductCard> = [
-    { name: 'Rainbow Hoodie Set', price: 'R$ 149,90', image: 'https://images.unsplash.com/photo-1618375531912-867984bdfd87?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Soft Garden Dress', price: 'R$ 129,90', image: 'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Sunny Day Shorts', price: 'R$ 79,90', image: 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Cloud Pajama Duo', price: 'R$ 99,90', image: 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Little Explorer Jacket', price: 'R$ 169,90', image: 'https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Candy Knit Set', price: 'R$ 139,90', image: 'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Playtime Tee Pack', price: 'R$ 89,90', image: 'https://images.unsplash.com/photo-1620799139652-715e4d5b232d?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Mini Rainbow Overalls', price: 'R$ 119,90', image: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=800&q=80' }
+    { name: 'Conjunto Moletom Arco-iris', price: 'R$ 149,90', image: 'https://images.unsplash.com/photo-1618375531912-867984bdfd87?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Vestido Jardim Suave', price: 'R$ 129,90', image: 'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Shorts Dia de Sol', price: 'R$ 79,90', image: 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Pijama Nuvem Duo', price: 'R$ 99,90', image: 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Jaqueta Pequeno Explorador', price: 'R$ 169,90', image: 'https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Conjunto Tricot Candy', price: 'R$ 139,90', image: 'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Kit Camisetas Brincar', price: 'R$ 89,90', image: 'https://images.unsplash.com/photo-1620799139652-715e4d5b232d?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Jardineira Mini Arco-iris', price: 'R$ 119,90', image: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=800&q=80' }
   ];
 
   readonly benefits: ReadonlyArray<BenefitItem> = [
-    { icon: 'local_shipping', title: 'Fast Shipping', text: 'Dispatch in up to 24h for selected regions.' },
-    { icon: 'verified', title: 'Premium Quality', text: 'Safe, soft and durable materials for daily use.' },
-    { icon: 'eco', title: 'Eco Friendly', text: 'Responsible production and low impact packaging.' }
+    { icon: 'local_shipping', title: 'Entrega Rapida', text: 'Despacho em ate 24h para regioes selecionadas.' },
+    { icon: 'verified', title: 'Qualidade Premium', text: 'Materiais seguros, macios e duraveis para uso diario.' },
+    { icon: 'eco', title: 'Sustentavel', text: 'Producao responsavel e embalagens de baixo impacto.' }
   ];
 
   readonly lifestylePhotos: ReadonlyArray<string> = [
@@ -92,10 +92,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   ];
 
   readonly footerLinks: ReadonlyArray<FooterLink> = [
-    { label: 'Home', sectionId: 'home' },
-    { label: 'Collections', sectionId: 'collections' },
-    { label: 'New Arrivals', sectionId: 'arrivals' },
-    { label: 'Contact', sectionId: 'contact' }
+    { label: 'Inicio', sectionId: 'home' },
+    { label: 'Colecoes', sectionId: 'collections' },
+    { label: 'Novidades', sectionId: 'arrivals' },
+    { label: 'Contato', sectionId: 'contact' }
   ];
 
   readonly socialLinks: ReadonlyArray<SocialLink> = [

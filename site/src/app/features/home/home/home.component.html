@@ -2,7 +2,7 @@
   <header class="floating-navbar" [class.solid]="isNavbarSolid">
     <div class="nav-shell">
       <button type="button" class="brand" (click)="scrollToSection('home')">
-        <img [src]="logoPath" alt="Mundo Colore logo" class="brand-logo" />
+        <img [src]="logoPath" alt="Logo Mundo Colore" class="brand-logo" />
         <span class="brand-text">
           <span class="brand-kicker">Mundo Colore</span>
           <strong>mundocolorestore</strong>
@@ -17,12 +17,12 @@
         <button type="button" *ngFor="let item of menuItems" (click)="scrollToSection(item.id)">
           {{ item.label }}
         </button>
-        <button type="button" class="shop-now" (click)="scrollToSection('arrivals')">Shop Now</button>
+        <button type="button" class="shop-now" (click)="scrollToSection('arrivals')">Comprar agora</button>
       </nav>
     </div>
   </header>
 
-  <section class="hero" aria-label="Hero slideshow">
+  <section class="hero" aria-label="Carrossel principal">
     <article
       *ngFor="let slide of heroSlides; let i = index"
       class="hero-slide"
@@ -52,8 +52,8 @@
 
   <section id="collections" class="section featured">
     <div class="section-head">
-      <p class="section-kicker">Featured Collections</p>
-      <h2>Three colorful paths to shop with joy</h2>
+      <p class="section-kicker">Colecoes em Destaque</p>
+      <h2>Tres caminhos coloridos para comprar com alegria</h2>
     </div>
     <div class="featured-grid">
       <article class="featured-card" *ngFor="let card of featuredCards">
@@ -69,8 +69,8 @@
       <img [src]="logoPath" alt="Tag da marca Mundo Colore" />
     </div>
     <div class="about-copy">
-      <p class="section-kicker">About Mundo Colore</p>
-      <h2>Created to brighten childhood with comfort and imagination</h2>
+      <p class="section-kicker">Sobre a Mundo Colore</p>
+      <h2>Criada para iluminar a infancia com conforto e imaginacao</h2>
       <p>
         Mundo Colore nasceu para vestir pequenos momentos com cores leves, modelagens arredondadas
         e tecidos aconchegantes. Cada peca foi pensada para acompanhar brincadeiras, descobertas e
@@ -85,8 +85,8 @@
 
   <section id="arrivals" class="section products">
     <div class="section-head">
-      <p class="section-kicker">Product Showcase</p>
-      <h2>New arrivals made for playful days</h2>
+      <p class="section-kicker">Vitrine de Produtos</p>
+      <h2>Novidades feitas para dias de muita brincadeira</h2>
     </div>
     <div class="products-grid">
       <article class="product-card" *ngFor="let product of products">
@@ -94,7 +94,7 @@
         <div class="product-body">
           <h3>{{ product.name }}</h3>
           <p class="price">{{ product.price }}</p>
-          <button type="button">Add to cart</button>
+          <button type="button">Adicionar ao carrinho</button>
         </div>
       </article>
     </div>
@@ -102,8 +102,8 @@
 
   <section class="section benefits">
     <div class="section-head">
-      <p class="section-kicker">Why Choose Us</p>
-      <h2>Everything designed for modern family routines</h2>
+      <p class="section-kicker">Por que escolher a gente</p>
+      <h2>Tudo pensado para a rotina das familias modernas</h2>
     </div>
     <div class="benefits-grid">
       <article class="benefit-card" *ngFor="let benefit of benefits">
@@ -116,28 +116,28 @@
 
   <section id="promotions" class="section promo">
     <div class="promo-content">
-      <p class="section-kicker">Promotions</p>
-      <h2>Launch week offers up to 30% off</h2>
-      <p>Use coupon <strong>COLORIDO30</strong> on selected items and complete the look with matching bundles.</p>
-      <button type="button" (click)="scrollToSection('arrivals')">See promotional looks</button>
+      <p class="section-kicker">Promocoes</p>
+      <h2>Semana de lancamento com ate 30% OFF</h2>
+      <p>Use o cupom <strong>COLORIDO30</strong> em itens selecionados e complete o look com kits combinando.</p>
+      <button type="button" (click)="scrollToSection('arrivals')">Ver looks em promocao</button>
     </div>
   </section>
 
   <section class="section lifestyle">
     <div class="section-head">
-      <p class="section-kicker">Lifestyle</p>
-      <h2>Instagram moodboard from real life moments</h2>
+      <p class="section-kicker">Estilo de Vida</p>
+      <h2>Inspire-se com momentos reais no estilo Mundo Colore</h2>
     </div>
     <div class="lifestyle-grid">
-      <img *ngFor="let photo of lifestylePhotos" [src]="photo" alt="Mundo Colore lifestyle" />
+      <img *ngFor="let photo of lifestylePhotos" [src]="photo" alt="Lifestyle Mundo Colore" />
     </div>
   </section>
 
   <section id="contact" class="section newsletter">
     <div class="newsletter-shell">
       <div>
-        <p class="section-kicker">Newsletter</p>
-        <h2>Get launch drops and special coupons first</h2>
+        <p class="section-kicker">Novidades por e-mail</p>
+        <h2>Receba primeiro os lancamentos e cupons especiais</h2>
         <p>Assine para receber novidades da mundocolorestore direto no seu e-mail.</p>
       </div>
       <form [formGroup]="newsletterForm" (ngSubmit)="onNewsletterSubmit()" class="newsletter-form">
@@ -147,7 +147,7 @@
           placeholder="Seu melhor e-mail"
           aria-label="Seu melhor e-mail"
         />
-        <button type="submit">Subscribe</button>
+        <button type="submit">Assinar</button>
       </form>
     </div>
   </section>
@@ -169,6 +169,6 @@
         </a>
       </div>
     </div>
-    <p class="copyright">© {{ currentYear }} mundocolorestore. All rights reserved.</p>
+    <p class="copyright">(c) {{ currentYear }} mundocolorestore. Todos os direitos reservados.</p>
   </footer>
 </div>
