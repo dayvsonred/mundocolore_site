@@ -1,0 +1,61 @@
+<div class="container" fxLayout="row" fxLayoutAlign="center none">
+
+  <div fxFlex="95%">
+    <div class="container" fxLayout="row" fxLayoutAlign="center none">
+      <h2>Bem vindo , {{currentUser.fullName}}!</h2>
+    </div>
+
+
+    <div class="container" fxLayout="row" fxLayoutAlign="center none">
+      <div fxFlex="95%">
+        <mat-card>
+          <mat-card-content>
+            <h2>Minhas Doações</h2>
+
+            <div class="donations-grid">
+              <mat-card class="donation-card" *ngFor="let donation of donations">
+                
+                <mat-card-header>
+                  <mat-card-title [routerLink]="['/donation/view', donation.nome_link]" >{{ donation.name }}</mat-card-title>
+                  <mat-card-subtitle  [routerLink]="['/donation/view', donation.nome_link]" >{{ donation.area }}</mat-card-subtitle>
+                </mat-card-header>
+                
+                <img 
+                  [routerLink]="['/donation/view', donation.nome_link]"
+                  mat-card-image [src]="getImageUrl(donation.img)" alt="{{ donation.name }}"
+                  class="donation-image">
+                <mat-card-content>
+                  <div class="donation-text" [innerHTML]="donation.texto"></div>
+                  <p><strong>Valor:</strong> {{ donation.valor | currency:'BRL' }}</p>
+                  <p><strong>Data de Criação:</strong> {{ donation.date_create | date:'dd/MM/yyyy' }}</p>
+                  <p><strong>Ativo:</strong> {{ donation.active ? 'Sim' : 'Não' }}</p>
+                  <p><strong>Deletado:</strong> {{ donation.dell ? 'Sim' : 'Não' }}</p>
+                </mat-card-content>
+
+                <mat-card-content>
+                  <a mat-button  matButton color="primary" [routerLink]="['/donation/view', donation.nome_link]">{{donation.nome_link}}</a>
+                </mat-card-content>
+
+              </mat-card>
+            </div>
+
+            <div *ngIf="hasNextPage" style="margin-top: 20px; text-align: center;">
+              <button mat-raised-button color="primary" (click)="page = page + 1; buscarDoacoes()">Carregar
+                Mais</button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </div>
+
+
+    <div class="container" fxLayout="row" fxLayoutAlign="center none">
+      <div fxFlex="50%" class="text-center no-records animate">
+        <mat-icon>dashboard</mat-icon>
+        <p>This is the dashboard.</p>
+      </div>
+
+      <mat-icon> </mat-icon>
+    </div>
+  </div>
+</div>

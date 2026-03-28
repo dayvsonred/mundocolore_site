@@ -1,0 +1,23 @@
+<div class="heading">
+  <p class="eyebrow">{{ eyebrow }}</p>
+  <h2>{{ title }}</h2>
+</div>
+
+<div class="projects-grid">
+  <article class="project-card" *ngFor="let project of projects">
+    <h3>{{ project.name }}</h3>
+    <p class="summary">{{ project.summary }}</p>
+
+    <div class="tags">
+      <span *ngFor="let tech of project.stack">{{ tech }}</span>
+    </div>
+
+    <ul>
+      <li *ngFor="let item of project.highlights">{{ item }}</li>
+    </ul>
+
+    <div class="links">
+      <a *ngFor="let link of project.links" [href]="link.url">{{ link.label }}</a>
+    </div>
+  </article>
+</div>

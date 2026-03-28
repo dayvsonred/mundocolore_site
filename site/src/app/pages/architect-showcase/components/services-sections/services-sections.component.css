@@ -1,0 +1,85 @@
+:host {
+  display: block;
+}
+
+.heading {
+  margin-bottom: 10px;
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: #0f766e;
+  font-size: 0.78rem;
+}
+
+.heading h2 {
+  margin: 8px 0 0;
+  font-size: clamp(1.45rem, 2.8vw, 2.1rem);
+  max-width: 18ch;
+}
+
+.service-row {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 14px;
+  background: #ffffff;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+}
+
+.service-copy h3 {
+  margin: 0;
+  font-size: 1.22rem;
+}
+
+.service-copy p {
+  color: #334155;
+}
+
+.service-copy ul {
+  margin: 12px 0 0;
+  padding-left: 18px;
+  color: #0f172a;
+}
+
+.service-copy li {
+  margin-top: 8px;
+}
+
+.service-media img {
+  width: 100%;
+  border-radius: 14px;
+  min-height: 220px;
+  object-fit: cover;
+}
+
+.icon {
+  margin: 0 0 8px;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: #ecfeff;
+}
+
+@media (min-width: 900px) {
+  .service-row {
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 18px;
+    margin-top: 26px;
+  }
+
+  .service-row.reverse .service-copy {
+    order: 2;
+  }
+
+  .service-row.reverse .service-media {
+    order: 1;
+  }
+}

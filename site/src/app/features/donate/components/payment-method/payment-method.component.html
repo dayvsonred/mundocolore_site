@@ -1,0 +1,81 @@
+<section class="payment-section">
+  <h3>Forma de pagamento</h3>
+  <div class="method-list">
+    <button
+      type="button"
+      class="method-card"
+      [class.selected]="form.get('paymentMethod')?.value === 'card'"
+      (click)="selectMethod('card')">
+      <span class="radio"></span>
+      <span class="method-label">Credito ou debito</span>
+    </button>
+  </div>
+
+  <div class="card-form" *ngIf="form.get('paymentMethod')?.value === 'card'" [formGroup]="cardGroup">
+    <div class="field-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" autocomplete="off" />
+        <mat-error *ngIf="cardGroup.get('email')?.invalid">Email invalido</mat-error>
+      </mat-form-field>
+    </div>
+
+    <div class="field-row two-cols">
+      <mat-form-field appearance="outline">
+        <mat-label>Nome</mat-label>
+        <input matInput formControlName="firstName" autocomplete="off" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Sobrenome</mat-label>
+        <input matInput formControlName="lastName" autocomplete="off" />
+      </mat-form-field>
+    </div>
+
+    <div class="checkout-note" *ngIf="checkoutOnly">
+      Voce sera redirecionado para a Stripe para concluir o pagamento com seguranca.
+    </div>
+
+    <div *ngIf="!checkoutOnly">
+      <div class="stripe-field">
+        <label>Numero do cartao</label>
+        <div class="stripe-input" #cardNumber></div>
+      </div>
+      <div class="card-error" *ngIf="cardError">{{ cardError }}</div>
+
+      <div class="field-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Nome no cartao</mat-label>
+          <input matInput formControlName="cardName" autocomplete="off" />
+        </mat-form-field>
+      </div>
+
+      <div class="field-row three-cols">
+        <div class="stripe-field">
+          <label>MM / AA</label>
+          <div class="stripe-input" #cardExpiry></div>
+        </div>
+        <div class="stripe-field">
+          <label>CVV</label>
+          <div class="stripe-input" #cardCvc></div>
+        </div>
+        <mat-form-field appearance="outline">
+          <mat-label>Pais</mat-label>
+          <mat-select formControlName="country">
+            <mat-option value="Brasil">Brasil</mat-option>
+            <mat-option value="Portugal">Portugal</mat-option>
+            <mat-option value="EUA">EUA</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline">
+        <mat-label>CEP</mat-label>
+        <input matInput formControlName="postalCode" autocomplete="off" />
+      </mat-form-field>
+
+      <mat-checkbox formControlName="saveCard">
+        Salvar cartao para doacoes futuras
+      </mat-checkbox>
+    </div>
+  </div>
+</section>

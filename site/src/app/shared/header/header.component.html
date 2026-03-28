@@ -1,0 +1,22 @@
+<mat-toolbar class="custom-toolbar">
+  <div class="toolbar-content">
+    <a class="logo-link" [routerLink]="['/']">
+      <img [src]="assetsBaseUrl + '/assest/logo-puregrace-04.png'" alt="Logo" class="logo" />
+    </a>
+    <span class="spacer"></span>
+    <div class="auth-buttons">
+      <button mat-stroked-button class="login-button" [routerLink]="['/create/doacao']" style="background-color: #ff4081;">
+        <mat-icon class="icon-centered">add_circle</mat-icon>
+        Criar Doação
+      </button>
+      <button mat-stroked-button class="login-button" *ngIf="Logado" [routerLink]="['/dashboard']">
+        <mat-icon class="icon-centered">account_circle</mat-icon>
+        Minha conta
+      </button>
+      <button mat-stroked-button class="login-button" *ngIf="!Logado" [routerLink]="['/auth/login']">
+        <mat-icon class="icon-centered">account_circle</mat-icon>
+        Login
+      </button>
+    </div>
+  </div>
+</mat-toolbar>

@@ -1,0 +1,52 @@
+<div class="architect-page">
+  <app-hero-section
+    [brand]="data.brand"
+    [hero]="data.hero"
+    [architect]="data.architect"
+    [selectedLanguage]="selectedLanguage"
+    (languageChange)="onLanguageChange($event)">
+  </app-hero-section>
+
+  <app-metrics-strip
+    [metrics]="data.metrics"
+    [logos]="data.logos"
+    [ariaLabel]="data.text.metrics.ariaLabel">
+  </app-metrics-strip>
+
+  <section id="servicos" class="section-shell">
+    <app-services-sections
+      [services]="data.services"
+      [eyebrow]="data.text.services.eyebrow"
+      [title]="data.text.services.title">
+    </app-services-sections>
+  </section>
+
+  <section id="projetos" class="section-shell">
+    <app-projects-grid
+      [projects]="data.projects"
+      [eyebrow]="data.text.projects.eyebrow"
+      [title]="data.text.projects.title">
+    </app-projects-grid>
+  </section>
+
+  <section id="depoimentos" class="section-shell">
+    <app-testimonials-carousel
+      [testimonials]="data.testimonials"
+      [eyebrow]="data.text.testimonials.eyebrow"
+      [title]="data.text.testimonials.title"
+      [previousButtonLabel]="data.text.testimonials.previousButton"
+      [nextButtonLabel]="data.text.testimonials.nextButton"
+      [indicatorsAriaLabel]="data.text.testimonials.indicatorsAriaLabel"
+      [goToAriaPrefix]="data.text.testimonials.goToAriaPrefix">
+    </app-testimonials-carousel>
+  </section>
+
+  <section id="contato" class="section-shell">
+    <app-final-cta
+      [cta]="data.cta"
+      [eyebrow]="data.text.cta.eyebrow"
+      [title]="data.text.cta.title"
+      [description]="data.text.cta.description">
+    </app-final-cta>
+  </section>
+</div>

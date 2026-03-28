@@ -1,0 +1,14 @@
+<section class="summary-section">
+  <div class="row">
+    <span>Sua doacao</span>
+    <strong>{{ summary?.donation | currency:'BRL':'symbol':'1.0-2':'pt-BR' }}</strong>
+  </div>
+  <div class="row">
+    <span>Gorjeta</span>
+    <strong>{{ summary?.tip | currency:'BRL':'symbol':'1.0-2':'pt-BR' }}</strong>
+  </div>
+  <div class="row total">
+    <span>Total devido hoje</span>
+    <strong>{{ summary?.total | currency:'BRL':'symbol':'1.0-2':'pt-BR' }}</strong>
+  </div>
+</section>

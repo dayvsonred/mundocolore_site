@@ -1,0 +1,54 @@
+.donations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  justify-items: center;
+}
+
+.donation-card {
+  margin-bottom: 20px;
+  max-width: 300px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.donation-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.donation-image {
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px 8px 0 0;
+}
+
+mat-card-content p {
+  margin: 10px 0;
+}
+
+.container {
+  padding: 20px;
+}
+
+/* Media queries for smaller screens */
+@media (max-width: 600px) {
+  .donations-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .donation-card {
+    max-width: 100%;
+    margin-bottom: 15px;
+  }
+
+  .donation-image {
+    height: 150px;
+  }
+
+  .container {
+    padding: 10px;
+  }
+}

@@ -1,0 +1,70 @@
+.legal-page {
+  max-width: 920px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.legal-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.legal-header p {
+  color: #4c6462;
+  margin: 8px auto 0;
+  max-width: 620px;
+}
+
+.legal-panel {
+  border-radius: 0;
+  box-shadow: none;
+  border-bottom: 1px solid #e1e8e6;
+  background: transparent;
+}
+
+.legal-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.legal-title {
+  font-weight: 600;
+  color: #1c2b2c;
+}
+
+.legal-toggle mat-icon {
+  font-size: 22px;
+  color: #163334;
+}
+
+.legal-body p {
+  margin: 0 0 12px;
+  color: #4c6462;
+  line-height: 1.6;
+}
+
+:host ::ng-deep .legal-panel .mat-expansion-panel-body {
+  padding: 0 24px 20px;
+}
+
+:host ::ng-deep .legal-panel .mat-expansion-panel-header {
+  padding: 0 8px;
+  min-height: 64px;
+}
+
+:host ::ng-deep .legal-panel .mat-expansion-panel-header.mat-expanded {
+  background: transparent;
+}
+
+:host ::ng-deep .legal-panel .mat-expansion-panel-header:hover {
+  background: rgba(22, 51, 52, 0.04);
+}
+
+@media (max-width: 600px) {
+  .legal-title {
+    font-size: 0.98rem;
+  }
+}

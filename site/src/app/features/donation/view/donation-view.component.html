@@ -1,0 +1,43 @@
+<div class="container" fxLayout="row" fxLayoutAlign="center none">
+  <div fxFlex="95%">
+    <mat-card>
+      <mat-card-content>
+        <h2>Detalhes da Doação</h2>
+
+        <div *ngIf="donation; else loading">
+          <mat-card class="donation-card">
+            <mat-card-header>
+              <mat-card-title>{{ donation.name }}</mat-card-title>
+              <mat-card-subtitle>{{ donation.area }}</mat-card-subtitle>
+            </mat-card-header>
+            <img mat-card-image [src]="getImageUrl(donation.img_caminho)" alt="{{ donation.name }}" class="donation-image">
+            <mat-card-content>
+              <div class="donation-text" [innerHTML]="donation.texto"></div>
+              <p><strong>Valor:</strong> {{ donation.valor | currency:'BRL' }}</p>
+              <p><strong>Data de Criação:</strong> {{ donation.date_create | date:'dd/MM/yyyy' }}</p>
+              <p><strong>Ativo:</strong> {{ donation.active ? 'Sim' : 'Não' }}</p>
+              <p><strong>Deletado:</strong> {{ donation.dell ? 'Sim' : 'Não' }}</p>
+              <p><strong>Link:</strong> 
+                <a [routerLink]="['/pg/', donation.nome_link ]">Ver {{donation.nome_link }}</a>
+              </p>
+            </mat-card-content>
+          </mat-card>
+        </div>
+
+        <ng-template #loading>
+          <p>Carregando doação...</p>
+        </ng-template>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
+<div class="container" fxLayout="row" fxLayoutAlign="center none">
+  <div fxFlex="95%">
+    <mat-card>
+      <mat-card-content>
+        <h2>Doadores</h2>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

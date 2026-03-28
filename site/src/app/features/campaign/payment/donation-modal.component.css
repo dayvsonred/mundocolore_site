@@ -1,0 +1,260 @@
+:host ::ng-deep .donation-modal-panel .mat-dialog-container {
+  padding: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.modal-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px 28px;
+  border-bottom: 1px solid #e6e6e6;
+  background: linear-gradient(135deg, #f7fafc 0%, #eef4ff 100%);
+}
+
+.modal-title-block {
+  max-width: 80%;
+}
+
+.modal-eyebrow {
+  margin: 0 0 8px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #62718a;
+}
+
+.modal-title {
+  margin: 0 0 6px;
+  font-size: 26px;
+  font-weight: 600;
+  color: #1f2a44;
+}
+
+.modal-subtitle {
+  margin: 0;
+  color: #4b5b75;
+  font-size: 14px;
+}
+
+.close-btn {
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  color: #1f2a44;
+}
+
+.modal-body {
+  padding: 24px 28px 32px;
+  overflow-y: auto;
+}
+
+.donation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+section h3 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  color: #1f2a44;
+}
+
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.preset-btn {
+  border: 1px solid #d6dbe7;
+  border-radius: 10px;
+  padding: 10px 8px;
+  background: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset-btn:hover {
+  border-color: #6a7fd1;
+  box-shadow: 0 4px 14px rgba(73, 94, 162, 0.15);
+}
+
+.custom-amount {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-with-prefix,
+.tip-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #d6dbe7;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #ffffff;
+}
+
+.input-with-prefix span,
+.tip-input span {
+  color: #62718a;
+  font-weight: 600;
+}
+
+.input-with-prefix input,
+.tip-input input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 16px;
+}
+
+.progress-row {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: #edf0f6;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #5b7cff 0%, #2dd4bf 100%);
+  border-radius: inherit;
+  transition: width 0.3s ease;
+}
+
+.payment-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.payment-option {
+  border: 1px solid #d6dbe7;
+  border-radius: 12px;
+  padding: 14px 10px;
+  font-weight: 600;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.payment-option.active {
+  border-color: #2f52ff;
+  box-shadow: 0 10px 20px rgba(47, 82, 255, 0.2);
+  background: #eef2ff;
+}
+
+.extras-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.checkbox {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  color: #3f4c64;
+}
+
+.summary-section {
+  border-radius: 16px;
+  padding: 18px;
+  border: 1px solid #e2e8f0;
+  background: #f9fbff;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.summary-row.total {
+  border-top: 1px solid #e2e8f0;
+  margin-top: 6px;
+  padding-top: 14px;
+  font-size: 16px;
+}
+
+.action-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.donate-btn {
+  background: #2f52ff;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.donate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.donate-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(47, 82, 255, 0.25);
+}
+
+.legal,
+.guarantee {
+  font-size: 12px;
+  color: #5d6b82;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.error {
+  color: #d14343;
+  font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .modal-header,
+  .modal-body {
+    padding: 20px;
+  }
+
+  .preset-grid,
+  .payment-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

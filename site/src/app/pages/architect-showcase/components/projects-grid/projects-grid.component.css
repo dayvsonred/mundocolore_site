@@ -1,0 +1,88 @@
+:host {
+  display: block;
+}
+
+.heading {
+  margin-bottom: 12px;
+}
+
+.eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: #0f766e;
+  font-size: 0.78rem;
+}
+
+.heading h2 {
+  margin: 8px 0 0;
+  font-size: clamp(1.45rem, 2.8vw, 2.1rem);
+}
+
+.projects-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.project-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.project-card h3 {
+  margin: 0;
+}
+
+.summary {
+  color: #334155;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tags span {
+  background: #eef2ff;
+  color: #3730a3;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  border: 1px solid #c7d2fe;
+}
+
+.project-card ul {
+  padding-left: 18px;
+  margin: 0 0 12px;
+}
+
+.project-card li {
+  margin-top: 8px;
+}
+
+.links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.links a {
+  color: #0f766e;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.links a:hover {
+  text-decoration: underline;
+}
+
+@media (min-width: 920px) {
+  .projects-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

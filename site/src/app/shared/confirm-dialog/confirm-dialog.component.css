@@ -1,0 +1,77 @@
+.dialog-container {
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.dialog-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dialog-title mat-icon {
+  color: #3f51b5;
+}
+
+.dialog-content p {
+  font-size: 16px;
+  color: #555;
+  margin: 16px 0;
+  line-height: 1.5;
+}
+
+.dialog-actions {
+  padding-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+mat-dialog-content {
+  padding: 12px 0;
+}
+
+button {
+  min-width: 100px;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button[color="warn"] {
+  border-color: #f44336;
+}
+
+button[color="warn"]:hover {
+  background-color: rgba(244, 67, 54, 0.04);
+}
+
+button[color="primary"] {
+  box-shadow: 0 2px 4px rgba(63, 81, 181, 0.2);
+}
+
+button[color="primary"]:hover {
+  box-shadow: 0 4px 8px rgba(63, 81, 181, 0.3);
+}
+
+mat-icon {
+  vertical-align: middle;
+  font-size: 20px;
+}
+
+
+
+#modal-78987{
+ /*padding: 0 0 0 0 !important;*/
+ box-shadow: none !important;
+}

@@ -1,0 +1,12 @@
+<section class="metrics-wrap" [attr.aria-label]="ariaLabel">
+  <div class="metrics-grid">
+    <article class="metric-card" *ngFor="let item of metrics">
+      <p class="metric-value">{{ item.value }}</p>
+      <p class="metric-label">{{ item.label }}</p>
+    </article>
+  </div>
+
+  <div class="logos-strip">
+    <span *ngFor="let logo of logos">{{ logo }}</span>
+  </div>
+</section>

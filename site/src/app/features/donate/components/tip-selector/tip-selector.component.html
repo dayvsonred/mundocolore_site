@@ -1,0 +1,19 @@
+<section class="tip-section">
+  <div class="tip-header">
+    <h3>Gorjeta para o servico do ThePureGrace</h3>
+    <span class="tip-percent">{{ tipPercent }}%</span>
+  </div>
+  <p class="tip-description">
+    A gorjeta ajuda a manter a plataforma funcionando. Ajuste abaixo se desejar.
+  </p>
+  <mat-slider
+    min="0"
+    max="30"
+    step="1"
+    [value]="tipPercent"
+    (change)="onSliderChange($event.value)">
+  </mat-slider>
+  <div class="tip-impact">
+    Impacto adicional: {{ tipValue | currency:'BRL':'symbol':'1.0-2':'pt-BR' }}
+  </div>
+</section>

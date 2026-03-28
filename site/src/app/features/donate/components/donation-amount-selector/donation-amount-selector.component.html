@@ -1,0 +1,27 @@
+<div class="amount-selector">
+  <div class="pill-row">
+    <button
+      mat-stroked-button
+      type="button"
+      class="pill"
+      *ngFor="let amountOption of suggestedAmounts"
+      [class.selected]="isSelected(amountOption.value)"
+      (click)="selectAmount(amountOption.value)">
+      {{ amountOption.value | currency:'BRL':'symbol':'1.0-0':'pt-BR' }}
+    </button>
+  </div>
+
+  <div class="custom-input">
+    <label>Valor personalizado</label>
+    <div class="input-wrap">
+      <span>R$</span>
+      <input
+        type="text"
+        [value]="amountDisplay"
+        placeholder="0,00"
+        (input)="onInputChange($any($event.target).value)" />
+      <span class="currency-code">BRL</span>
+    </div>
+    <small class="helper">Minimo de R$ 5,00</small>
+  </div>
+</div>

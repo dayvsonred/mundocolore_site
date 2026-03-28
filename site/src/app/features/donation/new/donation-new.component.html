@@ -1,0 +1,89 @@
+<div class="container" fxLayout="row" fxLayoutAlign="center none">
+  <div fxFlex="95%">
+    <!-- <div class="container" fxLayout="column" fxLayoutAlign="center stretch" fxLayoutGap="20px"> -->
+    <mat-card class="container" fxLayout="column" fxLayoutAlign="center stretch" fxLayoutGap="20px">
+      <mat-card-content>
+        <h2>Nova Doação</h2>
+        <form [formGroup]="donationForm" (ngSubmit)="sendForm()" class="donation-form">
+
+          <!-- Título -->
+          <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>Título da Campanha</mat-label>
+            <input matInput formControlName="name" placeholder="Digite o título da campanha" />
+            <mat-error *ngIf="donationForm.get('name')?.hasError('required')">
+              O título é obrigatório.
+            </mat-error>
+            <mat-error *ngIf="donationForm.get('name')?.hasError('minlength')">
+              Mínimo de 3 caracteres.
+            </mat-error>
+            <mat-error *ngIf="donationForm.get('name')?.hasError('maxlength')">
+              Máximo de 100 caracteres.
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Valor -->
+          <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>Meta de Arrecadação (R$)</mat-label>
+            <input matInput type="text" formControlName="amount" placeholder="0,00" (input)="onAmountInput($event)" />
+            <mat-error *ngIf="donationForm.get('amount')?.hasError('required')">
+              Valor é obrigatório.
+            </mat-error>
+            <mat-error *ngIf="donationForm.get('amount')?.hasError('invalidFormat')">
+              Formato inválido. Use o formato: 1.234,56
+            </mat-error>
+            <mat-error *ngIf="donationForm.get('amount')?.hasError('minValue')">
+              O valor deve ser maior que zero.
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Texto com AngularEditor -->
+          <div class="form-section">
+            <label class="editor-label">Descrição da Campanha</label>
+            <angular-editor formControlName="message" [config]="editorConfig"  placeholder="Explique por que está arrecadando doações.">
+            </angular-editor>
+            <mat-hint align="end"> {{ donationForm.get('message')?.value?.length || 0 }}/5000  </mat-hint>
+            <mat-error *ngIf="donationForm.get('message')?.hasError('required')">
+              A descrição é obrigatória.
+            </mat-error>
+            <mat-error *ngIf="donationForm.get('message')?.hasError('minlength')">
+              Mínimo de 10 caracteres.
+            </mat-error>
+            <mat-error *ngIf="donationForm.get('message')?.hasError('maxlength')">
+              Máximo de 5000 caracteres.
+            </mat-error>
+          </div>
+
+          <!-- Categoria -->
+          <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>Categoria</mat-label>
+            <mat-select formControlName="category">
+              <mat-option *ngFor="let category of categories" [value]="category.value">
+                {{ category.label }}
+              </mat-option>
+            </mat-select>
+            <mat-error *ngIf="donationForm.get('category')?.hasError('required')">
+              Categoria é obrigatória.
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Upload de Imagem -->
+          <div class="form-section">
+            <label for="file-upload">Imagem da campanha:</label>
+            <input id="file-upload" type="file" (change)="onFileSelected($event)" />
+            <mat-hint *ngIf="selectedFile">Selecionado: {{ selectedFile.name }}</mat-hint>
+          </div>
+
+          <!-- Botão Enviar -->
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="donationForm.invalid">
+              Criar Doação
+            </button>
+          </div>
+
+        </form>
+      </mat-card-content>
+    </mat-card>
+    <!--  </div> -->
+
+  </div>
+</div>

@@ -1,0 +1,93 @@
+<div class="container">
+  <!-- Toolbar -->
+   <app-header-top [Logado]="Logado"> </app-header-top>  
+ <!-- <mat-toolbar class="custom-toolbar">
+    <div class="toolbar-content">
+      <a class="logo-link" [routerLink]="['/']">
+        <img [src]="assetsBaseUrl + '/assest/logo_bb.png'" alt="Logo" class="logo" />
+      </a>
+      <span class="spacer"></span>
+      <div class="auth-buttons">
+        <button mat-stroked-button class="login-button" style=" align-items: center; margin-top: 5px; background-color: #ff4081;">
+          <mat-icon
+            style="color: white; font-size: 24px; margin-right: 5px; position: relative; top: 7px;">add_circle</mat-icon>
+          Criar Doação
+        </button>
+        <button mat-stroked-button class="login-button" *ngIf="!Logado" [routerLink]="['/auth/login']"
+          style=" align-items: center; margin-top: 5px;">
+          <mat-icon
+            style="color: white; font-size: 24px; margin-right: 5px; position: relative; top: 7px;">account_circle</mat-icon>
+          Login
+        </button>
+        <button mat-stroked-button class="login-button" *ngIf="!Logado" [routerLink]="['/auth/new-user']"
+          style=" align-items: center; margin-top: 5px;">
+          <mat-icon
+            style="color: white; font-size: 24px; margin-right: 5px; position: relative; top: 7px;">account_circle</mat-icon>
+          Criar Conta
+        </button>
+        <button mat-stroked-button class="login-button" *ngIf="Logado" (click)="logout()"
+          style=" align-items: center; margin-top: 5px;">
+          <mat-icon
+            style="color: white; font-size: 24px; margin-right: 5px; position: relative; top: 7px;">account_circle</mat-icon>
+          Sair
+        </button>
+      </div>
+    </div>
+  </mat-toolbar>  -->
+
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Faça a Diferença com {{ appName }}</h1>
+      <p>Apoie causas que transformam vidas com doações seguras e transparentes.</p>
+      <button mat-raised-button color="primary" [routerLink]="['/create']">Doe Agora</button>
+    </div>
+  </section>
+
+
+    <!-- Header -->
+  <header class="header">
+    <h1>Políticas da Plataforma {{ appName }}</h1>
+    <p>Conheça nossas políticas para garantir transparência, segurança e conformidade.</p>
+  </header>
+
+  <!-- Main Content -->
+  <div class="policy-content">
+    <!-- Sidebar -->
+    <mat-nav-list class="sidebar">
+      <h3 class="sidebar-title">Políticas</h3>
+      <a
+        mat-list-item
+        *ngFor="let policy of policies"
+        [class.active]="activePolicy === policy.id"
+        (click)="selectPolicy(policy.id)"
+      >
+        {{ policy.title }}
+      </a>
+    </mat-nav-list>
+
+    <!-- Policy Content -->
+    <div class="content">
+      <div *ngFor="let policy of policies">
+        <div *ngIf="activePolicy === policy.id" [innerHTML]="policy.content"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu Toggle -->
+  <button mat-icon-button class="mobile-toggle" (click)="toggleSidebar()" *ngIf="isMobile">
+    <mat-icon>menu</mat-icon>
+  </button>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>© 2025 {{ appName }} Creative Agency. All rights reserved.</p>
+    <div class="social-icons">
+      <a href="https://facebook.com" target="_blank"><mat-icon>facebook</mat-icon></a>
+      <a href="https://x.com" target="_blank"><mat-icon>close</mat-icon></a>
+      <a href="https://youtube.com" target="_blank"><mat-icon>youtube_activity</mat-icon></a>
+      <a href="https://linkedin.com" target="_blank"><mat-icon>linkedin</mat-icon></a>
+    </div>
+  </footer>
+</div>

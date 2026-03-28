@@ -1,0 +1,22 @@
+.summary-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 0;
+  border-top: 1px solid #eaecf0;
+  border-bottom: 1px solid #eaecf0;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #344054;
+  align-items: center;
+}
+
+.row.total {
+  font-size: 16px;
+  font-weight: 600;
+  padding-top: 8px;
+}

@@ -1,0 +1,79 @@
+<div class="donate-page" *ngIf="form">
+  <mat-card class="donate-card">
+    <form [formGroup]="form" autocomplete="off">
+    <header class="donate-header">
+      <div class="header-left">
+        <h1>The Anthropocene: environmentally conscientious games</h1>
+        <p>Ainda ha tanta coisa para impactar.</p>
+      </div>
+      <div class="header-right">
+        <span class="category-chip">{{ form.get('category')?.value }}</span>
+        <mat-button-toggle-group
+          formControlName="frequency"
+          (change)="onFrequencyChange($event.value)"
+          class="frequency-toggle">
+          <mat-button-toggle value="once">Unica</mat-button-toggle>
+          <mat-button-toggle value="monthly">Mensal</mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    </header>
+
+    <section class="impact-block">
+      <div class="impact-row">
+        <p>Aumente seu impacto</p>
+        <mat-form-field appearance="outline" class="small-select">
+          <mat-select formControlName="frequency">
+            <mat-option *ngFor="let freq of frequencies" [value]="freq.value">
+              {{ freq.label }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <app-donation-amount-selector
+        [amount]="form.get('amount')?.value"
+        [suggestedAmounts]="suggestedAmounts"
+        (amountSelected)="onAmountSelected($event)"
+        (amountChanged)="onAmountChanged($event)">
+      </app-donation-amount-selector>
+    </section>
+
+    <mat-divider></mat-divider>
+
+    <app-tip-selector
+      [amount]="form.get('amount')?.value"
+      [tipPercent]="form.get('tipPercent')?.value"
+      (tipChanged)="onTipChanged($event)">
+    </app-tip-selector>
+
+    <mat-divider></mat-divider>
+
+    <app-payment-method
+      [form]="form"
+      [checkoutOnly]="true"
+      (methodChanged)="onPaymentMethodChange($event)">
+    </app-payment-method>
+
+    <section class="privacy-block">
+      <mat-checkbox formControlName="hideName">Nao mostrar meu nome publicamente.</mat-checkbox>
+      <mat-slide-toggle formControlName="anonymous" color="primary">
+        Ativar doacao anonima
+      </mat-slide-toggle>
+    </section>
+
+    <app-donation-summary [summary]="summary"></app-donation-summary>
+
+    <div class="sticky-action">
+      <button mat-raised-button color="primary" class="donate-button" (click)="submit()" [disabled]="isSubmitting">
+        Doar agora
+      </button>
+      <p class="footnote">
+        Ao clicar em "Doar agora", voce concorda com os Termos de Servico e o Aviso de Privacidade.
+      </p>
+      <div class="guarantee">
+        <strong>Protecao da doacao</strong>
+        <span>Reembolso total por ate um ano em caso raro de fraude.</span>
+      </div>
+    </div>
+    </form>
+  </mat-card>
+</div>

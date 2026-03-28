@@ -1,0 +1,32 @@
+table {
+    width: 100%;
+}
+
+th.mat-sort-header-sorted {
+    color: black;
+}
+
+table {
+  width: 100%;
+}
+
+th.mat-header-cell, td.mat-cell {
+  padding: 8px;
+  text-align: left;
+}
+
+mat-card {
+  margin-top: 20px;
+}
+
+.donation-card {
+  margin-bottom: 20px;
+}
+
+td button {
+  min-width: 110px;
+}
+
+#modal-78987{
+ padding: 0px !important;
+}

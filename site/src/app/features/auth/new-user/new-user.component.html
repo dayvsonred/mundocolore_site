@@ -1,0 +1,55 @@
+<div class="signin-content">
+	<mat-card style="text-align: center;">
+		<mat-card-content>
+			<form [formGroup]="form" (ngSubmit)="onSubmit()">
+				<mat-card-title>
+					<p>Criando novo usuário</p>
+				</mat-card-title>
+
+				<mat-form-field class="full-width-input">
+					<input matInput placeholder="Usuário nome" formControlName="userName" required>
+					<mat-error *ngIf="isFieldInvalid('userName')">
+						Por favor, informe seu nome de usuário
+					</mat-error>
+				</mat-form-field><br />
+				<mat-form-field class="full-width-input">
+					<input matInput placeholder="Usuário cpf" formControlName="userCpf" required>
+					<mat-error *ngIf="isFieldInvalid('userCpf')">
+						Por favor, informe seu CPF
+					</mat-error>
+				</mat-form-field><br />
+				
+				<mat-form-field class="full-width-input">
+					<input matInput placeholder="Usuário e-mail" formControlName="userEmail" required>
+					<mat-error *ngIf="isFieldInvalid('userEmail')">
+						Por favor, informe seu Email
+					</mat-error>
+				</mat-form-field><br />
+				<mat-form-field class="full-width-input">
+					<input matInput type="password" placeholder="Senha" formControlName="password" required>
+					<mat-error *ngIf="isFieldInvalid('password')">
+						Por favor, informe sua senha
+					</mat-error>
+				</mat-form-field><br />
+				<mat-form-field class="full-width-input">
+					<input matInput type="password" placeholder="Confirme a senha" formControlName="passwordConfirm" required>
+					<mat-error *ngIf="isFieldInvalid('passwordConfirm')">
+						Por favor, confirme sua senha
+					</mat-error>
+				</mat-form-field><br />
+				
+
+				<section>
+                    <div class="example-button-row">
+                      <div class="demo-button-container" style="text-align: center;">
+						<button mat-raised-button color="primary" type="submit" style="margin-right:20px" >Criar</button>
+                      </div>
+                    </div>
+                  </section>
+
+
+
+			</form>
+		</mat-card-content>
+	</mat-card>
+</div>

@@ -1,0 +1,22 @@
+mat-icon {
+    color: rgb(200, 0, 0);
+}
+
+mat-icon {
+    color: rgb(200, 0, 0);
+}
+
+h3 {
+    color: #3f51b5;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+a {
+    color: #3f51b5;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}

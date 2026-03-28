@@ -1,0 +1,25 @@
+<form [formGroup]="form" (ngSubmit)="submitUpdateUserName()">
+  <p>Preencha com o novo nome.</p>
+
+  <div fxLayout="row" fxLayoutGap="20px" fxLayout.xs="column">
+
+    <div fxFlex="40%" fxFlex.md="60%" fxFlex.sm="50%" fxFlex.xs="100%">
+      
+
+      <!-- PIX -->
+      <mat-form-field class="full-width">
+        <mat-label>Novo Nome</mat-label>
+        <input matInput formControlName="name" placeholder="Ex: João Lucas Oliveira de Assis Silva">
+        <mat-error *ngIf="form.controls['name'].hasError('required')">
+          Informe o novo nome
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Botão de envio -->
+      <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || disableSubmit">
+        Alterar
+      </button>
+    </div>
+
+  </div>
+</form>

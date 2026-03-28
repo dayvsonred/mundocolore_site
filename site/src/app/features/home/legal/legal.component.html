@@ -1,0 +1,27 @@
+<section class="section legal-page">
+  <div class="legal-header">
+    <h2>Termos e Políticas</h2>
+    <p>Informações importantes sobre uso, privacidade e transparência da nossa plataforma de doações.</p>
+  </div>
+
+  <mat-accordion class="legal-accordion">
+    <mat-expansion-panel *ngFor="let item of items; let i = index"
+      class="legal-panel"
+      [expanded]="openIndex === i"
+      (opened)="openIndex = i"
+      (closed)="openIndex = null"
+      [hideToggle]="true">
+      <mat-expansion-panel-header>
+        <div class="legal-row">
+          <span class="legal-title">{{ item.title }}</span>
+          <span class="legal-toggle" aria-hidden="true">
+            <mat-icon>{{ openIndex === i ? 'remove' : 'add' }}</mat-icon>
+          </span>
+        </div>
+      </mat-expansion-panel-header>
+      <div class="legal-body">
+        <p *ngFor="let paragraph of item.content">{{ paragraph }}</p>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+</section>

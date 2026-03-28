@@ -1,0 +1,103 @@
+<form [formGroup]="form" (ngSubmit)="submitBankAccount()">
+  <p>Preencha os dados bancários abaixo para atualizar sua conta.</p>
+
+  <div fxLayout="row" fxLayoutGap="20px" fxLayout.xs="column">
+
+    <div fxFlex="40%" fxFlex.md="60%" fxFlex.sm="50%" fxFlex.xs="100%">
+      <!-- Banco (select) -->
+      <mat-form-field class="full-width">
+        <mat-label>Banco</mat-label>
+        <mat-select formControlName="banco" (selectionChange)="onBankChange($event.value)">
+          <mat-option *ngFor="let bank of banks" [value]="bank.code">
+            {{ bank.name }} ({{ bank.code }})
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="form.controls['banco'].hasError('required')">
+          Selecione um banco
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Banco Nome (somente leitura, preenchido automaticamente) -->
+      <mat-form-field class="full-width">
+        <mat-label>Nome do Banco</mat-label>
+        <input matInput formControlName="banco_nome" readonly>
+      </mat-form-field>
+
+      <!-- Agência -->
+      <mat-form-field class="full-width">
+        <mat-label>Agência</mat-label>
+        <input matInput formControlName="agencia" placeholder="Ex: 1234">
+        <mat-error *ngIf="form.controls['agencia'].hasError('required')">
+          Informe a agência
+        </mat-error>
+        <mat-error *ngIf="form.controls['agencia'].hasError('pattern')">
+          Agência inválida (apenas números)
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Conta -->
+      <mat-form-field class="full-width">
+        <mat-label>Conta</mat-label>
+        <input matInput formControlName="conta" placeholder="Ex: 12345-6">
+        <mat-error *ngIf="form.controls['conta'].hasError('required')">
+          Informe a conta
+        </mat-error>
+        <mat-error *ngIf="form.controls['conta'].hasError('pattern')">
+          Conta inválida (ex: 12345)
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Dígito -->
+      <mat-form-field class="full-width">
+        <mat-label>Dígito</mat-label>
+        <input matInput formControlName="digito" placeholder="Ex: 6">
+        <mat-error *ngIf="form.controls['digito'].hasError('required')">
+          Informe o dígito
+        </mat-error>
+        <mat-error *ngIf="form.controls['digito'].hasError('pattern')">
+          Dígito inválido (apenas 1 número ou letra)
+        </mat-error>
+      </mat-form-field>
+
+      <!-- CPF -->
+      <mat-form-field class="full-width">
+        <mat-label>CPF</mat-label>
+        <input matInput formControlName="cpf" placeholder="Ex: 000.000.000-00">
+        <mat-error *ngIf="form.controls['cpf'].hasError('required')">
+          Informe o CPF
+        </mat-error>
+        <mat-error *ngIf="form.controls['cpf'].hasError('pattern')">
+          CPF inválido (ex: 000.000.000-00)
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Telefone -->
+      <mat-form-field class="full-width">
+        <mat-label>Telefone</mat-label>
+        <input matInput formControlName="telefone" placeholder="Ex: (11) 91234-5678">
+        <mat-error *ngIf="form.controls['telefone'].hasError('required')">
+          Informe o telefone
+        </mat-error>
+        <mat-error *ngIf="form.controls['telefone'].hasError('pattern')">
+          Telefone inválido (ex: (11) 91234-5678)
+        </mat-error>
+      </mat-form-field>
+
+      <!-- PIX -->
+      <!--
+      <mat-form-field class="full-width">
+        <mat-label>Chave PIX</mat-label>
+        <input matInput formControlName="pix" placeholder="Ex: meuchavepix@pix.com">
+        <mat-error *ngIf="form.controls['pix'].hasError('required')">
+          Informe a chave PIX
+        </mat-error>
+      </mat-form-field> -->
+
+      <!-- Botão de envio -->
+      <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid || disableSubmit">
+        Salvar Dados Bancários
+      </button>
+    </div>
+
+  </div>
+</form>

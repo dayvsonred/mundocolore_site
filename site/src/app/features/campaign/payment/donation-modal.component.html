@@ -1,0 +1,119 @@
+<div class="modal-shell">
+  <header class="modal-header">
+    <div class="modal-title-block">
+      <p class="modal-eyebrow">Doacao unica</p>
+      <h2 class="modal-title">Contribua para a campanha</h2>
+      <p class="modal-subtitle" *ngIf="data?.campaignTitle">{{ data.campaignTitle }}</p>
+    </div>
+    <button class="close-btn" type="button" mat-dialog-close aria-label="Fechar modal">×</button>
+  </header>
+
+  <mat-dialog-content class="modal-body">
+    <form [formGroup]="donationForm" (ngSubmit)="submitDonation()" class="donation-form">
+      <section class="amount-section">
+        <h3>Escolha um valor</h3>
+        <div class="preset-grid">
+          <button
+            type="button"
+            class="preset-btn"
+            *ngFor="let amount of presetAmounts"
+            (click)="setPresetAmount(amount)">
+            {{ amount | currency:'BRL':'symbol':'1.0-0':'pt-BR' }}
+          </button>
+        </div>
+
+        <div class="custom-amount">
+          <label for="amountInput">Ou digite um valor personalizado</label>
+          <div class="input-with-prefix">
+            <span>R$</span>
+            <input
+              id="amountInput"
+              type="text"
+              formControlName="amount"
+              placeholder="0,00"
+              (input)="formatCurrencyInput($event, 'amount')" />
+          </div>
+          <div class="error" *ngIf="donationForm.get('amount')?.invalid && donationForm.get('amount')?.touched">
+            Digite um valor valido.
+          </div>
+        </div>
+
+        <div class="progress-row" *ngIf="progressAfterDonation !== null">
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="progressAfterDonation"></div>
+          </div>
+          <p>
+            Apos esta doacao, a campanha alcancara {{ progressAfterDonation | number:'1.0-0' }}% da meta.
+          </p>
+        </div>
+      </section>
+
+      <section class="payment-section">
+        <h3>Escolha a forma de pagamento</h3>
+        <div class="payment-options">
+          <button
+            type="button"
+            class="payment-option"
+            [class.active]="donationForm.get('paymentMethod')?.value === 'card'"
+            (click)="selectPaymentMethod('card')">
+            Cartao de credito
+          </button>
+        </div>
+        <div class="error" *ngIf="donationForm.get('paymentMethod')?.invalid && donationForm.get('paymentMethod')?.touched">
+          Selecione uma forma de pagamento.
+        </div>
+      </section>
+
+      <section class="extras-section">
+        <h3>Preferencias</h3>
+        <label class="checkbox">
+          <input type="checkbox" formControlName="hidePublicInfo" />
+          Nao mostrar as minhas informacoes publicamente na arrecadacao.
+        </label>
+        <label class="checkbox">
+          <input type="checkbox" formControlName="receiveUpdates" />
+          Sim, quero receber atualizacoes do ThePureGrace sobre como mudar a vida das pessoas. Voce pode cancelar a assinatura quando quiser.
+        </label>
+      </section>
+
+      <section class="summary-section">
+        <h3>Resumo</h3>
+        <div class="summary-row">
+          <span>Sua doacao</span>
+          <strong>{{ formatCurrencyDisplay(donationAmountValue) }}</strong>
+        </div>
+        <div class="summary-row">
+          <span>Gorjeta para o ThePureGrace</span>
+          <div class="tip-input">
+            <span>R$</span>
+            <input
+              type="text"
+              formControlName="tipAmount"
+              (input)="formatCurrencyInput($event, 'tipAmount')" />
+          </div>
+        </div>
+        <div class="summary-row total">
+          <span>Total devido hoje</span>
+          <strong>{{ formatCurrencyDisplay(totalAmountValue) }}</strong>
+        </div>
+      </section>
+
+      <section class="action-section">
+        <button
+          type="submit"
+          class="donate-btn"
+          [disabled]="donationForm.invalid">
+          Doar agora
+        </button>
+        <p class="legal">
+          Ao clicar em 'Doar agora', voce concorda com os Termos de Servico e Aviso de Privacidade do ThePureGrace.
+          Saiba mais sobre precos e tarifas.
+        </p>
+        <p class="guarantee">
+          O ThePureGrace protege a sua doacao. Garantimos um reembolso total por ate um ano no caso raro de ocorrencia de fraude.
+          Consulte nossa Garantia de Doacao ThePureGrace.
+        </p>
+      </section>
+    </form>
+  </mat-dialog-content>
+</div>

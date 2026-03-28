@@ -1,0 +1,181 @@
+<div class="container">
+  <!-- Toolbar -->
+   <app-header-top [Logado]="Logado"> </app-header-top>
+  <!--<mat-toolbar class="custom-toolbar">
+    <div class="toolbar-content">
+      <a class="logo-link" [routerLink]="['/']">
+        <img [src]="assetsBaseUrl + '/assest/logo_bb.png'" alt="Logo" class="logo" />
+      </a>
+      <span class="spacer"></span>
+      <div class="auth-buttons">
+        <button mat-stroked-button class="login-button" *ngIf="!Logado" [routerLink]="['/auth/login']">
+          <mat-icon>account_circle</mat-icon> Login
+        </button>
+        <button mat-stroked-button class="login-button" *ngIf="!Logado" [routerLink]="['/auth/new-user']">
+          <mat-icon>account_circle</mat-icon> Criar Conta
+        </button>
+        <button mat-stroked-button class="login-button" *ngIf="Logado" (click)="logout()">
+          <mat-icon>account_circle</mat-icon> Sair
+        </button>
+      </div>
+    </div>
+  </mat-toolbar>-->
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="full-screen-spinner" *ngIf="loading">
+      <mat-spinner diameter="64" color="accent"></mat-spinner>
+    </div>
+    <mat-card class="donation-card" *ngIf="start">
+      <mat-card-header>
+        <mat-card-title class="donation-title">Criar Conta e Doação</mat-card-title>
+        <mat-card-subtitle>Preencha os dados abaixo para criar sua conta e iniciar uma campanha de
+          doação.</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="submit()" class="donation-form">
+          <!-- User Data Section -->
+          <div class="form-section">
+            <h3>Dados do Usuário</h3>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Nome Completo</mat-label>
+              <input matInput formControlName="fullName" placeholder="Digite seu nome completo" />
+              <mat-error *ngIf="form.get('fullName')?.hasError('required')">Nome é obrigatório</mat-error>
+              <mat-error *ngIf="form.get('fullName')?.hasError('maxlength')">O nome não pode ter mais de 50
+                caracteres</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>CPF</mat-label>
+              <input matInput formControlName="cpf" placeholder="Digite seu CPF" mask="000.000.000-00" />
+              <mat-error *ngIf="form.get('cpf')?.hasError('required')">CPF é obrigatório</mat-error>
+              <mat-error *ngIf="form.get('cpf')?.hasError('cpfInvalido')">CPF inválido</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" placeholder="Digite seu email" type="email" />
+              <mat-error *ngIf="form.get('email')?.hasError('required')">Email é obrigatório</mat-error>
+              <mat-error *ngIf="form.get('email')?.hasError('email')">Email inválido</mat-error>
+              <mat-error *ngIf="form.get('email')?.hasError('emailTaken')">Este email já está cadastrado</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Senha</mat-label>
+              <input matInput formControlName="senha" placeholder="Digite sua senha" type="password" />
+              <mat-error *ngIf="form.get('senha')?.hasError('required')">Senha é obrigatória</mat-error>
+              <mat-error *ngIf="form.get('senha')?.hasError('minlength')">Mínimo de 6 caracteres</mat-error>
+              <mat-error *ngIf="form.get('senha')?.hasError('maxlength')">O senha não pode ter mais de 130
+                caracteres</mat-error>
+            </mat-form-field>
+          </div>
+
+          <!-- Donation Data Section -->
+          <div class="form-section">
+            <h3>Dados da Doação</h3>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Título da Campanha</mat-label>
+              <input matInput formControlName="titulo" placeholder="Digite o título da campanha" />
+              <mat-error *ngIf="form.get('titulo')?.hasError('required')">Título é obrigatório</mat-error>
+              <mat-error *ngIf="form.get('titulo')?.hasError('minlength')">Mínimo de 5 caracteres</mat-error>
+              <mat-error *ngIf="form.get('titulo')?.hasError('maxlength')">O nome não pode ter mais de 130
+                caracteres</mat-error>
+            </mat-form-field>
+
+            <!--
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Meta (R$)</mat-label>
+              <input matInput formControlName="meta" placeholder="Digite a meta em reais" type="number" />
+              <mat-error *ngIf="form.get('meta')?.hasError('required')">Meta é obrigatória</mat-error>
+            </mat-form-field>
+            -->
+
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Meta (R$)</mat-label>
+              <input matInput formControlName="meta" placeholder="Digite a meta em reais" type="text"
+                (input)="formatCurrencyInput($event, 'meta')" />
+              <mat-error *ngIf="form.get('meta')?.hasError('required')">
+                Meta é obrigatória
+              </mat-error>
+              <mat-error *ngIf="form.get('meta')?.hasError('pattern')">
+                Digite um valor monetário válido (ex: 1.000,00)
+              </mat-error>
+              <mat-error *ngIf="form.get('meta')?.hasError('maxlength')">
+                O valor não pode exceder 20 caracteres
+              </mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Categoria</mat-label>
+              <mat-select formControlName="categoria">
+                <mat-option *ngFor="let category of categories" [value]="category.value">
+                  {{ category.label }}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="form.get('categoria')?.hasError('required')">
+                Categoria é obrigatória
+              </mat-error>
+            </mat-form-field>
+
+            <!-- 
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Texto da Campanha</mat-label>
+              <angular-editor formControlName="texto" [placeholder]="'Descreva sua campanha'" [config]="editorConfig">
+              </angular-editor>
+              <mat-error *ngIf="form.get('texto')?.hasError('required')">Descrição é obrigatória</mat-error>
+              <mat-error *ngIf="form.get('texto')?.hasError('minlength')">Mínimo de 10 caracteres</mat-error>
+            </mat-form-field> 
+            -->
+            <div class="form-field">
+              <label class="editor-label">Texto da Campanha</label>
+              <angular-editor formControlName="texto" [placeholder]="'Descreva sua campanha'" [config]="editorConfig">
+              </angular-editor>
+              <mat-error *ngIf="form.get('texto')?.hasError('required')">Descrição é obrigatória</mat-error>
+              <mat-error *ngIf="form.get('texto')?.hasError('minlength')">Mínimo de 10 caracteres</mat-error>
+              <mat-error *ngIf="form.get('texto')?.hasError('maxlength')">O texto não pode ter mais de 5000
+                caracteres</mat-error>
+            </div>
+
+            <div class="file-upload">
+              <label for="fileInput" class="file-label">Selecionar Imagem</label>
+              <input id="fileInput" type="file" (change)="onFileSelected($event)" accept="image/*" />
+              <span class="file-name" *ngIf="selectedFile">{{ selectedFile.name }}</span>
+              <mat-error *ngIf="!selectedFile && form.touched">Imagem é obrigatória</mat-error>
+            </div>
+            <div class="terms-toggle-row">
+              <mat-slide-toggle class="system-green-toggle" formControlName="acceptTerms" >
+                <a class="terms-link"
+                  [routerLink]="['/home/termos']"
+                  [queryParams]="{ item: 'termo-de-uso' }"
+                  (click)="$event.stopPropagation()">
+                  Aceitar termos da plataforma
+                </a>
+              </mat-slide-toggle>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit"
+              [disabled]="form.invalid || !selectedFile || !form.get('acceptTerms')?.value || disableSubmit">
+              <mat-icon *ngIf="disableSubmit">hourglass_empty</mat-icon>
+              {{ disableSubmit ? 'Criando...' : 'Criar Conta e Doação' }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Loading State -->
+    <div class="loading-container" *ngIf="!start">
+      <mat-spinner></mat-spinner>
+      <p>Carregando informações da doação...</p>
+    </div>
+  </div>
+
+  <app-footer></app-footer>
+</div>
+
+
+

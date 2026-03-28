@@ -1,0 +1,131 @@
+<div class="payment-container">
+  <div class="payment-header">
+    <h1 class="payment-title">Finalize sua doação via Pix</h1>
+    <p class="payment-subtitle">Escaneie o QR Code ou copie o código Pix para concluir o pagamento</p>
+  </div>
+
+  <div class="payment-content" fxLayout="row" fxLayout.lt-md="column" fxLayoutGap="32px">
+    <!-- QR Code Section -->
+    <div class="payment-card qr-code-section" fxFlex="40%">
+      <div class="qr-code-container">
+        <qrcode 
+          *ngIf="showQrCOde"
+          [qrdata]="pixCopiaECola" 
+          [width]="300"
+          [errorCorrectionLevel]="'M'">
+        </qrcode>
+        <br />
+        <!--  <img [src]="qrCodeUrl" alt="QR Code para pagamento Pix" class="qr-code-image" /> -->
+        <div class="qr-code-timer">
+          <mat-icon>access_time</mat-icon>
+          <span>Válido por: 30:00</span>
+        </div>
+      </div>
+      <div class="payment-amount">
+        <span class="amount-label">Valor:</span>
+        <span class="amount-value">{{ donationAmount | currency:'BRL':'symbol':'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="payment-right-column" fxFlex="60%">
+      <!-- Donation Details -->
+      <div class="payment-card">
+        <h3 class="section-title">
+          <mat-icon class="section-icon">receipt</mat-icon>
+          Resumo da doação
+        </h3>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Causa:</span>
+            <span class="detail-value">{{Causa}}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">ID Vaquinha:</span>
+            <span class="detail-value">{{ID_Vaquinha}}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">ID Transação:</span>
+            <span class="detail-value">{{ID_Transacao}}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Data:</span>
+            <span class="detail-value">{{dataFormatada}}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">E-mail:</span>
+            <span class="detail-value">contato&#64;dadivaorg.com</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Instructions -->
+      <div class="payment-card">
+        <h3 class="section-title">
+          <mat-icon class="section-icon">help_outline</mat-icon>
+          Como pagar com Pix
+        </h3>
+        <div class="instruction-steps">
+          <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              Abra o aplicativo do seu banco e acesse a área Pix
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              Escolha a opção <strong>"Pagar com QR Code"</strong>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              Aponte a câmera para o QR Code ao lado
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              Confirme os dados e finalize o pagamento
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Copy/Paste Section -->
+      <div class="payment-card">
+        <h3 class="section-title">
+          <mat-icon class="section-icon">content_copy</mat-icon>
+          Pix Copia e Cola
+        </h3>
+        <p class="copy-instruction">Precisa pagar sem usar a câmera? Copie o código abaixo:</p>
+        <div class="copy-section">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Código Pix</mat-label>
+            <input matInput [value]="pixCode" readonly>
+            <button mat-icon-button matSuffix (click)="copyPixCode()" aria-label="Copiar código Pix">
+              <mat-icon>content_copy</mat-icon>
+            </button>
+          </mat-form-field>
+
+        </div>
+          <button mat-raised-button color="primary" class="copy-button" (click)="copyPixCode()">
+            <mat-icon>content_copy</mat-icon>
+            Copiar código
+          </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="payment-footer">
+    <p class="security-info">
+      <mat-icon>lock</mat-icon>
+      Pagamento 100% seguro via instituições bancárias
+    </p>
+    <button mat-button color="primary" class="help-button">
+      <mat-icon>help</mat-icon>
+      Precisa de ajuda?
+    </button>
+  </div>
+</div>

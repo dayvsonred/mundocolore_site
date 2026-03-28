@@ -1,0 +1,27 @@
+.architect-page {
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --text: #0f172a;
+  --muted: #475569;
+  --primary: #0f766e;
+  --primary-dark: #115e59;
+  --accent: #f59e0b;
+  background:
+    radial-gradient(circle at top right, rgba(20, 184, 166, 0.12), transparent 35%),
+    radial-gradient(circle at top left, rgba(245, 158, 11, 0.12), transparent 28%),
+    var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.section-shell {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+@media (min-width: 768px) {
+  .section-shell {
+    padding: 40px 24px;
+  }
+}

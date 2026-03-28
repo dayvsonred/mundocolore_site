@@ -1,0 +1,264 @@
+<div class="container">
+
+  <app-header-top [Logado]="Logado"> </app-header-top>
+  <!-- Toolbar -->
+   <!--
+  <mat-toolbar class="custom-toolbar">
+    <div class="toolbar-content">
+      <a class="logo-link" [routerLink]="['/']">
+        <img [src]="assetsBaseUrl + '/assest/logo_bb.png'" alt="Logo" class="logo" />
+      </a>
+      <span class="spacer"></span>
+      <div class="auth-buttons">
+        <button mat-stroked-button class="login-button" [routerLink]="['/create/doacao']"
+          style=" align-items: center; margin-top: 5px; background-color: #ff4081;">
+          <mat-icon
+            style="color: white; font-size: 24px; margin-right: 5px; position: relative; top: 7px;">add_circle</mat-icon>
+          Criar Doação
+        </button>
+        <button mat-stroked-button class="login-button" *ngIf="!Logado" [routerLink]="['/auth/login']"
+          style=" align-items: center; margin-top: 5px;">
+          <mat-icon
+            style="color: white; font-size: 24px; margin-right: 5px; position: relative; top: 7px;">account_circle</mat-icon>
+          Login
+        </button>
+        <button mat-stroked-button class="login-button" *ngIf="!Logado" [routerLink]="['/auth/new-user']"
+          style=" align-items: center; margin-top: 5px;">
+          <mat-icon
+            style="color: white; font-size: 24px; margin-right: 5px; position: relative; top: 7px;">account_circle</mat-icon>
+          Criar Conta
+        </button>
+        <button mat-stroked-button class="login-button" *ngIf="Logado" (click)="logout()"
+          style=" align-items: center; margin-top: 5px;">
+          <mat-icon
+            style="color: white; font-size: 24px; margin-right: 5px; position: relative; top: 7px;">account_circle</mat-icon>
+          Sair
+        </button>
+      </div>
+    </div>
+  </mat-toolbar>
+  -->
+
+
+  <!-- Hero Section -->
+  <section class="hero" [ngStyle]="{'background-image': 'url(' + assetsBaseUrl + '/assest/home_trofel.png)'}">
+    <div class="hero-content">
+      <h1>A Graça que se transforma em ação.  {{ appName }}</h1>
+      <p>Apoie causas que transformam vidas com doações seguras e transparentes.</p>
+      <button mat-raised-button color="primary" [routerLink]="['/create/doacao']">Doe Agora</button>
+    </div>
+  </section>
+
+  <!-- Our Awesome Features -->
+  <section class="section features" #featuresSection [class.is-visible]="featuresInView">
+    <div class="features-header">
+      <h2>Nossos Recursos Incríveis</h2>
+      <p class="features-subtitle">
+        Uma experiência segura e transparente, feita para você doar com confiança.
+      </p>
+    </div>
+    <div class="features-grid">
+      <mat-card class="feature-card" *ngFor="let feature of features; let i = index"
+        [style.transitionDelay]="(i * 120) + 'ms'">
+        <div class="feature-waves" aria-hidden="true">
+          <span class="feature-wave wave-one"></span>
+          <span class="feature-wave wave-two"></span>
+          <span class="feature-wave wave-three"></span>
+        </div>
+        <div class="feature-icon">
+          <img [src]="feature.icon" [alt]="feature.title" />
+        </div>
+        <h3 class="feature-title">{{ feature.title }}</h3>
+        <p class="feature-text">{{ feature.description }}</p>
+      </mat-card>
+    </div>
+  </section>
+
+  <!-- Views (Impact Metrics) -->
+  <section class="section views" #impactSection [class.is-visible]="impactInView">
+    <div class="views-header">
+      <h2>Nosso Impacto</h2>
+      <p class="views-subtitle">Números reais, pessoas reais. Cada doação move essa história.</p>
+    </div>
+    <div class="metrics-grid">
+      <div class="metric-card" *ngFor="let metric of metrics">
+        <div class="metric-value" [attr.aria-label]="metric.label">
+          {{ formatMetricValue(metric) }}
+        </div>
+        <p class="metric-label">{{ metric.label }}</p>
+        <span class="metric-glow" aria-hidden="true"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Meet Ninjas Our Creative Team -->
+   <!-- <section class="section team">
+    <h2>Conheça os Ninjas: Nossa Equipe Criativa</h2>
+    <div class="team-grid">
+      <mat-card *ngFor="let member of teamMembers">
+        <img mat-card-image [src]="member.image" alt="{{ member.name }}" [style]="member.style">
+        <mat-card-title>{{ member.name }}</mat-card-title>
+        <mat-card-subtitle>{{ member.role }}</mat-card-subtitle>
+      </mat-card>
+    </div>
+  </section>-->
+
+  <!-- Meet the Developers -->
+  <section class="section team">
+    <h2 class="team-title">Gestão Institucional</h2>   <p class="team-subtitle">As mentes por trás da visão, do marketing e da tecnologia.</p>
+    <div class="developer-grid">
+      <div class="developer-card" *ngFor="let member of teamMembers">
+        <img class="developer-avatar" [src]="member.image" [alt]="member.name">
+        <h3 class="developer-name">{{ member.name }}</h3>
+        <p class="developer-role">{{ member.role }}</p>
+        <a class="developer-email" [href]="'mailto:' + member.email">{{ member.email }}</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- What We Do We Are Digital -->
+  <section class="section what-we-do" #whatWeDoSection [class.is-visible]="whatWeDoInView">
+    <div class="what-we-do-content">
+      <h2>O Que Fazemos: Somos Digitais</h2>
+      <p>Utilizamos tecnologia de ponta para conectar doadores a causas significativas, com uma plataforma intuitiva e
+        acessível.</p>
+      <button mat-stroked-button class="tech-button" [routerLink]="['/create/doacao']">Saiba Mais</button>
+    </div>
+  </section>
+
+  <!-- About Us We Are Partners -->
+  <section class="section about-us">
+    <h2>Sobre Nós: Somos Parceiros</h2>
+    <p>Colaboramos com ONGs, empresas e comunidades para amplificar o impacto das doações. Nossa missão é transformar
+      vidas.</p>
+    <p>Parceiros: ONG Vida, Instituto Educação, e mais.</p>
+  </section>
+
+  <!-- We Are Becki App Features -->
+  <section class="section app-features">
+    <h2>Nossos Recursos da Plataforma</h2>
+    <div class="features-grid">
+      <mat-card>
+        <mat-icon style="font-size: 24px;">phone_iphone</mat-icon>
+        <h3>Aplicativo Móvel</h3>
+        <p>Doe em qualquer lugar, a qualquer hora.</p>
+      </mat-card>
+      <mat-card>
+        <mat-icon style="font-size: 24px;">bar_chart</mat-icon>
+        <h3>Acompanhamento de Impacto</h3>
+        <p>Veja o progresso das suas doações.</p>
+      </mat-card>
+      <mat-card>
+        <mat-icon style="font-size: 24px;">payments</mat-icon>
+        <h3>Pagamentos Multiforma</h3>
+        <p>Aceitamos múltiplas moedas e métodos de pagamento.</p>
+      </mat-card>
+    </div>
+  </section>
+
+  <!-- Our Amazing Story Watch Our Video -->
+  <!-- 
+  <section class="section video">
+    <h2>Nossa História Incrível: Assista ao Nosso Vídeo</h2>
+    <div class="video-container">
+      <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
+    </div>
+  </section>
+  -->
+
+  <!-- We Make Themes That Solve Problems -->
+  <section class="section themes">
+    <h2>Criamos Soluções que Resolvem Problemas</h2>
+    <p>Às vezes, contamos histórias que inspiram. Nossa plataforma simplifica o processo de doação e maximiza o impacto.
+    </p>
+    <button mat-raised-button color="primary" [routerLink]="['/create/doacao']">Comece Agora</button>
+  </section>
+
+  <!-- Testimonials -->
+  <section class="section testimonials" aria-label="Depoimentos de impacto">
+    <div class="testimonials-header">
+      <h2>Depoimentos</h2>
+      <p class="testimonials-subtitle">Histórias reais de confiança, esperança e transformação.</p>
+    </div>
+
+    <div class="testimonial-slider"
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Carrossel de depoimentos"
+      aria-live="polite"
+      (mouseenter)="pauseTestimonials()"
+      (mouseleave)="resumeTestimonials()">
+      <div class="testimonial-track"
+        [style.transform]="'translateX(-' + currentTestimonialIndex * 100 + '%)'">
+        <div class="testimonial-slide" *ngFor="let testimonial of testimonials">
+          <mat-card class="testimonial-card">
+            <div class="testimonial-quote" aria-hidden="true">“</div>
+            <div class="testimonial-avatar" aria-hidden="true">
+              <mat-icon>{{ testimonial.avatarIcon }}</mat-icon>
+            </div>
+            <mat-card-content>{{ testimonial.text }}</mat-card-content>
+            <div class="testimonial-meta">
+              <span class="testimonial-name">{{ testimonial.name }}</span>
+              <span class="testimonial-role">{{ testimonial.role }}</span>
+            </div>
+          </mat-card>
+        </div>
+      </div>
+
+      <div class="testimonial-dots" role="tablist" aria-label="Navegação dos depoimentos">
+        <button type="button"
+          class="dot"
+          *ngFor="let testimonial of testimonials; let i = index"
+          [class.active]="i === currentTestimonialIndex"
+          (click)="goToTestimonial(i)"
+          [attr.aria-label]="'Ir para depoimento ' + (i + 1)"
+          [attr.aria-selected]="i === currentTestimonialIndex">
+        </button>
+      </div>
+    </div>
+  <!-- <p class="testimonials-note">Depoimentos ilustrativos e gerados por IA para fins de demonstração.</p>-->
+  </section>
+
+  <!-- Read Our News Latest Blog Post -->
+  <section class="section blog">
+    <h2>Leia Nossas Novidades: Últimos Posts</h2>
+    <div class="blog-grid">
+      <mat-card *ngFor="let post of blogPosts">
+        <mat-card-title>{{ post.title }}</mat-card-title>
+        <mat-card-content>{{ post.excerpt }}</mat-card-content>
+        <button mat-stroked-button [routerLink]="post.link" [queryParams]="post.queryParams">Leia Mais</button>
+      </mat-card>
+    </div>
+  </section>
+
+  <!-- Just Keep In Touch Contact Us Now -->
+  <section class="section contact">
+    <h2>Mantenha Contato: Fale Conosco</h2>
+    <form [formGroup]="contactForm" (ngSubmit)="submitContact()" class="contact-form">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nome</mat-label>
+        <input matInput formControlName="name" placeholder="Digite seu nome" />
+        <mat-error *ngIf="contactForm.get('name')?.hasError('required')">Nome é obrigatório</mat-error>
+        <mat-error *ngIf="contactForm.get('name')?.hasError('minlength')">Mínimo de 3 caracteres</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email" placeholder="Digite seu email" type="email" />
+        <mat-error *ngIf="contactForm.get('email')?.hasError('required')">Email é obrigatório</mat-error>
+        <mat-error *ngIf="contactForm.get('email')?.hasError('email')">Email inválido</mat-error>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Mensagem</mat-label>
+        <textarea matInput formControlName="message" placeholder="Digite sua mensagem"></textarea>
+        <mat-error *ngIf="contactForm.get('message')?.hasError('required')">Mensagem é obrigatória</mat-error>
+        <mat-error *ngIf="contactForm.get('message')?.hasError('minlength')">Mínimo de 10 caracteres</mat-error>
+      </mat-form-field>
+      <div class="form-actions">
+        <button mat-raised-button color="primary" type="submit" [disabled]="contactForm.invalid">Enviar</button>
+      </div>
+    </form>
+  </section>
+
+  <app-footer></app-footer>
+</div>
+

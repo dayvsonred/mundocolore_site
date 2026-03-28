@@ -1,0 +1,43 @@
+.tip-section {
+  padding: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tip-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.tip-percent {
+  font-weight: 700;
+  color: #1a4235;
+}
+
+.tip-description {
+  margin: 0;
+  color: #475467;
+  font-size: 13px;
+}
+
+.tip-impact {
+  font-size: 13px;
+  color: #475467;
+  font-weight: 600;
+}
+
+::ng-deep .mat-slider-thumb {
+  background-color: #1a4235;
+}
+
+::ng-deep .mat-slider-track-fill {
+  background-color: #1a4235;
+}

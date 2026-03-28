@@ -1,0 +1,19 @@
+<div class="heading">
+  <p class="eyebrow">{{ eyebrow }}</p>
+  <h2>{{ title }}</h2>
+</div>
+
+<article class="service-row" *ngFor="let service of services; let i = index" [class.reverse]="i % 2 === 1">
+  <div class="service-copy">
+    <p class="icon" aria-hidden="true">{{ getIcon(service.iconKey) }}</p>
+    <h3>{{ service.title }}</h3>
+    <p>{{ service.description }}</p>
+    <ul>
+      <li *ngFor="let bullet of service.bullets">{{ bullet }}</li>
+    </ul>
+  </div>
+
+  <div class="service-media">
+    <img [src]="service.imageUrl" [alt]="service.title" loading="lazy" />
+  </div>
+</article>

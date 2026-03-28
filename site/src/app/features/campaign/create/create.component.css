@@ -1,0 +1,283 @@
+/* Container and Layout */
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f5f5f5; /* Light background for better contrast */
+   padding-top: 64px; /* Altura da toolbar, pode ajustar se necessário */
+}
+
+.custom-toolbar {
+  background-color: #163334;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toolbar-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0 16px;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  height: 48px;
+  margin-right: 16px;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.auth-buttons button {
+  margin-left: 8px;
+}
+
+.login-button {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  color: white;
+}
+
+.main-content {
+  flex: 1;
+  padding: 32px 16px;
+  max-width: 800px; /* Narrower for better readability */
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Card Styling */
+.donation-card {
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: white;
+}
+
+.donation-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #163334;
+  margin-bottom: 8px;
+}
+
+mat-card-subtitle {
+  color: #666;
+  margin-bottom: 16px;
+}
+
+/* Form Styling */
+.donation-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.form-section h3 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #163334;
+  margin-bottom: 8px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.file-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-label {
+  font-size: 0.875rem;
+  color: #163334;
+  font-weight: 500;
+}
+
+input[type="file"] {
+  padding: 8px 0;
+}
+
+.file-name {
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.terms-toggle-row {
+  margin-top: 8px;
+}
+
+.terms-link {
+  color: #163334;
+  text-decoration: underline;
+}
+
+.terms-link:hover {
+  text-decoration: none;
+}
+
+::ng-deep .system-green-toggle.mat-mdc-slide-toggle {
+  --mdc-switch-selected-track-color: #163334;
+  --mdc-switch-selected-focus-track-color: #163334;
+  --mdc-switch-selected-hover-track-color: #163334;
+  --mdc-switch-selected-pressed-track-color: #163334;
+  --mdc-switch-selected-handle-color: #163334;
+  --mdc-switch-selected-focus-handle-color: #163334;
+  --mdc-switch-selected-hover-handle-color: #163334;
+  --mdc-switch-selected-pressed-handle-color: #163334;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+button[color="primary"] {
+  background-color: #163334;
+  color: white;
+  padding: 0 24px;
+}
+
+button[color="primary"]:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Loading State */
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 50vh;
+  color: #163334;
+}
+
+mat-spinner {
+  margin-bottom: 16px;
+}
+
+/* Responsiveness */
+@media (max-width: 600px) {
+  .main-content {
+    padding: 16px;
+  }
+
+  .donation-card {
+    padding: 16px;
+  }
+
+  .donation-title {
+    font-size: 1.5rem;
+  }
+
+  .auth-buttons button {
+    margin-left: 4px;
+    padding: 0 8px;
+  }
+
+  .logo {
+    height: 32px;
+  }
+}
+
+/* Estilos para o Quill Editor */
+.ql-container {
+  min-height: 150px;
+  border-radius: 0 0 4px 4px;
+}
+
+.ql-toolbar {
+  border-radius: 4px 4px 0 0;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+}
+
+.ql-editor {
+  min-height: 150px;
+  padding: 12px;
+}
+
+/* Ajuste para erros */
+.mat-form-field-invalid .ql-container {
+  border-color: #f44336;
+}
+
+.mat-form-field-invalid .ql-toolbar {
+  border-color: #f44336;
+  border-bottom-color: #ccc;
+}
+
+
+/* Estilos para o Quill Editor */
+.ql-container {
+  min-height: 150px;
+  border-radius: 0 0 4px 4px;
+  border: 1px solid #ccc;
+}
+
+.ql-toolbar {
+  border-radius: 4px 4px 0 0;
+  border: 1px solid #ccc;
+  border-bottom: none;
+  background-color: #f9f9f9;
+}
+
+.ql-editor {
+  min-height: 150px;
+  padding: 12px;
+}
+
+/* Ajuste para erros */
+.mat-form-field-invalid .ql-container {
+  border-color: #f44336;
+}
+
+.mat-form-field-invalid .ql-toolbar {
+  border-color: #f44336;
+}
+
+.editor-label {
+  display: block;
+  margin-bottom: 8px;
+  color: rgba(0, 0, 0, 0.6);
+  font-size: 12px;
+}
+
+
+
+
+
+
+
+
+
+
+
+.full-screen-spinner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}

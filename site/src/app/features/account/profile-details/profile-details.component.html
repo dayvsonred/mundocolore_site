@@ -1,0 +1,17 @@
+<div class="profile-card">
+  <div class="profile-image-wrapper" (click)="triggerFileInput()" (mouseenter)="hover = true"
+    (mouseleave)="hover = false">
+    <img [src]="profileImageUrl || 'assets/images/user.png'" [alt]="fullName" class="profile-avatar" />
+
+    <div class="edit-overlay" *ngIf="hover">
+      <mat-icon>edit</mat-icon>
+      <span>Editar</span>
+    </div>
+
+    <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" hidden />
+  </div>
+
+  <h2 class="title">{{ fullName }}</h2>
+  <label>{{ alias }}</label>
+  <label>{{ email }}</label>
+</div>

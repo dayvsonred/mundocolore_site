@@ -1,0 +1,19 @@
+<div class="dialog-container"  id="modal-78987">
+  <h2 mat-dialog-title class="dialog-title">
+    <mat-icon>help_outline</mat-icon>
+    {{ title }}
+  </h2>
+
+  <mat-dialog-content class="dialog-content">
+    <p style="padding: 5px;" >{{ message }}</p>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="dialog-actions">
+  <button *ngIf="!data.confirm_only" mat-stroked-button color="warn" (click)="onDismiss()">
+    <mat-icon>cancel</mat-icon>&nbsp; Nuo
+  </button>
+  <button mat-flat-button color="primary" (click)="onConfirm()">
+    <mat-icon>check_circle</mat-icon>&nbsp; {{ data.confirm_only ? 'OK' : 'Sim' }}
+  </button>
+</mat-dialog-actions>
+</div>

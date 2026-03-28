@@ -1,0 +1,29 @@
+<div class="container">
+  <app-header-top [Logado]="Logado"> </app-header-top>
+
+
+  <section class="section news-page" style="margin-top: 100px;">
+    <div class="news-header">
+      <h2>Novidades e Atualizações</h2>
+      <p>Conteúdos informativos sobre impacto, melhorias da plataforma e ações em andamento.</p>
+    </div>
+
+    <mat-accordion class="news-accordion">
+      <mat-expansion-panel *ngFor="let post of posts; let i = index" class="news-panel" [expanded]="openIndex === i"
+        (opened)="openIndex = i" (closed)="openIndex = null" [hideToggle]="true">
+        <mat-expansion-panel-header>
+          <div class="news-row">
+            <span class="news-title">{{ post.title }}</span>
+            <span class="news-toggle" aria-hidden="true">
+              <mat-icon>{{ openIndex === i ? 'remove' : 'add' }}</mat-icon>
+            </span>
+          </div>
+        </mat-expansion-panel-header>
+        <div class="news-body">
+          <p *ngFor="let paragraph of post.content">{{ paragraph }}</p>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </section>
+
+</div>

@@ -1,0 +1,54 @@
+<div class="container" fxLayout="row" fxLayoutAlign="center none">
+  <div fxFlex="95%">
+    <mat-card>
+      <mat-card-content>
+        <h2>Minhas Doações</h2>
+
+        <table mat-table [dataSource]="dataSource" matSort>
+          <!-- Name Column -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Nome</th>
+            <td mat-cell *matCellDef="let donation">{{ donation.name }}</td>
+          </ng-container>
+
+          <!-- Area Column -->
+          <ng-container matColumnDef="area">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Área</th>
+            <td mat-cell *matCellDef="let donation">{{ donation.area }}</td>
+          </ng-container>
+
+          <!-- Valor Column -->
+          <ng-container matColumnDef="valor">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Valor</th>
+            <td mat-cell *matCellDef="let donation">{{ donation.valor | currency:'BRL' }}</td>
+          </ng-container>
+
+          <!-- Date Create Column -->
+          <ng-container matColumnDef="date_create">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Data de Criação</th>
+            <td mat-cell *matCellDef="let donation">{{ donation.date_create | date:'dd/MM/yyyy' }}</td>
+          </ng-container>
+
+          <!-- Active Column -->
+          <ng-container matColumnDef="active">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Ativo</th>
+            <td mat-cell *matCellDef="let donation">{{ donation.active ? 'Sim' : 'Não' }}</td>
+          </ng-container>
+
+          <!-- Dell Column -->
+          <ng-container matColumnDef="dell">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Deletado</th>
+            <td mat-cell *matCellDef="let donation">{{ donation.dell ? 'Sim' : 'Não' }}</td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <div *ngIf="hasNextPage" style="margin-top: 20px;">
+          <button mat-raised-button color="primary" (click)="page = page + 1; buscarDoacoes()">Carregar Mais</button>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

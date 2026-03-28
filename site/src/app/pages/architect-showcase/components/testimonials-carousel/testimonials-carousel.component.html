@@ -1,0 +1,25 @@
+<div class="heading">
+  <p class="eyebrow">{{ eyebrow }}</p>
+  <h2>{{ title }}</h2>
+</div>
+
+<article class="carousel-card" *ngIf="testimonials.length">
+  <p class="quote">"{{ testimonials[activeIndex].quote }}"</p>
+  <p class="author">{{ testimonials[activeIndex].name }}</p>
+  <p class="meta">{{ testimonials[activeIndex].role }} - {{ testimonials[activeIndex].company }}</p>
+
+  <div class="controls">
+    <button type="button" (click)="prev()" [attr.aria-label]="previousButtonLabel">{{ previousButtonLabel }}</button>
+    <button type="button" (click)="next()" [attr.aria-label]="nextButtonLabel">{{ nextButtonLabel }}</button>
+  </div>
+
+  <div class="dots" role="tablist" [attr.aria-label]="indicatorsAriaLabel">
+    <button
+      type="button"
+      *ngFor="let testimonial of testimonials; let i = index"
+      [class.active]="i === activeIndex"
+      (click)="goTo(i)"
+      [attr.aria-label]="goToAriaPrefix + ' ' + (i + 1)">
+    </button>
+  </div>
+</article>

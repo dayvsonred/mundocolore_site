@@ -1,0 +1,44 @@
+/*table {
+    width: 100%;
+}
+
+th.mat-sort-header-sorted {
+    color: black;
+}
+
+table {
+  width: 100%;
+}
+
+th.mat-header-cell, td.mat-cell {
+  padding: 8px;
+  text-align: left;
+}
+
+mat-card {
+  margin-top: 20px;
+}
+
+.donation-card {
+  margin-bottom: 20px;
+}*/
+
+.donation-card {
+  margin-bottom: 20px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.donation-image {
+  height: 300px;
+  object-fit: cover;
+}
+
+mat-card-content p {
+  margin: 10px 0;
+}
+
+.container {
+  padding: 20px;
+}

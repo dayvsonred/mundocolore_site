@@ -1,0 +1,50 @@
+.profile-card {
+    text-align: center;
+}
+
+.profile-avatar {
+  /*width: 128px;
+  height: 128px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: block;
+  margin: 0 auto 16px auto;*/
+}
+
+
+.profile-image-wrapper {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  margin: 0 auto 16px;
+  cursor: pointer;
+}
+
+.profile-avatar {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #ccc;
+}
+
+.edit-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 4px;
+  border-radius: 0 0 50% 50%;
+}
+
+.edit-overlay mat-icon {
+  vertical-align: middle;
+  font-size: 18px;
+  margin-right: 4px;
+}
