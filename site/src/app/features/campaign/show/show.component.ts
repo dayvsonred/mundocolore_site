@@ -182,7 +182,7 @@ export class ShowComponent implements OnInit, OnDestroy {
     this.meta.updateTag({ name: 'twitter:title', content: campaignName });
     this.meta.updateTag({ name: 'twitter:description', content: description });
     this.meta.updateTag({ name: 'twitter:image', content: image });
-    this.meta.updateTag({ name: 'keywords', content: `${campaignName}, campanha, doacao, ${campaignCategory}, thepuregrace` });
+    this.meta.updateTag({ name: 'keywords', content: `${campaignName}, campanha, doacao, ${campaignCategory}, mundocolorestore` });
 
     this.setCanonicalUrl(pageUrl);
     this.setJsonLd({

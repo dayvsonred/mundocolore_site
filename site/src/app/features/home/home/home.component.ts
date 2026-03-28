@@ -1,12 +1,8 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
-import { NotificationService } from 'src/app/core/services/notification.service';
-import { Meta, Title } from '@angular/platform-browser';
-import { AuthenticationService } from 'src/app/core/services/auth.service';
-import { GlobalService } from 'src/app/core/services/global.service';
-import { environment } from 'src/environments/environment';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { Meta, Title } from '@angular/platform-browser';
 
+import { NotificationService } from 'src/app/core/services/notification.service';
 import { APP_NAME } from 'src/app/core/constants/branding';
 
 @Component({
@@ -14,291 +10,229 @@ import { APP_NAME } from 'src/app/core/constants/branding';
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css']
 })
-export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
-  appName = APP_NAME;
-  Logado = false;
-  contactForm: FormGroup;
-  impactInView = false;
-  featuresInView = false;
-  whatWeDoInView = false;
-  assetsBaseUrl = environment.assetsBaseUrl;
-  currentTestimonialIndex = 0;
-  private testimonialInterval?: ReturnType<typeof setInterval>;
-  metrics = [
-    { label: 'Doações Realizadas', target: 20000, suffix: '+', display: 0 },
-    { label: 'Projetos Financiados', target: 200, suffix: '+', display: 0 },
-    { label: 'Vidas Impactadas', target: 4000, suffix: '+', display: 0 },
+export class HomeComponent implements OnInit, OnDestroy {
+  readonly appName = APP_NAME;
+  readonly currentYear = new Date().getFullYear();
+  readonly logoPath = 'assets/images/logo-mundo-colore.jpg';
+
+  readonly menuItems: ReadonlyArray<MenuItem> = [
+    { id: 'home', label: 'Home' },
+    { id: 'collections', label: 'Collections' },
+    { id: 'arrivals', label: 'New Arrivals' },
+    { id: 'promotions', label: 'Promotions' },
+    { id: 'contact', label: 'Contact' }
   ];
-  private impactObserver?: IntersectionObserver;
-  private featuresObserver?: IntersectionObserver;
-  private whatWeDoObserver?: IntersectionObserver;
-  private metricsAnimated = false;
-  @ViewChild('impactSection') impactSection?: ElementRef<HTMLElement>;
-  @ViewChild('featuresSection') featuresSection?: ElementRef<HTMLElement>;
-  @ViewChild('whatWeDoSection') whatWeDoSection?: ElementRef<HTMLElement>;
-  features = [
+
+  readonly heroSlides: ReadonlyArray<HeroSlide> = [
     {
-      title: 'Pagamentos Seguros',
-      description: 'Doações protegidas com criptografia e monitoramento antifraude.',
-      icon: `${environment.assetsBaseUrl}/assest/bloqueio-inteligente.png`,
+      title: 'Color, comfort and joy for every childhood moment',
+      subtitle: 'A playful launch collection with soft fabrics and rainbow inspired essentials.',
+      cta: 'Shop New Arrivals',
+      backgroundImage:
+        'https://images.unsplash.com/photo-1519238359922-989348752efb?auto=format&fit=crop&w=1600&q=80'
     },
     {
-      title: 'Transparência Total',
-      description: 'Acompanhe cada etapa e veja o impacto real da sua doação.',
-      icon: `${environment.assetsBaseUrl}/assest/comunidade-online.png`,
+      title: 'Pastel tones and happy outfits for everyday adventures',
+      subtitle: 'Designed for movement, made for smiles, ready for school and weekend fun.',
+      cta: 'Explore Collections',
+      backgroundImage:
+        'https://images.unsplash.com/photo-1542838687-8f3d93d6f105?auto=format&fit=crop&w=1600&q=80'
     },
     {
-      title: 'Comunidade Engajada',
-      description: 'Conecte-se a pessoas e causas que transformam vidas.',
-      icon: `${environment.assetsBaseUrl}/assest/reconhecimento-de-olho.png`,
-    },
+      title: 'Mundo Colore Store is now live',
+      subtitle: 'Discover modern kidswear with rounded details and a gentle colorful identity.',
+      cta: 'View Promotions',
+      backgroundImage:
+        'https://images.unsplash.com/photo-1519345182560-3f2917c472ef?auto=format&fit=crop&w=1600&q=80'
+    }
   ];
-  testimonials = [
+
+  readonly featuredCards: ReadonlyArray<FeaturedCard> = [
     {
-      name: 'Mariana Oliveira',
-      role: 'Doadora',
-      text: 'Doei com confiança e recebi atualizações claras. Ver o impacto real foi emocionante.',
-      avatarIcon: 'person',
+      title: 'New Arrivals',
+      description: 'Fresh drops for babies and kids with breathable cotton and pastel finishes.',
+      badgeColor: 'var(--primary-red)'
     },
     {
-      name: 'Hiago Lima',
-      role: 'Voluntário',
-      text: 'A plataforma conecta pessoas de verdade. O processo é simples e transparente.',
-      avatarIcon: 'person',
+      title: 'Color Collection',
+      description: 'Rainbow inspired looks curated by color mood and playful combinations.',
+      badgeColor: 'var(--primary-blue)'
     },
     {
-      name: 'Camila Rocha',
-      role: 'Beneficiária',
-      text: 'A doação chegou no momento certo. Sou muito grata por essa rede de apoio.',
-      avatarIcon: 'person',
-    },
-    {
-      name: 'Pedro Alves',
-      role: 'Doador',
-      text: 'Segurança e credibilidade fizeram a diferença. Hoje faço parte dessa comunidade.',
-      avatarIcon: 'person',
-    },
+      title: 'Sales',
+      description: 'Special prices for selected looks, bundles and seasonal combos.',
+      badgeColor: 'var(--primary-orange)'
+    }
   ];
-  blogPosts = [
-    {
-      title: 'Nosso Impacto em 2025',
-      excerpt: 'Saiba como suas doações transformaram vidas este ano.',
-      link: '/home/novidades',
-      queryParams: { post: 'impacto-2025' }
-    },
-    {
-      title: 'Atualizações da Plataforma',
-      excerpt: 'Acompanhe melhorias, novidades e evoluções contínuas do nosso sistema.',
-      link: '/home/novidades',
-      queryParams: { post: 'educacao-2025' }
-    },
+
+  readonly products: ReadonlyArray<ProductCard> = [
+    { name: 'Rainbow Hoodie Set', price: 'R$ 149,90', image: 'https://images.unsplash.com/photo-1618375531912-867984bdfd87?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Soft Garden Dress', price: 'R$ 129,90', image: 'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Sunny Day Shorts', price: 'R$ 79,90', image: 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Cloud Pajama Duo', price: 'R$ 99,90', image: 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Little Explorer Jacket', price: 'R$ 169,90', image: 'https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Candy Knit Set', price: 'R$ 139,90', image: 'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Playtime Tee Pack', price: 'R$ 89,90', image: 'https://images.unsplash.com/photo-1620799139652-715e4d5b232d?auto=format&fit=crop&w=800&q=80' },
+    { name: 'Mini Rainbow Overalls', price: 'R$ 119,90', image: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=800&q=80' }
   ];
-  teamMembers = [
-    { name: 'Marina Oliveira', role: 'CMO – Chief Marketing Officer (Diretor de Marketing)', email: 'domains@thepuregrace.com', image: `${environment.assetsBaseUrl}/assest/cmo_v1.png`, style: "" },
-    { name: 'Dayvson Vicente', role: ' CTO – Chief Technology Officer (Diretor de Tecnologia) ', email: 'admin@thepuregrace.com', image: `${environment.assetsBaseUrl}/assest/cto_v1.png`, style: "" },
+
+  readonly benefits: ReadonlyArray<BenefitItem> = [
+    { icon: 'local_shipping', title: 'Fast Shipping', text: 'Dispatch in up to 24h for selected regions.' },
+    { icon: 'verified', title: 'Premium Quality', text: 'Safe, soft and durable materials for daily use.' },
+    { icon: 'eco', title: 'Eco Friendly', text: 'Responsible production and low impact packaging.' }
   ];
-  router: any;
+
+  readonly lifestylePhotos: ReadonlyArray<string> = [
+    'https://images.unsplash.com/photo-1476234251651-f353703a034d?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1516627145497-ae6968895b9a?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1492724441997-5dc865305da7?auto=format&fit=crop&w=900&q=80',
+    'https://images.unsplash.com/photo-1522771930-78848d9293e8?auto=format&fit=crop&w=900&q=80'
+  ];
+
+  readonly footerLinks: ReadonlyArray<FooterLink> = [
+    { label: 'Home', sectionId: 'home' },
+    { label: 'Collections', sectionId: 'collections' },
+    { label: 'New Arrivals', sectionId: 'arrivals' },
+    { label: 'Contact', sectionId: 'contact' }
+  ];
+
+  readonly socialLinks: ReadonlyArray<SocialLink> = [
+    { label: 'Instagram', href: 'https://instagram.com' },
+    { label: 'Facebook', href: 'https://facebook.com' },
+    { label: 'Pinterest', href: 'https://pinterest.com' }
+  ];
+
+  isNavbarSolid = false;
+  mobileMenuOpen = false;
+  activeSlideIndex = 0;
+  newsletterForm: FormGroup;
+
+  private heroIntervalId?: number;
 
   constructor(
-    private fb: FormBuilder,
-    private titleService: Title,
-    private notificationService: NotificationService,
-    private meta: Meta,
-    private authenticationService: AuthenticationService,
-    private globalService: GlobalService,
-    private http: HttpClient
+    private readonly fb: FormBuilder,
+    private readonly notificationService: NotificationService,
+    private readonly titleService: Title,
+    private readonly meta: Meta
   ) {
-    this.titleService.setTitle(APP_NAME + ' - Doar inspira vida');
-    this.contactForm = this.fb.group({
-      name: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      message: ['', [Validators.required, Validators.minLength(10)]],
+    this.newsletterForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]]
     });
-    this.meta.addTags([
-      { name: 'description', content: 'Doe para causas que transformam vidas com a ' + APP_NAME + ' Creative Agency.' },
-      { name: 'keywords', content: 'doação, nonprofit, caridade, impacto social' },
-    ]);
+    this.titleService.setTitle('mundocolorestore - Moda infantil colorida');
+    this.meta.updateTag({
+      name: 'description',
+      content: 'Mundo Colore Store: ecommerce infantil com colecoes coloridas, confortaveis e modernas.'
+    });
+    this.meta.updateTag({
+      name: 'keywords',
+      content: 'mundocolorestore, roupas infantis, moda infantil, colecao colorida, ecommerce'
+    });
   }
 
   ngOnInit(): void {
-
-    const currentUser = this.globalService.getCurrentUser();
-    if (currentUser) {
-      this.Logado = true;
-    }
-
-
-  }
-
-  ngAfterViewInit(): void {
-    const impact = this.impactSection?.nativeElement;
-    if (impact) {
-      this.impactObserver = new IntersectionObserver(
-        (entries) => {
-          const [entry] = entries;
-          if (entry.isIntersecting) {
-            this.impactInView = true;
-            if (!this.metricsAnimated) {
-              this.metricsAnimated = true;
-              this.animateMetrics();
-            }
-          }
-        },
-        { threshold: 0.35 }
-      );
-
-      this.impactObserver.observe(impact);
-    }
-
-    const features = this.featuresSection?.nativeElement;
-    if (features) {
-      this.featuresObserver = new IntersectionObserver(
-        (entries) => {
-          const [entry] = entries;
-          this.featuresInView = entry.isIntersecting;
-        },
-        { threshold: 0.25 }
-      );
-
-      this.featuresObserver.observe(features);
-    }
-
-    const whatWeDo = this.whatWeDoSection?.nativeElement;
-    if (whatWeDo) {
-      this.whatWeDoObserver = new IntersectionObserver(
-        (entries) => {
-          const [entry] = entries;
-          this.whatWeDoInView = entry.isIntersecting;
-        },
-        { threshold: 0.3 }
-      );
-
-      this.whatWeDoObserver.observe(whatWeDo);
-    }
-
-    this.startTestimonialsAutoSlide();
+    this.startHeroAutoSlide();
+    this.onWindowScroll();
   }
 
   ngOnDestroy(): void {
-    this.impactObserver?.disconnect();
-    this.featuresObserver?.disconnect();
-    this.whatWeDoObserver?.disconnect();
-    this.stopTestimonialsAutoSlide();
+    this.stopHeroAutoSlide();
   }
 
-  logout(): void {
-    this.authenticationService.logout();
-    this.Logado = false;
-    this.router.navigate(['/']);
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    this.isNavbarSolid = window.scrollY > 24;
   }
 
-  async submitContact(): Promise<void> {
-    if (this.contactForm.invalid) {
-      this.notificationService.openSnackBar('Preencha todos os campos corretamente.');
-      this.contactForm.markAllAsTouched();
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
+  scrollToSection(sectionId: string): void {
+    const section = document.getElementById(sectionId);
+    if (!section) {
+      return;
+    }
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    this.mobileMenuOpen = false;
+  }
+
+  goToSlide(index: number): void {
+    this.activeSlideIndex = index;
+    this.restartHeroAutoSlide();
+  }
+
+  onNewsletterSubmit(): void {
+    if (this.newsletterForm.invalid) {
+      this.newsletterForm.markAllAsTouched();
+      this.notificationService.openSnackBar('Informe um e-mail valido para receber novidades.');
       return;
     }
 
-    const ip = await this.getUserIP(); // Aguarda IP
-
-    const formValues = this.contactForm.value;
-    const payload = {
-      nome: formValues.name,
-      email: formValues.email,
-      mensagem: formValues.message,
-      ip: ip,
-      location: 'Desconhecida', // Pode adicionar geolocalização no futuro
-      token: 'browser-123',     // Ou gerar dinamicamente
-    };
-
-    this.globalService.sendContactMessage(payload).subscribe({
-      next: () => {
-        this.notificationService.openSnackBar('Mensagem enviada com sucesso!');
-        this.contactForm.reset();
-        // Reset com valores padrão
-        this.contactForm.reset({
-          name: '',
-          email: '',
-          message: ''
-        });
-
-        Object.keys(this.contactForm.controls).forEach(key => {
-          const control = this.contactForm.get(key);
-          control?.markAsPristine();
-          control?.markAsUntouched();
-          control?.updateValueAndValidity();
-        });
-
-      },
-      error: (err) => {
-        this.notificationService.openSnackBar(err);
-      }
-    });
+    this.notificationService.openSnackBar('Cadastro realizado! Em breve voce recebera as novidades da Mundo Colore.');
+    this.newsletterForm.reset();
   }
 
-
-  getUserIP(): Promise<string> {
-    return this.http.get<any>('https://api.ipify.org?format=json')
-      .toPromise()
-      .then((res) => res.ip)
-      .catch(() => '0.0.0.0');
+  private nextSlide(): void {
+    this.activeSlideIndex = (this.activeSlideIndex + 1) % this.heroSlides.length;
   }
 
-  formatMetricValue(metric: { display: number; target: number; suffix: string }): string {
-    const formatted = Math.round(metric.display).toLocaleString('pt-BR');
-    return `${formatted}${metric.suffix}`;
+  private startHeroAutoSlide(): void {
+    this.heroIntervalId = window.setInterval(() => {
+      this.nextSlide();
+    }, 5500);
   }
 
-  private animateMetrics(): void {
-    const duration = 1400;
-    const start = performance.now();
-
-    const animate = (now: number) => {
-      const progress = Math.min((now - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-
-      this.metrics = this.metrics.map((metric) => ({
-        ...metric,
-        display: metric.target * eased,
-      }));
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-
-    requestAnimationFrame(animate);
-  }
-
-  private startTestimonialsAutoSlide(): void {
-    if (this.testimonials.length <= 1) {
-      return;
-    }
-    this.testimonialInterval = setInterval(() => {
-      this.nextTestimonial();
-    }, 5000);
-  }
-
-  private stopTestimonialsAutoSlide(): void {
-    if (this.testimonialInterval) {
-      clearInterval(this.testimonialInterval);
-      this.testimonialInterval = undefined;
+  private stopHeroAutoSlide(): void {
+    if (typeof this.heroIntervalId === 'number') {
+      window.clearInterval(this.heroIntervalId);
+      this.heroIntervalId = undefined;
     }
   }
 
-  pauseTestimonials(): void {
-    this.stopTestimonialsAutoSlide();
+  private restartHeroAutoSlide(): void {
+    this.stopHeroAutoSlide();
+    this.startHeroAutoSlide();
   }
+}
 
-  resumeTestimonials(): void {
-    this.startTestimonialsAutoSlide();
-  }
+interface MenuItem {
+  id: string;
+  label: string;
+}
 
-  nextTestimonial(): void {
-    this.currentTestimonialIndex = (this.currentTestimonialIndex + 1) % this.testimonials.length;
-  }
+interface HeroSlide {
+  title: string;
+  subtitle: string;
+  cta: string;
+  backgroundImage: string;
+}
 
-  goToTestimonial(index: number): void {
-    this.currentTestimonialIndex = index;
-  }
+interface FeaturedCard {
+  title: string;
+  description: string;
+  badgeColor: string;
+}
+
+interface ProductCard {
+  name: string;
+  price: string;
+  image: string;
+}
+
+interface BenefitItem {
+  icon: string;
+  title: string;
+  text: string;
+}
+
+interface FooterLink {
+  label: string;
+  sectionId: string;
+}
+
+interface SocialLink {
+  label: string;
+  href: string;
 }

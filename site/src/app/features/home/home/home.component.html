@@ -1,264 +1,174 @@
-<div class="container">
+<div class="home-page" id="home">
+  <header class="floating-navbar" [class.solid]="isNavbarSolid">
+    <div class="nav-shell">
+      <button type="button" class="brand" (click)="scrollToSection('home')">
+        <img [src]="logoPath" alt="Mundo Colore logo" class="brand-logo" />
+        <span class="brand-text">
+          <span class="brand-kicker">Mundo Colore</span>
+          <strong>mundocolorestore</strong>
+        </span>
+      </button>
 
-  <app-header-top [Logado]="Logado"> </app-header-top>
-  <!-- Toolbar -->
-   <!--
-  <mat-toolbar class="custom-toolbar">
-    <div class="toolbar-content">
-      <a class="logo-link" [routerLink]="['/']">
-        <img [src]="assetsBaseUrl + '/assest/logo_bb.png'" alt="Logo" class="logo" />
-      </a>
-      <span class="spacer"></span>
-      <div class="auth-buttons">
-        <button mat-stroked-button class="login-button" [routerLink]="['/create/doacao']"
-          style=" align-items: center; margin-top: 5px; background-color: #ff4081;">
-          <mat-icon
-            style="color: white; font-size: 24px; margin-right: 5px; position: relative; top: 7px;">add_circle</mat-icon>
-          Criar Doação
+      <button type="button" class="menu-toggle" (click)="toggleMobileMenu()" aria-label="Abrir menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <nav class="nav-links" [class.open]="mobileMenuOpen">
+        <button type="button" *ngFor="let item of menuItems" (click)="scrollToSection(item.id)">
+          {{ item.label }}
         </button>
-        <button mat-stroked-button class="login-button" *ngIf="!Logado" [routerLink]="['/auth/login']"
-          style=" align-items: center; margin-top: 5px;">
-          <mat-icon
-            style="color: white; font-size: 24px; margin-right: 5px; position: relative; top: 7px;">account_circle</mat-icon>
-          Login
-        </button>
-        <button mat-stroked-button class="login-button" *ngIf="!Logado" [routerLink]="['/auth/new-user']"
-          style=" align-items: center; margin-top: 5px;">
-          <mat-icon
-            style="color: white; font-size: 24px; margin-right: 5px; position: relative; top: 7px;">account_circle</mat-icon>
-          Criar Conta
-        </button>
-        <button mat-stroked-button class="login-button" *ngIf="Logado" (click)="logout()"
-          style=" align-items: center; margin-top: 5px;">
-          <mat-icon
-            style="color: white; font-size: 24px; margin-right: 5px; position: relative; top: 7px;">account_circle</mat-icon>
-          Sair
+        <button type="button" class="shop-now" (click)="scrollToSection('arrivals')">Shop Now</button>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero" aria-label="Hero slideshow">
+    <article
+      *ngFor="let slide of heroSlides; let i = index"
+      class="hero-slide"
+      [class.active]="i === activeSlideIndex"
+      [style.backgroundImage]="'linear-gradient(130deg, rgba(90, 74, 66, 0.58), rgba(74, 163, 216, 0.35)), url(' + slide.backgroundImage + ')'"
+    >
+      <div class="hero-content">
+        <p class="eyebrow">Mundo Colore</p>
+        <h1>{{ slide.title }}</h1>
+        <p>{{ slide.subtitle }}</p>
+        <button type="button" class="hero-cta" (click)="scrollToSection('arrivals')">
+          {{ slide.cta }}
         </button>
       </div>
-    </div>
-  </mat-toolbar>
-  -->
+    </article>
 
-
-  <!-- Hero Section -->
-  <section class="hero" [ngStyle]="{'background-image': 'url(' + assetsBaseUrl + '/assest/home_trofel.png)'}">
-    <div class="hero-content">
-      <h1>A Graça que se transforma em ação.  {{ appName }}</h1>
-      <p>Apoie causas que transformam vidas com doações seguras e transparentes.</p>
-      <button mat-raised-button color="primary" [routerLink]="['/create/doacao']">Doe Agora</button>
+    <div class="hero-dots" aria-label="Navegacao dos banners">
+      <button
+        type="button"
+        *ngFor="let slide of heroSlides; let i = index"
+        [class.active]="i === activeSlideIndex"
+        [attr.aria-label]="'Ir para banner ' + (i + 1)"
+        (click)="goToSlide(i)"
+      ></button>
     </div>
   </section>
 
-  <!-- Our Awesome Features -->
-  <section class="section features" #featuresSection [class.is-visible]="featuresInView">
-    <div class="features-header">
-      <h2>Nossos Recursos Incríveis</h2>
-      <p class="features-subtitle">
-        Uma experiência segura e transparente, feita para você doar com confiança.
+  <section id="collections" class="section featured">
+    <div class="section-head">
+      <p class="section-kicker">Featured Collections</p>
+      <h2>Three colorful paths to shop with joy</h2>
+    </div>
+    <div class="featured-grid">
+      <article class="featured-card" *ngFor="let card of featuredCards">
+        <span class="featured-dot" [style.background]="card.badgeColor"></span>
+        <h3>{{ card.title }}</h3>
+        <p>{{ card.description }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="section about">
+    <div class="about-media">
+      <img [src]="logoPath" alt="Tag da marca Mundo Colore" />
+    </div>
+    <div class="about-copy">
+      <p class="section-kicker">About Mundo Colore</p>
+      <h2>Created to brighten childhood with comfort and imagination</h2>
+      <p>
+        Mundo Colore nasceu para vestir pequenos momentos com cores leves, modelagens arredondadas
+        e tecidos aconchegantes. Cada peca foi pensada para acompanhar brincadeiras, descobertas e
+        memorias em familia.
+      </p>
+      <p>
+        Nossa proposta une design minimalista e energia alegre para um ecommerce infantil moderno,
+        humano e facil de navegar.
       </p>
     </div>
-    <div class="features-grid">
-      <mat-card class="feature-card" *ngFor="let feature of features; let i = index"
-        [style.transitionDelay]="(i * 120) + 'ms'">
-        <div class="feature-waves" aria-hidden="true">
-          <span class="feature-wave wave-one"></span>
-          <span class="feature-wave wave-two"></span>
-          <span class="feature-wave wave-three"></span>
+  </section>
+
+  <section id="arrivals" class="section products">
+    <div class="section-head">
+      <p class="section-kicker">Product Showcase</p>
+      <h2>New arrivals made for playful days</h2>
+    </div>
+    <div class="products-grid">
+      <article class="product-card" *ngFor="let product of products">
+        <img [src]="product.image" [alt]="product.name" />
+        <div class="product-body">
+          <h3>{{ product.name }}</h3>
+          <p class="price">{{ product.price }}</p>
+          <button type="button">Add to cart</button>
         </div>
-        <div class="feature-icon">
-          <img [src]="feature.icon" [alt]="feature.title" />
-        </div>
-        <h3 class="feature-title">{{ feature.title }}</h3>
-        <p class="feature-text">{{ feature.description }}</p>
-      </mat-card>
+      </article>
     </div>
   </section>
 
-  <!-- Views (Impact Metrics) -->
-  <section class="section views" #impactSection [class.is-visible]="impactInView">
-    <div class="views-header">
-      <h2>Nosso Impacto</h2>
-      <p class="views-subtitle">Números reais, pessoas reais. Cada doação move essa história.</p>
+  <section class="section benefits">
+    <div class="section-head">
+      <p class="section-kicker">Why Choose Us</p>
+      <h2>Everything designed for modern family routines</h2>
     </div>
-    <div class="metrics-grid">
-      <div class="metric-card" *ngFor="let metric of metrics">
-        <div class="metric-value" [attr.aria-label]="metric.label">
-          {{ formatMetricValue(metric) }}
-        </div>
-        <p class="metric-label">{{ metric.label }}</p>
-        <span class="metric-glow" aria-hidden="true"></span>
+    <div class="benefits-grid">
+      <article class="benefit-card" *ngFor="let benefit of benefits">
+        <mat-icon>{{ benefit.icon }}</mat-icon>
+        <h3>{{ benefit.title }}</h3>
+        <p>{{ benefit.text }}</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="promotions" class="section promo">
+    <div class="promo-content">
+      <p class="section-kicker">Promotions</p>
+      <h2>Launch week offers up to 30% off</h2>
+      <p>Use coupon <strong>COLORIDO30</strong> on selected items and complete the look with matching bundles.</p>
+      <button type="button" (click)="scrollToSection('arrivals')">See promotional looks</button>
+    </div>
+  </section>
+
+  <section class="section lifestyle">
+    <div class="section-head">
+      <p class="section-kicker">Lifestyle</p>
+      <h2>Instagram moodboard from real life moments</h2>
+    </div>
+    <div class="lifestyle-grid">
+      <img *ngFor="let photo of lifestylePhotos" [src]="photo" alt="Mundo Colore lifestyle" />
+    </div>
+  </section>
+
+  <section id="contact" class="section newsletter">
+    <div class="newsletter-shell">
+      <div>
+        <p class="section-kicker">Newsletter</p>
+        <h2>Get launch drops and special coupons first</h2>
+        <p>Assine para receber novidades da mundocolorestore direto no seu e-mail.</p>
+      </div>
+      <form [formGroup]="newsletterForm" (ngSubmit)="onNewsletterSubmit()" class="newsletter-form">
+        <input
+          type="email"
+          formControlName="email"
+          placeholder="Seu melhor e-mail"
+          aria-label="Seu melhor e-mail"
+        />
+        <button type="submit">Subscribe</button>
+      </form>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="footer-grid">
+      <div>
+        <strong>mundocolorestore</strong>
+        <p>Moda infantil alegre, moderna e confortavel para todos os dias.</p>
+      </div>
+      <nav>
+        <a href="#" *ngFor="let link of footerLinks" (click)="scrollToSection(link.sectionId); $event.preventDefault()">
+          {{ link.label }}
+        </a>
+      </nav>
+      <div class="social">
+        <a *ngFor="let social of socialLinks" [href]="social.href" target="_blank" rel="noopener noreferrer">
+          {{ social.label }}
+        </a>
       </div>
     </div>
-  </section>
-
-  <!-- Meet Ninjas Our Creative Team -->
-   <!-- <section class="section team">
-    <h2>Conheça os Ninjas: Nossa Equipe Criativa</h2>
-    <div class="team-grid">
-      <mat-card *ngFor="let member of teamMembers">
-        <img mat-card-image [src]="member.image" alt="{{ member.name }}" [style]="member.style">
-        <mat-card-title>{{ member.name }}</mat-card-title>
-        <mat-card-subtitle>{{ member.role }}</mat-card-subtitle>
-      </mat-card>
-    </div>
-  </section>-->
-
-  <!-- Meet the Developers -->
-  <section class="section team">
-    <h2 class="team-title">Gestão Institucional</h2>   <p class="team-subtitle">As mentes por trás da visão, do marketing e da tecnologia.</p>
-    <div class="developer-grid">
-      <div class="developer-card" *ngFor="let member of teamMembers">
-        <img class="developer-avatar" [src]="member.image" [alt]="member.name">
-        <h3 class="developer-name">{{ member.name }}</h3>
-        <p class="developer-role">{{ member.role }}</p>
-        <a class="developer-email" [href]="'mailto:' + member.email">{{ member.email }}</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- What We Do We Are Digital -->
-  <section class="section what-we-do" #whatWeDoSection [class.is-visible]="whatWeDoInView">
-    <div class="what-we-do-content">
-      <h2>O Que Fazemos: Somos Digitais</h2>
-      <p>Utilizamos tecnologia de ponta para conectar doadores a causas significativas, com uma plataforma intuitiva e
-        acessível.</p>
-      <button mat-stroked-button class="tech-button" [routerLink]="['/create/doacao']">Saiba Mais</button>
-    </div>
-  </section>
-
-  <!-- About Us We Are Partners -->
-  <section class="section about-us">
-    <h2>Sobre Nós: Somos Parceiros</h2>
-    <p>Colaboramos com ONGs, empresas e comunidades para amplificar o impacto das doações. Nossa missão é transformar
-      vidas.</p>
-    <p>Parceiros: ONG Vida, Instituto Educação, e mais.</p>
-  </section>
-
-  <!-- We Are Becki App Features -->
-  <section class="section app-features">
-    <h2>Nossos Recursos da Plataforma</h2>
-    <div class="features-grid">
-      <mat-card>
-        <mat-icon style="font-size: 24px;">phone_iphone</mat-icon>
-        <h3>Aplicativo Móvel</h3>
-        <p>Doe em qualquer lugar, a qualquer hora.</p>
-      </mat-card>
-      <mat-card>
-        <mat-icon style="font-size: 24px;">bar_chart</mat-icon>
-        <h3>Acompanhamento de Impacto</h3>
-        <p>Veja o progresso das suas doações.</p>
-      </mat-card>
-      <mat-card>
-        <mat-icon style="font-size: 24px;">payments</mat-icon>
-        <h3>Pagamentos Multiforma</h3>
-        <p>Aceitamos múltiplas moedas e métodos de pagamento.</p>
-      </mat-card>
-    </div>
-  </section>
-
-  <!-- Our Amazing Story Watch Our Video -->
-  <!-- 
-  <section class="section video">
-    <h2>Nossa História Incrível: Assista ao Nosso Vídeo</h2>
-    <div class="video-container">
-      <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" frameborder="0" allowfullscreen></iframe>
-    </div>
-  </section>
-  -->
-
-  <!-- We Make Themes That Solve Problems -->
-  <section class="section themes">
-    <h2>Criamos Soluções que Resolvem Problemas</h2>
-    <p>Às vezes, contamos histórias que inspiram. Nossa plataforma simplifica o processo de doação e maximiza o impacto.
-    </p>
-    <button mat-raised-button color="primary" [routerLink]="['/create/doacao']">Comece Agora</button>
-  </section>
-
-  <!-- Testimonials -->
-  <section class="section testimonials" aria-label="Depoimentos de impacto">
-    <div class="testimonials-header">
-      <h2>Depoimentos</h2>
-      <p class="testimonials-subtitle">Histórias reais de confiança, esperança e transformação.</p>
-    </div>
-
-    <div class="testimonial-slider"
-      role="region"
-      aria-roledescription="carousel"
-      aria-label="Carrossel de depoimentos"
-      aria-live="polite"
-      (mouseenter)="pauseTestimonials()"
-      (mouseleave)="resumeTestimonials()">
-      <div class="testimonial-track"
-        [style.transform]="'translateX(-' + currentTestimonialIndex * 100 + '%)'">
-        <div class="testimonial-slide" *ngFor="let testimonial of testimonials">
-          <mat-card class="testimonial-card">
-            <div class="testimonial-quote" aria-hidden="true">“</div>
-            <div class="testimonial-avatar" aria-hidden="true">
-              <mat-icon>{{ testimonial.avatarIcon }}</mat-icon>
-            </div>
-            <mat-card-content>{{ testimonial.text }}</mat-card-content>
-            <div class="testimonial-meta">
-              <span class="testimonial-name">{{ testimonial.name }}</span>
-              <span class="testimonial-role">{{ testimonial.role }}</span>
-            </div>
-          </mat-card>
-        </div>
-      </div>
-
-      <div class="testimonial-dots" role="tablist" aria-label="Navegação dos depoimentos">
-        <button type="button"
-          class="dot"
-          *ngFor="let testimonial of testimonials; let i = index"
-          [class.active]="i === currentTestimonialIndex"
-          (click)="goToTestimonial(i)"
-          [attr.aria-label]="'Ir para depoimento ' + (i + 1)"
-          [attr.aria-selected]="i === currentTestimonialIndex">
-        </button>
-      </div>
-    </div>
-  <!-- <p class="testimonials-note">Depoimentos ilustrativos e gerados por IA para fins de demonstração.</p>-->
-  </section>
-
-  <!-- Read Our News Latest Blog Post -->
-  <section class="section blog">
-    <h2>Leia Nossas Novidades: Últimos Posts</h2>
-    <div class="blog-grid">
-      <mat-card *ngFor="let post of blogPosts">
-        <mat-card-title>{{ post.title }}</mat-card-title>
-        <mat-card-content>{{ post.excerpt }}</mat-card-content>
-        <button mat-stroked-button [routerLink]="post.link" [queryParams]="post.queryParams">Leia Mais</button>
-      </mat-card>
-    </div>
-  </section>
-
-  <!-- Just Keep In Touch Contact Us Now -->
-  <section class="section contact">
-    <h2>Mantenha Contato: Fale Conosco</h2>
-    <form [formGroup]="contactForm" (ngSubmit)="submitContact()" class="contact-form">
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Nome</mat-label>
-        <input matInput formControlName="name" placeholder="Digite seu nome" />
-        <mat-error *ngIf="contactForm.get('name')?.hasError('required')">Nome é obrigatório</mat-error>
-        <mat-error *ngIf="contactForm.get('name')?.hasError('minlength')">Mínimo de 3 caracteres</mat-error>
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Email</mat-label>
-        <input matInput formControlName="email" placeholder="Digite seu email" type="email" />
-        <mat-error *ngIf="contactForm.get('email')?.hasError('required')">Email é obrigatório</mat-error>
-        <mat-error *ngIf="contactForm.get('email')?.hasError('email')">Email inválido</mat-error>
-      </mat-form-field>
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Mensagem</mat-label>
-        <textarea matInput formControlName="message" placeholder="Digite sua mensagem"></textarea>
-        <mat-error *ngIf="contactForm.get('message')?.hasError('required')">Mensagem é obrigatória</mat-error>
-        <mat-error *ngIf="contactForm.get('message')?.hasError('minlength')">Mínimo de 10 caracteres</mat-error>
-      </mat-form-field>
-      <div class="form-actions">
-        <button mat-raised-button color="primary" type="submit" [disabled]="contactForm.invalid">Enviar</button>
-      </div>
-    </form>
-  </section>
-
-  <app-footer></app-footer>
+    <p class="copyright">© {{ currentYear }} mundocolorestore. All rights reserved.</p>
+  </footer>
 </div>
-

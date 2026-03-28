@@ -1,9 +1,30 @@
 @import "~@angular/material/prebuilt-themes/indigo-pink.css";
 
+:root {
+  --bg: #F5F1EA;
+
+  --primary-red: #F26B6B;
+  --primary-orange: #F7A65A;
+  --primary-yellow: #F9D76E;
+  --primary-green: #8ED1A6;
+  --primary-blue: #6EC1E4;
+
+  --accent-blue: #4AA3D8;
+  --accent-orange: #F39A4A;
+
+  --text-dark: #5A4A42;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-family: "Nunito", "Segoe UI", sans-serif;
   font-size: 14px;
+  background-color: var(--bg);
+  color: var(--text-dark);
 }
 
 .full-width {
@@ -108,33 +129,33 @@ p .mat-icon {
 
 /* Slide toggle ativo com a cor principal do sistema */
 .mat-mdc-slide-toggle {
-  --mdc-switch-selected-track-color: #163334;
-  --mdc-switch-selected-focus-track-color: #163334;
-  --mdc-switch-selected-hover-track-color: #163334;
-  --mdc-switch-selected-pressed-track-color: #163334;
-  --mdc-switch-selected-handle-color: #163334;
-  --mdc-switch-selected-focus-handle-color: #163334;
-  --mdc-switch-selected-hover-handle-color: #163334;
-  --mdc-switch-selected-pressed-handle-color: #163334;
+  --mdc-switch-selected-track-color: var(--accent-blue);
+  --mdc-switch-selected-focus-track-color: var(--accent-blue);
+  --mdc-switch-selected-hover-track-color: var(--accent-blue);
+  --mdc-switch-selected-pressed-track-color: var(--accent-blue);
+  --mdc-switch-selected-handle-color: var(--accent-blue);
+  --mdc-switch-selected-focus-handle-color: var(--accent-blue);
+  --mdc-switch-selected-hover-handle-color: var(--accent-blue);
+  --mdc-switch-selected-pressed-handle-color: var(--accent-blue);
 }
 
 .mat-mdc-slide-toggle.mat-primary {
-  --mdc-switch-selected-track-color: #163334;
-  --mdc-switch-selected-focus-track-color: #163334;
-  --mdc-switch-selected-hover-track-color: #163334;
-  --mdc-switch-selected-pressed-track-color: #163334;
-  --mdc-switch-selected-handle-color: #163334;
-  --mdc-switch-selected-focus-handle-color: #163334;
-  --mdc-switch-selected-hover-handle-color: #163334;
-  --mdc-switch-selected-pressed-handle-color: #163334;
+  --mdc-switch-selected-track-color: var(--accent-blue);
+  --mdc-switch-selected-focus-track-color: var(--accent-blue);
+  --mdc-switch-selected-hover-track-color: var(--accent-blue);
+  --mdc-switch-selected-pressed-track-color: var(--accent-blue);
+  --mdc-switch-selected-handle-color: var(--accent-blue);
+  --mdc-switch-selected-focus-handle-color: var(--accent-blue);
+  --mdc-switch-selected-hover-handle-color: var(--accent-blue);
+  --mdc-switch-selected-pressed-handle-color: var(--accent-blue);
 }
 
 .mat-slide-toggle.mat-checked .mat-slide-toggle-bar {
-  background-color: rgba(22, 51, 52, 0.55);
+  background-color: rgba(74, 163, 216, 0.55);
 }
 
 .mat-slide-toggle.mat-checked .mat-slide-toggle-thumb {
-  background-color: #163334;
+  background-color: var(--accent-blue);
 }
 
 .mat-tooltip {

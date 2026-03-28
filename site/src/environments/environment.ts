@@ -19,7 +19,7 @@ export const environment = {
   paymentsBaseUrl: `https://rm0t2sapef.execute-api.us-east-1.amazonaws.com`,
   stripePublishableKey: `pk_test_51SwZqYDGla8YTkh15TvwJGILoOZoR9bFrlklKteced2TDjmCxUmoQMIGH3RnhCIhaCOiOFtvlnA4GgHQlOSG2axl00e6evIRTb`,
   defaultCampaignId: ``,
-  nomeProjetoTitulo: `Thepuregrace`,
+  nomeProjetoTitulo: `mundocolorestore`,
   labels: {
     menu: {
       dashboard : "Dashboard",

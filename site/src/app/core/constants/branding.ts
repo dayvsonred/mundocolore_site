@@ -1,1 +1,1 @@
-export const APP_NAME = 'Thepuregrace';
+export const APP_NAME = 'mundocolorestore';

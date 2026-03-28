@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.thepuregrace.com/sitemap.xml
+Sitemap: https://www.mundocolorestore.com/sitemap.xml

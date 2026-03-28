@@ -1,5 +1,5 @@
 {
-  "name": "thepuregrace",
+  "name": "mundocolorestore",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -8,7 +8,7 @@
     "watch": "ng build --watch --configuration development",
     "lint": "ng lint",
     "test": "ng test",
-    "build-production": "ng build --configuration=production --base-href=/thepuregrace/"
+    "build-production": "ng build --configuration=production --base-href=/mundocolorestore/"
   },
   "private": true,
   "dependencies": {

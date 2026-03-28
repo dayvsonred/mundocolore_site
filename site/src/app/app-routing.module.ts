@@ -7,6 +7,11 @@ import { GlobalService } from './core/services/global.service';
 
 const appRoutes: Routes = [
   {
+    path: '',
+    redirectTo: 'home',
+    pathMatch: 'full'
+  },
+  {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule),
   },
@@ -85,8 +90,7 @@ const appRoutes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'home',
-    pathMatch: 'full'
+    redirectTo: 'home'
   }
   
 ];
