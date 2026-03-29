@@ -1,0 +1,19 @@
+aws_region   = "sa-east-1"
+project_name = "mundocolore"
+environment  = "prod"
+
+# Must be globally unique in S3.
+bucket_name = "mundocolore-site-prod-CHANGE-ME"
+
+# Start without domain. Use CloudFront default domain first.
+domain_names           = []
+hosted_zone_id         = ""
+create_route53_records = false
+create_acm_certificate = true
+acm_certificate_arn    = ""
+
+# Optional:
+# force_destroy_bucket = false
+# spa_mode             = true
+# price_class          = "PriceClass_100"
+
