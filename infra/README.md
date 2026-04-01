@@ -1,76 +1,70 @@
 # Infra AWS (Terraform)
 
-Esta estrutura permite publicar o site agora sem dominio e, depois, ativar dominio sem mudar arquitetura.
-
-## Estrategia recomendada
-- Fase 1 (agora): `S3 privado + CloudFront` usando URL publica da CloudFront (`*.cloudfront.net`).
-- Fase 2 (quando tiver dominio): adicionar `domain_names` + `hosted_zone_id`, e opcionalmente criar registros no Route53.
-
-Assim voce evita retrabalho e mantem o mesmo fluxo de deploy.
-
-## Arquitetura
-- `S3` guarda os arquivos estaticos.
-- `CloudFront` entrega o site para internet.
-- `OAC` (Origin Access Control) restringe leitura do bucket apenas para a CloudFront.
-- `ACM` e `Route53` sao opcionais e entram quando houver dominio.
+Esta estrutura publica o site com `S3 privado + CloudFront` e permite ativar dominio depois sem mudar arquitetura.
 
 ## Requisitos
 - Terraform >= 1.5
-- AWS CLI configurada (`aws configure`)
-- Credenciais AWS com permissao para S3, CloudFront, ACM e Route53 (se usar DNS/certificado)
+- AWS CLI configurada
+- Credenciais AWS com permissao para S3, CloudFront, ACM e Route53 (se usar DNS)
 
-## 1) Subir infra sem dominio
+## Protecao de conta AWS
+O provider tem trava de conta:
+- `allowed_account_id = "261955339827"`
+
+Antes de rodar Terraform:
 ```powershell
-cd infra/terraform
+Remove-Item Env:AWS_ACCESS_KEY_ID,Env:AWS_SECRET_ACCESS_KEY,Env:AWS_SESSION_TOKEN -ErrorAction SilentlyContinue
+$env:AWS_PROFILE = "mundocolore"
+$account = aws sts get-caller-identity --query Account --output text
+if ($account -ne "261955339827") { throw "Conta AWS errada: $account" }
+```
+
+## 1) Build do Angular
+```powershell
+cd site
+npm install
+npm run build -- --configuration production
+```
+
+## 2) Infra + upload automatico para S3
+```powershell
+cd ..\infra\terraform
 copy terraform.tfvars.example terraform.tfvars
 ```
 
-Edite `terraform.tfvars` e ajuste pelo menos:
-- `bucket_name` (precisa ser unico globalmente no S3)
-- mantenha `domain_names = []`
+No `terraform.tfvars`, ajuste:
+- `bucket_name`
+- `upload_build_files = true`
+- `build_output_path` (padrao: `../../site/dist/mundocolore`)
 
-Depois:
+Aplicar:
 ```powershell
 terraform init
 terraform plan
 terraform apply
 ```
 
-Pegue a URL publica:
+## 3) Invalidar cache CloudFront
 ```powershell
-terraform output site_url
-```
-
-## 2) Publicar o build do Angular
-```powershell
-cd site
-npm install
-npm run build -- --configuration production
-aws s3 sync dist/mundocolore/ s3://SEU_BUCKET --delete
-```
-
-Invalide cache da CloudFront:
-```powershell
-cd ..\infra\terraform
 $distributionId = terraform output -raw cloudfront_distribution_id
 aws cloudfront create-invalidation --distribution-id $distributionId --paths "/*"
 ```
 
-## 3) Quando o dominio estiver pronto
+## 4) Quando tiver dominio
 No `terraform.tfvars`:
 - `domain_names = ["seudominio.com", "www.seudominio.com"]`
 - `hosted_zone_id = "ZXXXXXXXXXXXXX"`
 - `create_route53_records = true`
-- se quiser usar cert existente, preencha `acm_certificate_arn`
-- se nao tiver cert, deixe `create_acm_certificate = true`
 
-Aplicar:
+Depois:
 ```powershell
 terraform plan
 terraform apply
 ```
 
-## Observacoes
-- Sem dominio, o acesso publico e pela URL da CloudFront.
-- O bucket nao fica publico na internet.
-- Para SPA Angular, ja ha fallback de `403/404` para `/index.html`.
+
+
+cd infra/terraform
+terraform output -raw site_url
+# ou
+terraform output -raw cloudfront_domain_name

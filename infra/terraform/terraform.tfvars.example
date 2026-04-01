@@ -1,6 +1,9 @@
 aws_region   = "sa-east-1"
 project_name = "mundocolore"
 environment  = "prod"
+allowed_account_id = "261955339827"
+upload_build_files = true
+build_output_path  = "../../site/dist/mundocolore"
 
 # Must be globally unique in S3.
 bucket_name = "mundocolore-site-prod-CHANGE-ME"
@@ -16,4 +19,3 @@ acm_certificate_arn    = ""
 # force_destroy_bucket = false
 # spa_mode             = true
 # price_class          = "PriceClass_100"
-

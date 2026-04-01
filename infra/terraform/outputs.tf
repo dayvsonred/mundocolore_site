@@ -18,3 +18,7 @@ output "site_url" {
   value       = "https://${local.default_primary_site_domain}"
 }
 
+output "uploaded_site_files_count" {
+  description = "Number of build files uploaded to S3 by Terraform."
+  value       = length(aws_s3_object.site_build_files)
+}

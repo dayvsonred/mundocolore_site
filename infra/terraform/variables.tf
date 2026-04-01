@@ -4,6 +4,17 @@ variable "aws_region" {
   default     = "sa-east-1"
 }
 
+variable "allowed_account_id" {
+  description = "Expected AWS account ID. Terraform fails if credentials point to another account."
+  type        = string
+  default     = "261955339827"
+
+  validation {
+    condition     = can(regex("^\\d{12}$", var.allowed_account_id))
+    error_message = "allowed_account_id must be a 12-digit AWS account ID."
+  }
+}
+
 variable "project_name" {
   description = "Project identifier used in tags."
   type        = string
@@ -19,6 +30,18 @@ variable "environment" {
 variable "bucket_name" {
   description = "Global unique bucket name to store static files."
   type        = string
+}
+
+variable "upload_build_files" {
+  description = "When true, upload local Angular build artifacts to S3 during terraform apply."
+  type        = bool
+  default     = true
+}
+
+variable "build_output_path" {
+  description = "Path to Angular build output directory (absolute or relative to infra/terraform)."
+  type        = string
+  default     = "../../site/dist/mundocolore"
 }
 
 variable "force_destroy_bucket" {
@@ -68,4 +91,3 @@ variable "create_acm_certificate" {
   type        = bool
   default     = true
 }
-

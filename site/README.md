@@ -11,5 +11,5 @@ Guia completo:
 Fluxo resumido:
 1. Criar infraestrutura em `../infra/terraform` (S3 + CloudFront).
 2. Gerar build Angular (`npm run build -- --configuration production`).
-3. Sincronizar `dist/mundocolore/` no bucket S3.
+3. Rodar `terraform apply` em `../infra/terraform` para subir build no bucket S3.
 4. Invalidar cache da CloudFront.
