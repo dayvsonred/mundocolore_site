@@ -5,6 +5,9 @@ export interface Product {
   image: string;
   images?: string[];
   description: string;
+  brand: string;
+  collection: string;
+  type: string;
   category: string;
   size: string[];
   ageGroup: string;

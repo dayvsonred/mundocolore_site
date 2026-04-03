@@ -17,7 +17,10 @@
         <button type="button" *ngFor="let item of menuItems" (click)="scrollToSection(item.id)">
           {{ item.label }}
         </button>
-        <button type="button" class="shop-now" (click)="scrollToSection('arrivals')">Comprar agora</button>
+        <button type="button" class="shop-now" [routerLink]="['/catalog']">Comprar agora</button>
+        <button type="button" class="cart-icon" [routerLink]="['/cart']" matTooltip="Carrinho de compras">
+          <mat-icon [matBadge]="cartItemCount" matBadgeColor="accent">shopping_cart</mat-icon>
+        </button>
       </nav>
     </div>
   </header>

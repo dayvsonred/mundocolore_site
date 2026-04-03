@@ -14,6 +14,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatBadgeModule } from '@angular/material/badge';
 import { PolicyComponent } from './policy/policy.component';
 import { ComplaintComponent } from './complaint/complaint.component';
 import { NewsComponent } from './news/news.component';
@@ -37,7 +38,8 @@ import { LegalComponent } from './legal/legal.component';
         MatSelectModule,
         MatSnackBarModule,
         MatProgressSpinnerModule,
-        MatExpansionModule
+        MatExpansionModule,
+        MatBadgeModule
     ]
 })
 export class HomeModule { }

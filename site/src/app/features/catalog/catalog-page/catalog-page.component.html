@@ -1,9 +1,47 @@
 <div class="catalog-container">
   <h1>Catálogo de Produtos</h1>
-  <div class="filters">
-    <!-- Filtros aqui -->
-  </div>
-  <div class="products-grid">
-    <app-product-card *ngFor="let product of products" [product]="product"></app-product-card>
-  </div>
+
+  <section class="filters">
+    <h2>Filtros</h2>
+    <label>
+      Tipo
+      <select [(ngModel)]="selectedType" (change)="onFilterChange()">
+        <option value="">Todos</option>
+        <option *ngFor="let type of typeOptions" [value]="type">{{ type }}</option>
+      </select>
+    </label>
+
+    <label>
+      Marca
+      <select [(ngModel)]="selectedBrand" (change)="onFilterChange()">
+        <option value="">Todas</option>
+        <option *ngFor="let brand of brandOptions" [value]="brand">{{ brand }}</option>
+      </select>
+    </label>
+
+    <label>
+      Coleção
+      <select [(ngModel)]="selectedCollection" (change)="onFilterChange()">
+        <option value="">Todas</option>
+        <option *ngFor="let collection of collectionOptions" [value]="collection">{{ collection }}</option>
+      </select>
+    </label>
+
+    <label>
+      Tamanho
+      <select [(ngModel)]="selectedSize" (change)="onFilterChange()">
+        <option value="">Todos</option>
+        <option *ngFor="let size of sizeOptions" [value]="size">{{ size }}</option>
+      </select>
+    </label>
+
+    <button type="button" class="btn-clear" (click)="clearFilters()">Limpar filtros</button>
+  </section>
+
+  <section class="products-grid">
+    <div *ngFor="let product of filteredProducts" class="product-card-wrapper">
+      <app-product-card [product]="product"></app-product-card>
+      <button type="button" class="btn-add" (click)="addToCart(product)">Adicionar ao carrinho</button>
+    </div>
+  </section>
 </div>
