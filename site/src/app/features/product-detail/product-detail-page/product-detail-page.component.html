@@ -1,0 +1,21 @@
+<div class="product-detail" *ngIf="product">
+  <div class="product-images">
+    <img [src]="product.image" [alt]="product.name">
+  </div>
+  <div class="product-info">
+    <h1>{{ product.name }}</h1>
+    <p class="price">R$ {{ product.price | number:'1.2-2' }}</p>
+    <p>{{ product.description }}</p>
+    <div class="size-selection">
+      <label>Tamanho:</label>
+      <select [(ngModel)]="selectedSize">
+        <option *ngFor="let size of product.size" [value]="size">{{ size }}</option>
+      </select>
+    </div>
+    <div class="quantity">
+      <label>Quantidade:</label>
+      <input type="number" [(ngModel)]="quantity" min="1">
+    </div>
+    <button class="btn-add-cart" (click)="addToCart()">Adicionar ao Carrinho</button>
+  </div>
+</div>

@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -15,6 +16,7 @@ import { YesNoPipe } from './pipes/yes-no.pipe';
 import { LayoutComponent } from './layout/layout.component';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
+import { ProductCardComponent } from './components/product-card/product-card.component';
 
 const maskConfig: Partial<IConfig> = {
     thousandSeparator: '.',
@@ -25,6 +27,7 @@ const maskConfig: Partial<IConfig> = {
 
 @NgModule({
     imports: [
+        CommonModule,
         RouterModule,
         CustomMaterialModule,
         FormsModule,
@@ -43,6 +46,7 @@ const maskConfig: Partial<IConfig> = {
         LayoutComponent,
         HeaderComponent,
         FooterComponent,
+        ProductCardComponent,
     ],
     exports: [
         FormsModule,
@@ -56,6 +60,7 @@ const maskConfig: Partial<IConfig> = {
         YesNoPipe,
         HeaderComponent,
         FooterComponent,
+        ProductCardComponent,
     ]
 })
 export class SharedModule { }

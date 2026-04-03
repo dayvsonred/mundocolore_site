@@ -1,0 +1,12 @@
+<div class="product-card">
+  <img [src]="product.image" [alt]="product.name" class="product-image">
+  <div class="product-info">
+    <h3>{{ product.name }}</h3>
+    <p class="price">R$ {{ product.price | number:'1.2-2' }}</p>
+    <div class="badges">
+      <span *ngIf="product.isNew" class="badge new">Novo</span>
+      <span *ngIf="product.isPromotion" class="badge promo">Promoção</span>
+    </div>
+    <button class="btn-view" (click)="onViewProduct()">Ver Produto</button>
+  </div>
+</div>

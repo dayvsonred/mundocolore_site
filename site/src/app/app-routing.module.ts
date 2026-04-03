@@ -25,6 +25,26 @@ const appRoutes: Routes = [
     loadChildren: () => import('./features/home/home.module').then(m => m.HomeModule),
   },
   {
+    path: 'catalog',
+    loadChildren: () => import('./features/catalog/catalog.module').then(m => m.CatalogModule),
+  },
+  {
+    path: 'product/:id',
+    loadChildren: () => import('./features/product-detail/product-detail.module').then(m => m.ProductDetailModule),
+  },
+  {
+    path: 'cart',
+    loadChildren: () => import('./features/cart/cart.module').then(m => m.CartModule),
+  },
+  {
+    path: 'checkout',
+    loadChildren: () => import('./features/checkout/checkout.module').then(m => m.CheckoutModule),
+  },
+  {
+    path: 'order-confirmation',
+    loadChildren: () => import('./features/order-confirmation/order-confirmation.module').then(m => m.OrderConfirmationModule),
+  },
+  {
     path: 'donation',
     loadChildren: () => import('./features/donation/donation.module').then(m => m.DonationModule),
     canActivate: [AuthGuard]

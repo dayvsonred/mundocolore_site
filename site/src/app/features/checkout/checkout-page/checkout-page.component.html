@@ -1,0 +1,30 @@
+<div class="checkout-container">
+  <h1>Checkout</h1>
+  <form (ngSubmit)="onSubmit()">
+    <div class="form-section">
+      <h2>Dados Pessoais</h2>
+      <input type="text" placeholder="Nome Completo" required>
+      <input type="email" placeholder="E-mail" required>
+      <input type="tel" placeholder="Telefone" required>
+    </div>
+    <div class="form-section">
+      <h2>Endereço</h2>
+      <input type="text" placeholder="CEP" required>
+      <input type="text" placeholder="Endereço" required>
+      <input type="text" placeholder="Número" required>
+      <input type="text" placeholder="Complemento">
+      <input type="text" placeholder="Bairro" required>
+      <input type="text" placeholder="Cidade" required>
+      <input type="text" placeholder="Estado" required>
+    </div>
+    <div class="form-section">
+      <h2>Pagamento</h2>
+      <select>
+        <option>PIX</option>
+        <option>Cartão de Crédito</option>
+        <option>Boleto</option>
+      </select>
+    </div>
+    <button type="submit" class="btn-submit">Finalizar Pedido</button>
+  </form>
+</div>

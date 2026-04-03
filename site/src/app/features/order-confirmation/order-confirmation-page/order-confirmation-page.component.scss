@@ -1,0 +1,60 @@
+.confirmation-container {
+  text-align: center;
+  padding: 40px 20px;
+  max-width: 600px;
+  margin: 0 auto;
+
+  .success-message {
+    margin-bottom: 30px;
+
+    h1 {
+      color: #4CAF50;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #666;
+    }
+  }
+
+  .order-details {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+
+    h2 {
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #666;
+    }
+  }
+
+  .actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    button {
+      padding: 15px 30px;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      cursor: pointer;
+
+      &.btn-primary {
+        background: linear-gradient(45deg, #ff69b4, #87ceeb);
+        color: white;
+      }
+
+      &.btn-secondary {
+        background: #f0f0f0;
+        color: #333;
+      }
+    }
+  }
+}

@@ -1,0 +1,42 @@
+.checkout-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+
+  h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 30px;
+  }
+
+  form {
+    .form-section {
+      margin-bottom: 30px;
+
+      h2 {
+        color: #555;
+        margin-bottom: 15px;
+      }
+
+      input, select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        font-size: 16px;
+      }
+    }
+
+    .btn-submit {
+      background: linear-gradient(45deg, #ff69b4, #87ceeb);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      padding: 15px 30px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+    }
+  }
+}
