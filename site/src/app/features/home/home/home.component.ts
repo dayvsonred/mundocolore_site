@@ -3,7 +3,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
 
 import { NotificationService } from 'src/app/core/services/notification.service';
-import { CartService } from 'src/app/core/services/cart.service';
 import { APP_NAME } from 'src/app/core/constants/branding';
 
 @Component({
@@ -14,15 +13,6 @@ import { APP_NAME } from 'src/app/core/constants/branding';
 export class HomeComponent implements OnInit, OnDestroy {
   readonly appName = APP_NAME;
   readonly currentYear = new Date().getFullYear();
-  readonly logoPath = 'assets/images/logo-mundo-colore.jpg';
-
-  readonly menuItems: ReadonlyArray<MenuItem> = [
-    { id: 'home', label: 'Inicio' },
-    { id: 'collections', label: 'Colecoes' },
-    { id: 'arrivals', label: 'Novidades' },
-    { id: 'promotions', label: 'Promocoes' },
-    { id: 'contact', label: 'Contato' }
-  ];
 
   readonly heroSlides: ReadonlyArray<HeroSlide> = [
     {
@@ -107,9 +97,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ];
 
   isNavbarSolid = false;
-  mobileMenuOpen = false;
   activeSlideIndex = 0;
-  cartItemCount = 0;
   newsletterForm: FormGroup;
 
   private heroIntervalId?: number;
@@ -117,7 +105,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private readonly fb: FormBuilder,
     private readonly notificationService: NotificationService,
-    private readonly cartService: CartService,
     private readonly titleService: Title,
     private readonly meta: Meta
   ) {
@@ -138,9 +125,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.startHeroAutoSlide();
     this.onWindowScroll();
-    this.cartService.cartItems$.subscribe(items => {
-      this.cartItemCount = items.reduce((total, item) => total + item.quantity, 0);
-    });
   }
 
   ngOnDestroy(): void {
@@ -152,17 +136,12 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.isNavbarSolid = window.scrollY > 24;
   }
 
-  toggleMobileMenu(): void {
-    this.mobileMenuOpen = !this.mobileMenuOpen;
-  }
-
   scrollToSection(sectionId: string): void {
     const section = document.getElementById(sectionId);
     if (!section) {
       return;
     }
     section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    this.mobileMenuOpen = false;
   }
 
   goToSlide(index: number): void {

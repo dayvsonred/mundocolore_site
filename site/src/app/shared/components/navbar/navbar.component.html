@@ -1,0 +1,25 @@
+<header class="floating-navbar" [class.solid]="isNavbarSolid">
+  <div class="nav-shell">
+    <button type="button" class="brand" (click)="navigateHome()" aria-label="Voltar para home">
+      <img [src]="logoPath" [alt]="brandName" class="brand-logo" />
+      <span class="brand-text">
+        <span class="brand-kicker">{{ brandName }}</span>
+        <strong>mundocolorestore</strong>
+      </span>
+    </button>
+
+    <button type="button" class="menu-toggle" (click)="toggleMobileMenu()" aria-label="Abrir menu">
+      <mat-icon>menu</mat-icon>
+    </button>
+
+    <nav class="nav-links" [class.open]="mobileMenuOpen">
+      <button type="button" *ngFor="let item of menuItems" (click)="closeMobileMenu()">
+        {{ item.label }}
+      </button>
+      <button type="button" class="shop-now" (click)="navigateToCatalog()">Comprar agora</button>
+      <button type="button" class="cart-icon" (click)="navigateToCart()" matTooltip="Carrinho de compras">
+        <mat-icon [matBadge]="cartItemCount" matBadgeColor="accent">shopping_cart</mat-icon>
+      </button>
+    </nav>
+  </div>
+</header>

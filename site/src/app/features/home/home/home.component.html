@@ -1,30 +1,4 @@
 <div class="home-page" id="home">
-  <header class="floating-navbar" [class.solid]="isNavbarSolid">
-    <div class="nav-shell">
-      <button type="button" class="brand" (click)="scrollToSection('home')">
-        <img [src]="logoPath" alt="Logo Mundo Colore" class="brand-logo" />
-        <span class="brand-text">
-          <span class="brand-kicker">Mundo Colore</span>
-          <strong>mundocolorestore</strong>
-        </span>
-      </button>
-
-      <button type="button" class="menu-toggle" (click)="toggleMobileMenu()" aria-label="Abrir menu">
-        <mat-icon>menu</mat-icon>
-      </button>
-
-      <nav class="nav-links" [class.open]="mobileMenuOpen">
-        <button type="button" *ngFor="let item of menuItems" (click)="scrollToSection(item.id)">
-          {{ item.label }}
-        </button>
-        <button type="button" class="shop-now" [routerLink]="['/catalog']">Comprar agora</button>
-        <button type="button" class="cart-icon" [routerLink]="['/cart']" matTooltip="Carrinho de compras">
-          <mat-icon [matBadge]="cartItemCount" matBadgeColor="accent">shopping_cart</mat-icon>
-        </button>
-      </nav>
-    </div>
-  </header>
-
   <section class="hero" aria-label="Carrossel principal">
     <article
       *ngFor="let slide of heroSlides; let i = index"
@@ -69,7 +43,7 @@
 
   <section class="section about">
     <div class="about-media">
-      <img [src]="logoPath" alt="Tag da marca Mundo Colore" />
+      <img src="assets/images/logo-mundo-colore.jpg" alt="Logo da marca Mundo Colore" />
     </div>
     <div class="about-copy">
       <p class="section-kicker">Sobre a Mundo Colore</p>

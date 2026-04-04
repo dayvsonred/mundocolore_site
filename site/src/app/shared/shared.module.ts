@@ -5,6 +5,9 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { NgxMaskModule, IConfig } from 'ngx-mask'; // Importar o módulo
 
 import { CustomMaterialModule } from '../custom-material/custom-material.module';
@@ -17,6 +20,7 @@ import { LayoutComponent } from './layout/layout.component';
 import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import { ProductCardComponent } from './components/product-card/product-card.component';
+import { NavbarComponent } from './components/navbar/navbar.component';
 
 const maskConfig: Partial<IConfig> = {
     thousandSeparator: '.',
@@ -35,6 +39,9 @@ const maskConfig: Partial<IConfig> = {
         FlexLayoutModule,
         MatInputModule,
         MatFormFieldModule,
+        MatIconModule,
+        MatBadgeModule,
+        MatTooltipModule,
         NgxMaskModule.forRoot(maskConfig),
     ],
     declarations: [
@@ -47,6 +54,7 @@ const maskConfig: Partial<IConfig> = {
         HeaderComponent,
         FooterComponent,
         ProductCardComponent,
+        NavbarComponent,
     ],
     exports: [
         FormsModule,
@@ -61,6 +69,7 @@ const maskConfig: Partial<IConfig> = {
         HeaderComponent,
         FooterComponent,
         ProductCardComponent,
+        NavbarComponent,
     ]
 })
 export class SharedModule { }
