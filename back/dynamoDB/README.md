@@ -32,93 +32,49 @@ Esta estrutura cria as tabelas DynamoDB necessárias para o backend do e-commerc
 - AWS CLI configurada
 - Credenciais AWS com permissões para DynamoDB e IAM
 
-## Proteção de conta AWS
+## Proteção de Conta AWS
+
 O provider tem trava de conta:
 - `allowed_account_id = "261955339827"`
+- `aws_region = "sa-east-1"`
 
-Antes de rodar Terraform:
+## Como Usar
+
+### 1️⃣ Configurar Credenciais
+
 ```powershell
-Remove-Item Env:AWS_ACCESS_KEY_ID,Env:AWS_SECRET_ACCESS_KEY,Env:AWS_SESSION_TOKEN -ErrorAction SilentlyContinue
+# Definir o profile AWS a usar
 $env:AWS_PROFILE = "mundocolore"
-$account = aws sts get-caller-identity --query Account --output text
-if ($account -ne "261955339827") { throw "Conta AWS errada: $account" }
 ```
 
-## Como usar
+### 2️⃣ Inicializar Terraform
 
-### 🔐 Passo 0: Configurar Credenciais AWS
-
-Você tem múltiplos profiles configurados e precisa usar o `mundocolore`:
-
-#### Opção A: Setup Interativo (Recomendado)
-
-```powershell
-cd back\dynamoDB
-
-# Executar setup interativo
-.\setup-credentials.ps1
-```
-
-O script irá:
-1. Listar todos os profiles disponíveis
-2. Deixar você escolher o profile
-3. Validar as credenciais
-4. Verificar se está na conta correta `261955339827`
-
-#### Opção B: Manual
-
-```powershell
-# Configurar o profile
-$env:AWS_PROFILE = "mundocolore"
-$env:AWS_REGION = "sa-east-1"
-
-# Verificar se está funcionando
-aws sts get-caller-identity
-```
-
-### Opção 1: Script Automático (Recomendado)
-
-```powershell
-cd back\dynamoDB
-
-# Verificar conta antes de executar
-.\deploy.ps1 -CheckAccount
-
-# Inicializar
-.\deploy.ps1 -Init
-
-# Ver plano de mudanças
-.\deploy.ps1 -Plan
-
-# Aplicar infraestrutura
-.\deploy.ps1 -Apply
-```
-
-### Opção 2: Comandos Terraform Diretos
-
-#### 1) Preparar variáveis
-```powershell
-copy terraform.tfvars.example terraform.tfvars
-```
-
-#### 2) Inicializar Terraform
 ```powershell
 terraform init
 ```
 
-#### 3) Verificar plano
+### 3️⃣ Ver Plano de Mudanças
+
 ```powershell
 terraform plan
 ```
 
-#### 4) Aplicar infraestrutura
+### 4️⃣ Aplicar Infraestrutura
+
 ```powershell
 terraform apply
 ```
 
-#### 5) Verificar outputs
+### 5️⃣ Ver Outputs
+
 ```powershell
 terraform output
+```
+
+### 6️⃣ Destruir Infraestrutura (se necessário)
+
+```powershell
+terraform destroy
 ```
 
 ## Configurações
@@ -134,27 +90,29 @@ terraform output
 - ✅ IAM Policy para acesso às tabelas
 - ✅ IAM Role para aplicações
 
-### Custos estimados
-- **PAY_PER_REQUEST:** ~$0.50 por GB de dados armazenados + custos de leitura/escrita
-- **Streams:** Custos adicionais se utilizados
-- **Backup:** Custos por GB armazenado
-
-## Próximos passos
+## Próximos Passos
 
 Após criar as tabelas, você pode:
 1. Configurar aplicações Lambda para processar streams
 2. Criar APIs Gateway para acesso
-3. Implementar backup automatizado adicional
+3. Implementar backup adicional
 4. Configurar CloudWatch alarms para monitoramento
 
-## Limpeza
+## Estrutura de Conta
 
-Para remover todos os recursos:
-```powershell
-terraform destroy
 ```
-
-Ou usando o script:
-```powershell
-.\deploy.ps1 -Destroy
+AWS Account: 261955339827 (mundocolore)
+│
+├── Region: sa-east-1 (São Paulo)
+│
+├── DynamoDB Tables:
+│   ├── mundocolore-users
+│   ├── mundocolore-products
+│   ├── mundocolore-orders
+│   ├── mundocolore-addresses
+│   └── mundocolore-payments
+│
+└── IAM:
+    ├── Policy: mundocolore-dynamodb-access-dev
+    └── Role: mundocolore-dynamodb-role-dev
 ```
