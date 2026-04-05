@@ -1,0 +1,30 @@
+<div class="user-sidebar">
+  <div class="sidebar-header">
+    <h3>Minha Conta</h3>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul class="menu-list">
+      <li *ngFor="let item of menuItems" class="menu-item">
+        <button
+          class="menu-button"
+          [class.active]="isActive(item.route)"
+          (click)="navigateTo(item.route)"
+          matRipple>
+          <mat-icon class="menu-icon">{{ item.icon }}</mat-icon>
+          <span class="menu-label">{{ item.label }}</span>
+        </button>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <button
+        class="logout-button"
+        (click)="logout()"
+        matRipple>
+        <mat-icon class="menu-icon">exit_to_app</mat-icon>
+        <span class="menu-label">Sair</span>
+      </button>
+    </div>
+  </nav>
+</div>

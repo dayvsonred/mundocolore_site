@@ -1,0 +1,78 @@
+.profile-page {
+  max-width: 800px;
+
+  .page-header {
+    margin-bottom: 32px;
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    p {
+      color: #666;
+      margin: 0;
+    }
+  }
+
+  .profile-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 24px 24px 0 24px;
+      margin-bottom: 24px;
+
+      h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+      }
+    }
+
+    form, .profile-info {
+      padding: 0 24px 24px 24px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+
+      mat-form-field {
+        flex: 1;
+      }
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+
+    .profile-info {
+      .info-row {
+        display: flex;
+        margin-bottom: 16px;
+
+        .label {
+          font-weight: 600;
+          color: #666;
+          min-width: 140px;
+        }
+
+        .value {
+          color: #333;
+        }
+      }
+    }
+  }
+}

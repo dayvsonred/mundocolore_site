@@ -1,0 +1,43 @@
+<div class="addresses-page">
+  <div class="page-header">
+    <h1>Meus Endereços</h1>
+    <p>Gerencie seus endereços de entrega e cobrança</p>
+  </div>
+
+  <div class="addresses-grid">
+    <!-- Existing Addresses -->
+    <div *ngFor="let address of addresses" class="address-card">
+      <div class="card-header">
+        <div class="address-name">
+          <h3>{{ address.name }}</h3>
+          <span *ngIf="address.isDefault" class="default-badge">Padrão</span>
+        </div>
+        <div class="card-actions">
+          <button mat-icon-button (click)="editAddress(address)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button (click)="deleteAddress(address)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="address-details">
+        <p class="street">{{ address.street }}</p>
+        <p class="city">{{ address.city }}</p>
+        <p class="zip-phone">
+          <span>CEP: {{ address.zipCode }}</span>
+          <span>Tel: {{ address.phone }}</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Add New Address Card -->
+    <div class="add-address-card" (click)="addNewAddress()">
+      <div class="add-content">
+        <mat-icon>add</mat-icon>
+        <h3>Adicionar novo endereço</h3>
+      </div>
+    </div>
+  </div>
+</div>

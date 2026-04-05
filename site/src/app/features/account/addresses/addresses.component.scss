@@ -1,0 +1,126 @@
+.addresses-page {
+  max-width: 1000px;
+
+  .page-header {
+    margin-bottom: 32px;
+
+    h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    p {
+      color: #666;
+      margin: 0;
+    }
+  }
+
+  .addresses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+
+    .address-card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 24px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      border: 1px solid #e0e0e0;
+
+      .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+
+        .address-name {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+          }
+
+          .default-badge {
+            background: #d32f2f;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+          }
+        }
+
+        .card-actions {
+          display: flex;
+          gap: 4px;
+        }
+      }
+
+      .address-details {
+        .street {
+          margin: 0 0 8px 0;
+          font-weight: 500;
+          color: #333;
+        }
+
+        .city {
+          margin: 0 0 12px 0;
+          color: #666;
+        }
+
+        .zip-phone {
+          display: flex;
+          justify-content: space-between;
+          font-size: 14px;
+          color: #666;
+
+          span {
+            flex: 1;
+          }
+        }
+      }
+    }
+
+    .add-address-card {
+      background: #fff;
+      border: 2px dashed #d32f2f;
+      border-radius: 8px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #ffebee;
+        border-color: #b71c1c;
+      }
+
+      .add-content {
+        text-align: center;
+        color: #d32f2f;
+
+        mat-icon {
+          font-size: 48px;
+          width: 48px;
+          height: 48px;
+          margin-bottom: 8px;
+        }
+
+        h3 {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 500;
+        }
+      }
+    }
+  }
+}

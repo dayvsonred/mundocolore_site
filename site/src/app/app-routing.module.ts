@@ -36,6 +36,15 @@ const appRoutes: Routes = [
     loadChildren: () => import('./features/order-confirmation/order-confirmation.module').then(m => m.OrderConfirmationModule),
   },
   {
+    path: 'auth',
+    loadChildren: () => import('./features/auth/auth.module').then(m => m.AuthModule),
+  },
+  {
+    path: 'minha-conta',
+    loadChildren: () => import('./features/account/account.module').then(m => m.AccountModule),
+    canActivate: [AuthGuard]
+  },
+  {
     path: '**',
     redirectTo: 'home'
   }

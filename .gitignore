@@ -41,4 +41,6 @@ Thumbs.db
 
 .angular/
 
-
+mode_info_img/
+**mode_info_img/
+mode_info_img/*

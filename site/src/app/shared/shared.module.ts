@@ -21,6 +21,8 @@ import { HeaderComponent } from './header/header.component';
 import { FooterComponent } from './footer/footer.component';
 import { ProductCardComponent } from './components/product-card/product-card.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
+import { UserSidebarComponent } from './components/user-sidebar/user-sidebar.component';
+import { UserLayoutComponent } from './layouts/user-layout/user-layout.component';
 
 const maskConfig: Partial<IConfig> = {
     thousandSeparator: '.',
@@ -55,6 +57,8 @@ const maskConfig: Partial<IConfig> = {
         FooterComponent,
         ProductCardComponent,
         NavbarComponent,
+        UserSidebarComponent,
+        UserLayoutComponent,
     ],
     exports: [
         FormsModule,
@@ -70,6 +74,8 @@ const maskConfig: Partial<IConfig> = {
         FooterComponent,
         ProductCardComponent,
         NavbarComponent,
+        UserSidebarComponent,
+        UserLayoutComponent,
     ]
 })
 export class SharedModule { }

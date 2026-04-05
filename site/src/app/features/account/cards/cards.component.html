@@ -1,0 +1,47 @@
+<div class="cards-page">
+  <div class="page-header">
+    <h1>Meus Cartões</h1>
+    <p>Gerencie seus métodos de pagamento</p>
+  </div>
+
+  <div class="cards-section">
+    <div *ngIf="cards.length === 0" class="no-cards">
+      <mat-icon>credit_card</mat-icon>
+      <h3>Você não possui métodos de pagamento cadastrados</h3>
+      <p>Adicione um cartão para facilitar suas compras.</p>
+      <button mat-raised-button color="primary" (click)="addNewCard()">
+        Adicionar cartão
+      </button>
+    </div>
+
+    <div *ngIf="cards.length > 0" class="cards-grid">
+      <div *ngFor="let card of cards" class="card-item">
+        <div class="card-display">
+          <div class="card-header">
+            <mat-icon>{{ getCardBrandIcon(card.brand) }}</mat-icon>
+            <span *ngIf="card.isDefault" class="default-badge">Padrão</span>
+          </div>
+          <div class="card-number">
+            **** **** **** {{ card.lastFour }}
+          </div>
+          <div class="card-details">
+            <span class="holder">{{ card.holderName }}</span>
+            <span class="expiry">{{ card.expiryMonth.toString().padStart(2, '0') }}/{{ card.expiryYear }}</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button mat-stroked-button (click)="deleteCard(card)">
+            Remover
+          </button>
+        </div>
+      </div>
+
+      <div class="add-card-item" (click)="addNewCard()">
+        <div class="add-content">
+          <mat-icon>add</mat-icon>
+          <h3>Adicionar cartão</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

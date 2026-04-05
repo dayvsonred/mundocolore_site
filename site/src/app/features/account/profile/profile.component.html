@@ -1,0 +1,95 @@
+<div class="profile-page">
+  <div class="page-header">
+    <h1>Meus Dados</h1>
+    <p>Gerencie suas informações pessoais</p>
+  </div>
+
+  <div class="profile-card">
+    <div class="card-header">
+      <h2>Informações Pessoais</h2>
+      <button
+        mat-stroked-button
+        (click)="toggleEdit()"
+        *ngIf="!isEditing">
+        <mat-icon>edit</mat-icon>
+        Editar
+      </button>
+    </div>
+
+    <form [formGroup]="profileForm" *ngIf="isEditing; else viewMode">
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Nome</mat-label>
+          <input matInput formControlName="firstName">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Sobrenome</mat-label>
+          <input matInput formControlName="lastName">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" formControlName="email">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>CPF</mat-label>
+          <input matInput mask="000.000.000-00" formControlName="cpf">
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Data de Nascimento</mat-label>
+          <input matInput type="date" formControlName="birthDate">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Gênero</mat-label>
+          <mat-select formControlName="gender">
+            <mat-option value="Masculino">Masculino</mat-option>
+            <mat-option value="Feminino">Feminino</mat-option>
+            <mat-option value="Outro">Outro</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="form-actions">
+        <button mat-stroked-button (click)="onCancel()">
+          Cancelar
+        </button>
+        <button mat-raised-button color="primary" (click)="onSave()">
+          Salvar
+        </button>
+      </div>
+    </form>
+
+    <ng-template #viewMode>
+      <div class="profile-info">
+        <div class="info-row">
+          <span class="label">Nome:</span>
+          <span class="value">{{ user.firstName }} {{ user.lastName }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Email:</span>
+          <span class="value">{{ user.email }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">CPF:</span>
+          <span class="value">{{ user.cpf }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Data de Nascimento:</span>
+          <span class="value">{{ user.birthDate | date:'dd/MM/yyyy' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Gênero:</span>
+          <span class="value">{{ user.gender }}</span>
+        </div>
+      </div>
+    </ng-template>
+  </div>
+</div>

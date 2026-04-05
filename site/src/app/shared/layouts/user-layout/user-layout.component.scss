@@ -1,0 +1,19 @@
+.user-layout {
+  min-height: 100vh;
+  background: #f9f9f9;
+
+  .layout-container {
+    display: flex;
+    min-height: 100vh;
+
+    .sidebar-section {
+      flex-shrink: 0;
+    }
+
+    .content-section {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+    }
+  }
+}
