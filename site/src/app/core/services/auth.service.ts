@@ -1,53 +1,73 @@
 import { Injectable, Inject } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { delay } from 'rxjs/operators';
-import * as jwt_decode from 'jwt-decode';
-import * as moment from 'moment';
-
-import { environment } from '../../../environments/environment';
-import { of, EMPTY } from 'rxjs';
-import { JwtHelperService } from '@auth0/angular-jwt';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map, throwError, catchError } from 'rxjs';
 import { Router } from '@angular/router';
+import { JwtHelperService } from '@auth0/angular-jwt';
+
+import { environment } from '../../../environments/environment';
 
 @Injectable({
     providedIn: 'root'
 })
 export class AuthenticationService {
-    private _headers: HttpHeaders | { [header: string]: string | string[]; } | undefined;
+    private apiUrl = environment.apiUrl; // e.g. https://your-api-gateway-url/prod
 
     constructor(private http: HttpClient,
         @Inject('LOCALSTORAGE') private localStorage: Storage,
-        private router: Router
-    ) {
+        private router: Router,
+        private jwtHelper: JwtHelperService
+    ) {}
+
+    register(email: string, password: string, name: string): Observable<any> {
+        const body = { email, password, name };
+        return this.http.post(`${this.apiUrl}/users/register`, body).pipe(
+            map((response: any) => {
+                this.localStorage.setItem('currentUser', JSON.stringify(response));
+                return response;
+            }),
+            catchError(error => throwError(error))
+        );
     }
 
-    login(email: string, password: string) {
-        return of(true)
-            .pipe(delay(1000),
-                map((/*response*/) => {
-                    // set token property
-                    // const decodedToken = jwt_decode(response['token']);
+    login(email: string, password: string): Observable<any> {
+        const body = { email, password };
+        return this.http.post(`${this.apiUrl}/users/login`, body).pipe(
+            map((response: any) => {
+                this.localStorage.setItem('currentUser', JSON.stringify(response));
+                return response;
+            }),
+            catchError(error => throwError(error))
+        );
+    }
 
-                    // store email and jwt token in local storage to keep user logged in between page refreshes
-                    this.localStorage.setItem('currentUser', JSON.stringify({
-                        token: 'aisdnaksjdn,axmnczm',
-                        isAdmin: true,
-                        email: 'john.doe@gmail.com',
-                        id: '12312323232',
-                        alias: 'john.doe@gmail.com'.split('@')[0],
-                        expiration: moment().add(1, 'days').toDate(),
-                        fullName: 'John Doe'
-                    }));
-
-                    return true;
-                }));
+    getProfile(): Observable<any> {
+        const token = this.getToken();
+        if (!token) return throwError('No token');
+        const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+        return this.http.get(`${this.apiUrl}/users/profile`, { headers }).pipe(
+            catchError(error => throwError(error))
+        );
     }
 
     logout(): void {
-        // clear token remove user from local storage to log user out
         this.localStorage.removeItem('currentUser');
+        this.router.navigate(['/auth/login']);
     }
+
+    getToken(): string | null {
+        const user = JSON.parse(this.localStorage.getItem('currentUser') || '{}');
+        return user.token || null;
+    }
+
+    isAuthenticated(): boolean {
+        const token = this.getToken();
+        return token ? !this.jwtHelper.isTokenExpired(token) : false;
+    }
+
+    getCurrentUser(): any {
+        return JSON.parse(this.localStorage.getItem('currentUser') || '{}');
+    }
+}
 
     getCurrentUser(): any {
         const userString = this.localStorage.getItem('currentUser');

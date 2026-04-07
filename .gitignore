@@ -44,3 +44,53 @@ Thumbs.db
 mode_info_img/
 **mode_info_img/
 mode_info_img/*
+
+back/contact/*
+
+
+
+# Test binary, built with `go test -c`
+*.test
+
+# Code coverage profiles and other test artifacts
+*.out
+coverage.*
+*.coverprofile
+profile.cov
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+go.work.sum
+
+
+**/.gocache/*
+**/.gomodcache/*
+
+# env file
+.env
+
+# Editor/IDE
+# .idea/
+# .vscode/
+
+
+*.zip
+
+# Terraform
+.terraform/
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.*
+
+# Node
+**/node_modules/
+
+# Binários
+**/*.exe
+**/*.zip
+
+
+

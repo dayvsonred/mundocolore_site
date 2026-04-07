@@ -18,6 +18,8 @@ export const environment = {
   assetsBaseUrl: `https://d39d9tndfl7lxp.cloudfront.net`,
   paymentsBaseUrl: `https://rm0t2sapef.execute-api.us-east-1.amazonaws.com`,
   stripePublishableKey: `pk_test_51SwZqYDGla8YTkh15TvwJGILoOZoR9bFrlklKteced2TDjmCxUmoQMIGH3RnhCIhaCOiOFtvlnA4GgHQlOSG2axl00e6evIRTb`,
+  apiUrl: `https://your-api-gateway-url/prod`, // Update with actual API Gateway URL
+};
   defaultCampaignId: ``,
   nomeProjetoTitulo: `mundocolorestore`,
   labels: {
