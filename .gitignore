@@ -65,7 +65,12 @@ profile.cov
 go.work
 go.work.sum
 
-
+.gocache/*
+.gomodcache/*
+*.gocache/*
+*.gomodcache/*
+*/.gocache/*
+*/.gomodcache/*
 **/.gocache/*
 **/.gomodcache/*
 
