@@ -65,14 +65,11 @@ profile.cov
 go.work
 go.work.sum
 
-.gocache/*
-.gomodcache/*
-*.gocache/*
-*.gomodcache/*
-*/.gocache/*
-*/.gomodcache/*
-**/.gocache/*
-**/.gomodcache/*
+# Go local caches (do not commit)
+.gocache/
+.gomodcache/
+**/.gocache/
+**/.gomodcache/
 
 # env file
 .env
@@ -96,6 +93,5 @@ go.work.sum
 # Binários
 **/*.exe
 **/*.zip
-
 
 
