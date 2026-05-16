@@ -16,6 +16,12 @@ data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}
 
+locals {
+  cors_allow_headers = "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token"
+  cors_allow_methods = "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+  cors_allow_origin  = "*"
+}
+
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_role" {
   name = "lb_mundocolore-addresses-role"
@@ -185,4 +191,64 @@ resource "aws_lambda_permission" "api_gateway" {
   function_name = aws_lambda_function.addresses_lambda.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${data.aws_api_gateway_rest_api.gateway.execution_arn}/*/*/*"
+}
+
+locals {
+  addresses_cors_resources = {
+    addresses               = aws_api_gateway_resource.addresses_resource.id
+    addresses_health_online = aws_api_gateway_resource.addresses_health_online_resource.id
+    addresses_health_data   = aws_api_gateway_resource.addresses_health_data_resource.id
+  }
+}
+
+resource "aws_api_gateway_method" "addresses_options" {
+  for_each      = local.addresses_cors_resources
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = each.value
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "addresses_options" {
+  for_each    = local.addresses_cors_resources
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  resource_id = each.value
+  http_method = aws_api_gateway_method.addresses_options[each.key].http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+resource "aws_api_gateway_method_response" "addresses_options_200" {
+  for_each    = local.addresses_cors_resources
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  resource_id = each.value
+  http_method = aws_api_gateway_method.addresses_options[each.key].http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = "Empty"
+  }
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "addresses_options_200" {
+  for_each    = local.addresses_cors_resources
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  resource_id = each.value
+  http_method = aws_api_gateway_method.addresses_options[each.key].http_method
+  status_code = aws_api_gateway_method_response.addresses_options_200[each.key].status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'${local.cors_allow_headers}'"
+    "method.response.header.Access-Control-Allow-Methods" = "'${local.cors_allow_methods}'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'${local.cors_allow_origin}'"
+  }
 }

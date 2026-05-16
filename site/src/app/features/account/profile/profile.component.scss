@@ -22,6 +22,12 @@
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 
+    .loading-state {
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+
     .card-header {
       display: flex;
       justify-content: space-between;
@@ -45,9 +51,10 @@
       display: flex;
       gap: 16px;
       margin-bottom: 16px;
+      flex-wrap: wrap;
 
       mat-form-field {
-        flex: 1;
+        flex: 1 1 280px;
       }
     }
 

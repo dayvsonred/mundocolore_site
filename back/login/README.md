@@ -7,6 +7,7 @@ Este diretorio contem a lambda de login e a infra Terraform.
 No diretorio `back/login`:
 
 ```powershell
+cd "C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\back\login"
 go mod tidy; $env:GOOS = "linux"; $env:GOARCH = "amd64"; go build -o bootstrap main.go; Compress-Archive -Path bootstrap -DestinationPath lambda.zip -Force
 ```
 

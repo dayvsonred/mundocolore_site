@@ -74,6 +74,10 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "port": 3487,
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "browserTarget": "mundocolore:build:production"
@@ -82,10 +86,7 @@
               "browserTarget": "mundocolore:build:development"
             }
           },
-          "defaultConfiguration": "development",
-          "options": {
-            "port": 3487
-          }
+          "defaultConfiguration": "development"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { AuthenticationService } from 'src/app/core/services/auth.service';
+
 interface RecentOrder {
   id: string;
   date: string;
@@ -15,57 +17,64 @@ interface RecentOrder {
 })
 export class AccountPageComponent implements OnInit {
   user = {
-    name: 'João Silva',
-    email: 'joao.silva@email.com'
+    name: 'Usuario',
+    email: ''
   };
 
   recentOrders: RecentOrder[] = [];
-  defaultAddress = 'Rua das Flores, 123 - São Paulo/SP';
-  billingAddress = 'Av. Paulista, 456 - São Paulo/SP';
+  defaultAddress = 'Rua das Flores, 123 - Sao Paulo/SP';
+  billingAddress = 'Av. Paulista, 456 - Sao Paulo/SP';
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private authService: AuthenticationService
+  ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
+    const currentUser = this.authService.getCurrentUser();
+    if (currentUser) {
+      this.user = {
+        name: currentUser.fullName || currentUser.name || 'Usuario',
+        email: currentUser.email || ''
+      };
+    }
     this.loadMockData();
   }
 
-  loadMockData() {
+  loadMockData(): void {
     this.recentOrders = [
       {
         id: 'PED-001',
         date: '2024-01-15',
-        total: 299.90,
+        total: 299.9,
         status: 'Entregue'
       },
       {
         id: 'PED-002',
         date: '2024-01-10',
-        total: 149.50,
+        total: 149.5,
         status: 'Entregue'
       }
     ];
   }
 
-  viewOrder(order: RecentOrder) {
+  viewOrder(_order: RecentOrder): void {
     this.router.navigate(['/minha-conta/meus-pedidos']);
   }
 
-  reorder() {
+  reorder(): void {
     this.router.navigate(['/catalog']);
   }
 
-  editProfile() {
+  editProfile(): void {
     this.router.navigate(['/minha-conta/meus-dados']);
   }
 
-  changePassword() {
-    // TODO: Navigate to change password
+  changePassword(): void {
     console.log('Change password');
   }
 
-  manageAddresses() {
+  manageAddresses(): void {
     this.router.navigate(['/minha-conta/meus-enderecos']);
   }
 }
-
-

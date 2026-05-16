@@ -9,13 +9,13 @@ export const environment = {
   link_creat_login: '/users/register',
   link_creat_valid_email: '/core/valid/email',
   link_donation_creat: '/donation',
-  urlBase: 'https://rm0t2sapef.execute-api.us-east-1.amazonaws.com',
+  urlBase: '/api',
   assetsBaseUrl: 'https://d39d9tndfl7lxp.cloudfront.net',
-  paymentsBaseUrl: 'https://rm0t2sapef.execute-api.us-east-1.amazonaws.com',
+  paymentsBaseUrl: '/api',
   stripePublishableKey: 'pk_test_51SwZqYDGla8YTkh15TvwJGILoOZoR9bFrlklKteced2TDjmCxUmoQMIGH3RnhCIhaCOiOFtvlnA4GgHQlOSG2axl00e6evIRTb',
   defaultCampaignId: '',
   nomeProjetoTitulo: 'mundocolorestore',
-  apiUrl: 'https://rm0t2sapef.execute-api.us-east-1.amazonaws.com',
+  apiUrl: '/api',
   labels: {
     menu: {
       dashboard: 'Dashboard',

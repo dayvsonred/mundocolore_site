@@ -1,6 +1,7 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
+import { AuthenticationService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-navbar',
@@ -16,16 +17,15 @@ export class NavbarComponent implements OnInit {
   cartItemCount = 0;
 
   readonly menuItems = [
-    { id: 'home', label: 'Inicio' },
     { id: 'collections', label: 'Colecoes' },
-    { id: 'arrivals', label: 'Novidades' },
     { id: 'promotions', label: 'Promocoes' },
     { id: 'contact', label: 'Contato' }
   ];
 
   constructor(
     private router: Router,
-    private cartService: CartService
+    private cartService: CartService,
+    private authService: AuthenticationService
   ) { }
 
   ngOnInit(): void {
@@ -59,6 +59,12 @@ export class NavbarComponent implements OnInit {
 
   navigateToCart(): void {
     this.router.navigate(['/cart']);
+    this.closeMobileMenu();
+  }
+
+  navigateToMyAccount(): void {
+    const route = this.authService.isAuthenticated() ? '/minha-conta' : '/auth/login';
+    this.router.navigate([route]);
     this.closeMobileMenu();
   }
 }

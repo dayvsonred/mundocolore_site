@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { Observable, catchError, map, throwError } from 'rxjs';
+import { Observable, catchError, map, of, switchMap, throwError } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 
@@ -31,7 +31,11 @@ export class AuthenticationService {
   }
 
   login(email: string, password: string): Observable<any> {
-    return this.sign({ email, password }).pipe(map(() => this.getCurrentUser()));
+    return this.sign({ email, password }).pipe(
+      switchMap(() => this.getProfile()),
+      map(() => this.getCurrentUser()),
+      catchError(() => of(this.getCurrentUser()))
+    );
   }
 
   sign(payload: { email: string; password: string }): Observable<boolean> {
@@ -69,7 +73,43 @@ export class AuthenticationService {
 
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     return this.http.get<any>(`${this.apiUrl}/users/profile`, { headers }).pipe(
+      map((profile) => {
+        this.syncCurrentUserProfile(profile);
+        return profile;
+      }),
       catchError((error) => throwError(() => error))
+    );
+  }
+
+  updateProfile(payload: {
+    name: string;
+    cpf: string;
+    phone: string;
+    birth_date: string;
+    gender: string;
+  }): Observable<any> {
+    const token = this.getToken();
+    if (!token) {
+      return throwError(() => 'No token');
+    }
+
+    const headers = new HttpHeaders()
+      .set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'application/json');
+
+    return this.http.put<any>(`${this.apiUrl}/users/profile`, payload, { headers }).pipe(
+      map((profile) => {
+        this.syncCurrentUserProfile(profile);
+        return profile;
+      }),
+      catchError((error) =>
+        throwError(
+          () =>
+            error?.error?.message ||
+            error?.error?.error ||
+            'Nao foi possivel atualizar o perfil.'
+        )
+      )
     );
   }
 
@@ -148,19 +188,74 @@ export class AuthenticationService {
     longitude: string;
     latitude: string;
   }): Observable<any> {
-    const headers = { 'Content-Type': 'application/json' };
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
     return this.http
-      .post<any>(`${environment.urlBase}${environment.link_creat_login}`, payload, { headers })
+      .post(`${environment.urlBase}${environment.link_creat_login}`, payload, {
+        headers,
+        observe: 'response',
+        responseType: 'text'
+      })
       .pipe(
-        map((response) => response),
-        catchError((error) =>
-          throwError(
-            () =>
-              error?.error?.message ||
-              'No momento nao foi possivel validar estes dados. Tente novamente mais tarde.'
-          )
-        )
+        map((response) => this.parseMaybeJson(response.body)),
+        catchError((error) => throwError(() => error))
       );
+  }
+
+  registerAndAuthenticate(payload: {
+    email: string;
+    name: string;
+    password: string;
+    cpf: string;
+    offshoot: string;
+    longitude: string;
+    latitude: string;
+  }): Observable<any> {
+    const hydrateProfile = () =>
+      this.getProfile().pipe(
+        map(() => this.getCurrentUser()),
+        catchError(() => of(this.getCurrentUser()))
+      );
+
+    const loginAfterRegister = () =>
+      this.sign({ email: payload.email, password: payload.password }).pipe(
+        switchMap(() => hydrateProfile())
+      );
+
+    return this.createNewUserLongin(payload).pipe(
+      switchMap((registerResponse) => {
+        const hasToken =
+          !!registerResponse &&
+          (typeof registerResponse === 'object') &&
+          (!!registerResponse.token || !!registerResponse.access_token);
+
+        if (hasToken) {
+          this.persistAuthenticatedUser(registerResponse, payload.email);
+          return hydrateProfile();
+        }
+
+        return loginAfterRegister();
+      }),
+      catchError((error) => {
+        if (this.isNetworkOrCorsLikeError(error)) {
+          return loginAfterRegister();
+        }
+
+        if (typeof error === 'string') {
+          return throwError(() => error);
+        }
+
+        const backendMessage =
+          error?.error?.message ||
+          error?.error?.error ||
+          (typeof error?.error === 'string' ? error.error : '');
+
+        return throwError(
+          () =>
+            backendMessage ||
+            'No momento nao foi possivel criar sua conta. Tente novamente mais tarde.'
+        );
+      })
+    );
   }
 
   validEmailUser(payload: { email: string; user: string }): Observable<any> {
@@ -218,7 +313,7 @@ export class AuthenticationService {
     };
 
     return this.http
-      .post<any>('https://rm0t2sapef.execute-api.us-east-1.amazonaws.com/contact/visualizations', body, {
+      .post<any>(`${environment.urlBase}/contact/visualizations`, body, {
         headers
       })
       .pipe(
@@ -262,7 +357,11 @@ export class AuthenticationService {
       const jwtHelper = new JwtHelperService();
       return !jwtHelper.isTokenExpired(token);
     } catch {
-      return false;
+      const currentUser = this.getCurrentUser();
+      if (currentUser?.expiration) {
+        return new Date(currentUser.expiration).getTime() > Date.now();
+      }
+      return true;
     }
   }
 
@@ -275,6 +374,10 @@ export class AuthenticationService {
     const userEmail = response?.user?.email || response?.email || fallbackEmail;
     const userId = response?.user?.id || response?.id || '';
     const userName = response?.user?.name || response?.name || '';
+    const userCpf = response?.user?.cpf || response?.cpf || '';
+    const userPhone = response?.user?.phone || response?.phone || '';
+    const userBirthDate = response?.user?.birth_date || response?.birth_date || '';
+    const userGender = response?.user?.gender || response?.gender || '';
     const contaNivel = response?.conta_nivel ?? {};
 
     this.localStorage.removeItem('access_token');
@@ -293,6 +396,11 @@ export class AuthenticationService {
         alias: userEmail.includes('@') ? userEmail.split('@')[0] : userEmail,
         expiration: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         fullName: userName,
+        name: userName,
+        cpf: userCpf,
+        phone: userPhone,
+        birth_date: userBirthDate,
+        gender: userGender,
         conta_nivel_ativo: contaNivel.ativo ?? null,
         conta_nivel_data_update: contaNivel.data_update ?? null,
         conta_nivel_data_nivel: contaNivel.nivel ?? null,
@@ -312,5 +420,46 @@ export class AuthenticationService {
       return 'mobile';
     }
     return 'desktop';
+  }
+
+  private parseMaybeJson(body: string | null): any {
+    if (!body) {
+      return {};
+    }
+
+    try {
+      return JSON.parse(body);
+    } catch {
+      return {};
+    }
+  }
+
+  private isNetworkOrCorsLikeError(error: any): boolean {
+    return (
+      error?.status === 0 ||
+      error?.message?.includes?.('Unknown Error')
+    );
+  }
+
+  private syncCurrentUserProfile(profile: any): void {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser || !profile) {
+      return;
+    }
+
+    const updatedUser = {
+      ...currentUser,
+      id: profile?.id || currentUser.id,
+      id_user: profile?.id || currentUser.id_user,
+      email: profile?.email || currentUser.email,
+      fullName: profile?.name || currentUser.fullName,
+      name: profile?.name || currentUser.name,
+      cpf: profile?.cpf || currentUser.cpf || '',
+      phone: profile?.phone || currentUser.phone || '',
+      birth_date: profile?.birth_date || currentUser.birth_date || '',
+      gender: profile?.gender || currentUser.gender || ''
+    };
+
+    this.localStorage.setItem('currentUser', JSON.stringify(updatedUser));
   }
 }

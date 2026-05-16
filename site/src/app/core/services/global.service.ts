@@ -729,7 +729,7 @@ export class GlobalService {
         };
 
         return this.http.post<any>(
-            `https://rm0t2sapef.execute-api.us-east-1.amazonaws.com/contact/visualizations`,
+            `${environment.urlBase}/contact/visualizations`,
             body,
             { headers }
         ).pipe(

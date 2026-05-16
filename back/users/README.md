@@ -39,11 +39,7 @@ terraform apply
 Depois do apply, publicar o stage:
 
 ```powershell
-aws apigateway create-deployment `
-  --rest-api-id b8i4etrh23 `
-  --stage-name prod `
-  --profile mundocolore `
-  --region sa-east-1
+aws apigateway create-deployment   --rest-api-id b8i4etrh23   --stage-name prod   --profile mundocolore   --region sa-east-1
 ```
 
 ## Exemplo de chamada das rotas health
@@ -73,3 +69,7 @@ curl -X GET "https://b8i4etrh23.execute-api.sa-east-1.amazonaws.com/prod/users/h
 
 
 aws apigateway create-deployment --rest-api-id b8i4etrh23 --stage-name prod --region sa-east-1
+
+
+
+aws apigateway create-deployment --rest-api-id b8i4etrh23 --stage-name prod --profile mundocolore --region sa-east-1

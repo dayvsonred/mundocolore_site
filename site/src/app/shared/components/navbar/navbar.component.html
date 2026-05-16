@@ -16,6 +16,7 @@
       <button type="button" *ngFor="let item of menuItems" (click)="closeMobileMenu()">
         {{ item.label }}
       </button>
+      <button type="button" (click)="navigateToMyAccount()">Minha conta</button>
       <button type="button" class="shop-now" (click)="navigateToCatalog()">Comprar agora</button>
       <button type="button" class="cart-icon" (click)="navigateToCart()" matTooltip="Carrinho de compras">
         <mat-icon [matBadge]="cartItemCount" matBadgeColor="accent">shopping_cart</mat-icon>

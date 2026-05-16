@@ -23,14 +23,33 @@ type User struct {
 	ID        string `json:"id" dynamodbav:"id"`
 	Email     string `json:"email" dynamodbav:"email"`
 	Name      string `json:"name,omitempty" dynamodbav:"name"`
+	CPF       string `json:"cpf,omitempty" dynamodbav:"cpf"`
+	Phone     string `json:"phone,omitempty" dynamodbav:"phone"`
+	BirthDate string `json:"birth_date,omitempty" dynamodbav:"birth_date"`
+	Gender    string `json:"gender,omitempty" dynamodbav:"gender"`
 	Password  string `json:"-" dynamodbav:"password"`
 	CreatedAt string `json:"created_at" dynamodbav:"created_at"`
 }
 
 type CreateUserRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Name     string `json:"name"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	Name      string `json:"name"`
+	CPF       string `json:"cpf"`
+	Phone     string `json:"phone"`
+	BirthDate string `json:"birth_date"`
+	Gender    string `json:"gender"`
+	Offshoot  string `json:"offshoot"`
+	Longitude string `json:"longitude"`
+	Latitude  string `json:"latitude"`
+}
+
+type UpdateProfileRequest struct {
+	Name      string `json:"name"`
+	CPF       string `json:"cpf"`
+	Phone     string `json:"phone"`
+	BirthDate string `json:"birth_date"`
+	Gender    string `json:"gender"`
 }
 
 type LoginRequest struct {
@@ -39,10 +58,14 @@ type LoginRequest struct {
 }
 
 type UserResponse struct {
-	ID    string `json:"id"`
-	Email string `json:"email"`
-	Name  string `json:"name"`
-	Token string `json:"token,omitempty"`
+	ID        string `json:"id"`
+	Email     string `json:"email"`
+	Name      string `json:"name"`
+	CPF       string `json:"cpf,omitempty"`
+	Phone     string `json:"phone,omitempty"`
+	BirthDate string `json:"birth_date,omitempty"`
+	Gender    string `json:"gender,omitempty"`
+	Token     string `json:"token,omitempty"`
 }
 
 var (
@@ -82,10 +105,7 @@ func HandleRegister(_ context.Context, request events.APIGatewayProxyRequest) (e
 	}
 
 	body, _ := json.Marshal(user)
-	return events.APIGatewayProxyResponse{
-		StatusCode: 201,
-		Body:       string(body),
-	}, nil
+	return successJSONResponse(201, string(body)), nil
 }
 
 func HandleLogin(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -100,10 +120,7 @@ func HandleLogin(_ context.Context, request events.APIGatewayProxyRequest) (even
 	}
 
 	body, _ := json.Marshal(user)
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       string(body),
-	}, nil
+	return successJSONResponse(200, string(body)), nil
 }
 
 func HandleProfile(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -119,14 +136,42 @@ func HandleProfile(_ context.Context, request events.APIGatewayProxyRequest) (ev
 
 	user, err := getUser(userID)
 	if err != nil {
-		return events.APIGatewayProxyResponse{StatusCode: 404, Body: fmt.Sprintf(`{"error": "%s"}`, err.Error())}, nil
+		return notFoundWithMessage(err.Error()), nil
 	}
 
 	body, _ := json.Marshal(user)
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       string(body),
-	}, nil
+	return successJSONResponse(200, string(body)), nil
+}
+
+func HandleUpdateProfile(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	token := extractBearerToken(request.Headers)
+	if token == "" {
+		return unauthorizedResponse("no token"), nil
+	}
+
+	userID, err := validateJWT(token)
+	if err != nil {
+		return unauthorizedResponse("invalid token"), nil
+	}
+
+	var req UpdateProfileRequest
+	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
+		return badRequestResponse("invalid request"), nil
+	}
+
+	if req.BirthDate != "" {
+		if _, err := time.Parse("2006-01-02", req.BirthDate); err != nil {
+			return badRequestResponse("birth_date must be in YYYY-MM-DD format"), nil
+		}
+	}
+
+	user, err := updateUserProfile(userID, req)
+	if err != nil {
+		return badRequestResponse(err.Error()), nil
+	}
+
+	body, _ := json.Marshal(user)
+	return successJSONResponse(200, string(body)), nil
 }
 
 func HandleGetUserByID(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -137,14 +182,11 @@ func HandleGetUserByID(_ context.Context, request events.APIGatewayProxyRequest)
 
 	user, err := getUser(userID)
 	if err != nil {
-		return events.APIGatewayProxyResponse{StatusCode: 404, Body: fmt.Sprintf(`{"error": "%s"}`, err.Error())}, nil
+		return notFoundWithMessage(err.Error()), nil
 	}
 
 	body, _ := json.Marshal(user)
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       string(body),
-	}, nil
+	return successJSONResponse(200, string(body)), nil
 }
 
 func HandleHealthOnline(_ context.Context, _ events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -154,10 +196,7 @@ func HandleHealthOnline(_ context.Context, _ events.APIGatewayProxyRequest) (eve
 		"timestamp": time.Now().Format(healthTimeLayout),
 	})
 
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       string(body),
-	}, nil
+	return successJSONResponse(200, string(body)), nil
 }
 
 func HandleHealthData(_ context.Context, _ events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -189,10 +228,7 @@ func HandleHealthData(_ context.Context, _ events.APIGatewayProxyRequest) (event
 			"data":      foundData,
 		})
 
-		return events.APIGatewayProxyResponse{
-			StatusCode: 200,
-			Body:       string(body),
-		}, nil
+		return successJSONResponse(200, string(body)), nil
 	}
 
 	item := map[string]*dynamodb.AttributeValue{
@@ -224,14 +260,23 @@ func HandleHealthData(_ context.Context, _ events.APIGatewayProxyRequest) (event
 		"data":      createdData,
 	})
 
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       string(body),
-	}, nil
+	return successJSONResponse(200, string(body)), nil
 }
 
 func createUser(req CreateUserRequest) (UserResponse, error) {
 	email := strings.ToLower(strings.TrimSpace(req.Email))
+	password := strings.TrimSpace(req.Password)
+	name := strings.TrimSpace(req.Name)
+
+	if email == "" {
+		return UserResponse{}, fmt.Errorf("email is required")
+	}
+	if password == "" {
+		return UserResponse{}, fmt.Errorf("password is required")
+	}
+	if name == "" {
+		return UserResponse{}, fmt.Errorf("name is required")
+	}
 
 	result, err := dynamoClient.Scan(&dynamodb.ScanInput{
 		TableName:        aws.String(tableName),
@@ -247,7 +292,7 @@ func createUser(req CreateUserRequest) (UserResponse, error) {
 		return UserResponse{}, fmt.Errorf("user already exists")
 	}
 
-	hashedPassword, err := hashPassword(req.Password)
+	hashedPassword, err := hashPassword(password)
 	if err != nil {
 		return UserResponse{}, err
 	}
@@ -255,7 +300,11 @@ func createUser(req CreateUserRequest) (UserResponse, error) {
 	user := User{
 		ID:        generateID(),
 		Email:     email,
-		Name:      req.Name,
+		Name:      name,
+		CPF:       onlyDigits(req.CPF),
+		Phone:     strings.TrimSpace(req.Phone),
+		BirthDate: strings.TrimSpace(req.BirthDate),
+		Gender:    strings.TrimSpace(req.Gender),
 		Password:  hashedPassword,
 		CreatedAt: time.Now().Format(time.RFC3339),
 	}
@@ -278,16 +327,15 @@ func createUser(req CreateUserRequest) (UserResponse, error) {
 		return UserResponse{}, err
 	}
 
-	return UserResponse{
-		ID:    user.ID,
-		Email: user.Email,
-		Name:  user.Name,
-		Token: token,
-	}, nil
+	return toUserResponse(user, token), nil
 }
 
 func loginUser(req LoginRequest) (UserResponse, error) {
 	email := strings.ToLower(strings.TrimSpace(req.Email))
+	password := strings.TrimSpace(req.Password)
+	if email == "" || password == "" {
+		return UserResponse{}, fmt.Errorf("email and password are required")
+	}
 
 	result, err := dynamoClient.Scan(&dynamodb.ScanInput{
 		TableName:        aws.String(tableName),
@@ -308,7 +356,7 @@ func loginUser(req LoginRequest) (UserResponse, error) {
 		return UserResponse{}, err
 	}
 
-	if err := checkPassword(user.Password, req.Password); err != nil {
+	if err := checkPassword(user.Password, password); err != nil {
 		return UserResponse{}, fmt.Errorf("invalid password")
 	}
 
@@ -317,15 +365,18 @@ func loginUser(req LoginRequest) (UserResponse, error) {
 		return UserResponse{}, err
 	}
 
-	return UserResponse{
-		ID:    user.ID,
-		Email: user.Email,
-		Name:  user.Name,
-		Token: token,
-	}, nil
+	return toUserResponse(user, token), nil
 }
 
 func getUser(userID string) (UserResponse, error) {
+	user, err := getUserEntity(userID)
+	if err != nil {
+		return UserResponse{}, err
+	}
+	return toUserResponse(user, ""), nil
+}
+
+func getUserEntity(userID string) (User, error) {
 	result, err := dynamoClient.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
 		Key: map[string]*dynamodb.AttributeValue{
@@ -333,22 +384,67 @@ func getUser(userID string) (UserResponse, error) {
 		},
 	})
 	if err != nil {
-		return UserResponse{}, err
+		return User{}, err
 	}
 	if result.Item == nil {
-		return UserResponse{}, fmt.Errorf("user not found")
+		return User{}, fmt.Errorf("user not found")
 	}
 
 	var user User
 	if err := dynamodbattribute.UnmarshalMap(result.Item, &user); err != nil {
+		return User{}, err
+	}
+	return user, nil
+}
+
+func updateUserProfile(userID string, req UpdateProfileRequest) (UserResponse, error) {
+	user, err := getUserEntity(userID)
+	if err != nil {
 		return UserResponse{}, err
 	}
 
+	if name := strings.TrimSpace(req.Name); name != "" {
+		user.Name = name
+	}
+	if cpf := onlyDigits(req.CPF); cpf != "" {
+		user.CPF = cpf
+	}
+	if phone := strings.TrimSpace(req.Phone); phone != "" {
+		user.Phone = phone
+	}
+	if req.BirthDate != "" {
+		user.BirthDate = strings.TrimSpace(req.BirthDate)
+	}
+	if req.Gender != "" {
+		user.Gender = strings.TrimSpace(req.Gender)
+	}
+
+	item, err := dynamodbattribute.MarshalMap(user)
+	if err != nil {
+		return UserResponse{}, err
+	}
+
+	if _, err := dynamoClient.PutItem(&dynamodb.PutItemInput{
+		TableName: aws.String(tableName),
+		Item:      item,
+	}); err != nil {
+		return UserResponse{}, err
+	}
+
+	return toUserResponse(user, ""), nil
+}
+
+func toUserResponse(user User, token string) UserResponse {
 	return UserResponse{
-		ID:    user.ID,
-		Email: user.Email,
-		Name:  user.Name,
-	}, nil
+		ID:        user.ID,
+		Email:     user.Email,
+		Name:      user.Name,
+		CPF:       user.CPF,
+		Phone:     user.Phone,
+		BirthDate: user.BirthDate,
+		Gender:    user.Gender,
+		Token:     token,
+	}
 }
 
 func generateJWT(userID string) (string, error) {
@@ -393,24 +489,65 @@ func checkPassword(hashed, password string) error {
 
 func generateID() string {
 	bytes := make([]byte, 16)
-	rand.Read(bytes)
+	_, _ = rand.Read(bytes)
 	return hex.EncodeToString(bytes)
 }
 
+func successJSONResponse(statusCode int, body string) events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
+		StatusCode: statusCode,
+		Body:       body,
+		Headers:    defaultHeaders(),
+	}
+}
+
 func unauthorizedResponse(message string) events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse{StatusCode: 401, Body: fmt.Sprintf(`{"error": "%s"}`, message)}
+	return events.APIGatewayProxyResponse{
+		StatusCode: 401,
+		Body:       fmt.Sprintf(`{"error": "%s"}`, message),
+		Headers:    defaultHeaders(),
+	}
 }
 
 func badRequestResponse(message string) events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse{StatusCode: 400, Body: fmt.Sprintf(`{"error": "%s"}`, message)}
+	return events.APIGatewayProxyResponse{
+		StatusCode: 400,
+		Body:       fmt.Sprintf(`{"error": "%s"}`, message),
+		Headers:    defaultHeaders(),
+	}
 }
 
 func serverErrorResponse(err error) events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse{StatusCode: 500, Body: fmt.Sprintf(`{"error": "%s"}`, err.Error())}
+	return events.APIGatewayProxyResponse{
+		StatusCode: 500,
+		Body:       fmt.Sprintf(`{"error": "%s"}`, err.Error()),
+		Headers:    defaultHeaders(),
+	}
 }
 
 func notFoundResponse() events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse{StatusCode: 404, Body: `{"error": "not found"}`}
+	return events.APIGatewayProxyResponse{
+		StatusCode: 404,
+		Body:       `{"error": "not found"}`,
+		Headers:    defaultHeaders(),
+	}
+}
+
+func notFoundWithMessage(message string) events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
+		StatusCode: 404,
+		Body:       fmt.Sprintf(`{"error": "%s"}`, message),
+		Headers:    defaultHeaders(),
+	}
+}
+
+func defaultHeaders() map[string]string {
+	return map[string]string{
+		"Content-Type":                 "application/json",
+		"Access-Control-Allow-Origin":  "*",
+		"Access-Control-Allow-Headers": "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
+		"Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+	}
 }
 
 func getAuthorizationHeader(headers map[string]string) string {
@@ -449,4 +586,19 @@ func extractUserIDFromShowPath(path string) string {
 	}
 
 	return strings.Split(userID, "/")[0]
+}
+
+func onlyDigits(value string) string {
+	if value == "" {
+		return ""
+	}
+
+	var builder strings.Builder
+	builder.Grow(len(value))
+	for _, r := range value {
+		if r >= '0' && r <= '9' {
+			builder.WriteRune(r)
+		}
+	}
+	return builder.String()
 }

@@ -16,6 +16,12 @@ data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}
 
+locals {
+  cors_allow_headers = "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token"
+  cors_allow_methods = "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+  cors_allow_origin  = "*"
+}
+
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_role" {
   name = "lb_mundocolore-users-role"
@@ -190,6 +196,22 @@ resource "aws_api_gateway_integration" "profile_integration" {
   uri                     = aws_lambda_function.users_lambda.invoke_arn
 }
 
+resource "aws_api_gateway_method" "profile_put" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.profile_resource.id
+  http_method   = "PUT"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "profile_put_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.profile_resource.id
+  http_method             = aws_api_gateway_method.profile_put.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.users_lambda.invoke_arn
+}
+
 resource "aws_api_gateway_resource" "show_resource" {
   rest_api_id = data.aws_api_gateway_rest_api.gateway.id
   parent_id   = aws_api_gateway_resource.users_resource.id
@@ -266,4 +288,68 @@ resource "aws_api_gateway_integration" "health_data_integration" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.users_lambda.invoke_arn
+}
+
+locals {
+  users_cors_resources = {
+    users               = aws_api_gateway_resource.users_resource.id
+    users_register      = aws_api_gateway_resource.register_resource.id
+    users_login         = aws_api_gateway_resource.login_resource.id
+    users_profile       = aws_api_gateway_resource.profile_resource.id
+    users_show_id       = aws_api_gateway_resource.show_id_resource.id
+    users_health_online = aws_api_gateway_resource.health_online_resource.id
+    users_health_data   = aws_api_gateway_resource.health_data_resource.id
+  }
+}
+
+resource "aws_api_gateway_method" "users_options" {
+  for_each      = local.users_cors_resources
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = each.value
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "users_options" {
+  for_each    = local.users_cors_resources
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  resource_id = each.value
+  http_method = aws_api_gateway_method.users_options[each.key].http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+resource "aws_api_gateway_method_response" "users_options_200" {
+  for_each    = local.users_cors_resources
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  resource_id = each.value
+  http_method = aws_api_gateway_method.users_options[each.key].http_method
+  status_code = "200"
+
+  response_models = {
+    "application/json" = "Empty"
+  }
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration_response" "users_options_200" {
+  for_each    = local.users_cors_resources
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  resource_id = each.value
+  http_method = aws_api_gateway_method.users_options[each.key].http_method
+  status_code = aws_api_gateway_method_response.users_options_200[each.key].status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'${local.cors_allow_headers}'"
+    "method.response.header.Access-Control-Allow-Methods" = "'${local.cors_allow_methods}'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'${local.cors_allow_origin}'"
+  }
 }

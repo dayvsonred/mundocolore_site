@@ -28,11 +28,11 @@ export class LoginComponent implements OnInit {
     }
 
     ngOnInit() {
-        localStorage.removeItem('access_token');
-		localStorage.removeItem('token');
-        localStorage.removeItem('savedUserEmail');
         this.titleService.setTitle(APP_NAME);
-        this.authenticationService.logout();
+        if (this.authenticationService.isAuthenticated()) {
+            this.router.navigate(['/minha-conta']);
+            return;
+        }
         this.createForm();
         this.titulo = environment.nomeProjetoTitulo;
     }
@@ -65,7 +65,7 @@ export class LoginComponent implements OnInit {
                     } else {
                         localStorage.removeItem('savedUserEmail');
                     }
-                    this.router.navigate(['/dashboard']);
+                    this.router.navigate(['/minha-conta']);
                 },
                 error: (e) => {
                     this.notificationService.openSnackBar(e);

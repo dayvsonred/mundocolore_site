@@ -1,0 +1,11 @@
+{
+  "/api": {
+    "target": "https://b8i4etrh23.execute-api.sa-east-1.amazonaws.com",
+    "secure": true,
+    "changeOrigin": true,
+    "logLevel": "debug",
+    "pathRewrite": {
+      "^/api": "/prod"
+    }
+  }
+}

@@ -32,5 +32,9 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		return HandleProfile(ctx, request)
 	}
 
+	if request.HTTPMethod == "PUT" && strings.HasSuffix(request.Path, "/profile") {
+		return HandleUpdateProfile(ctx, request)
+	}
+
 	return notFoundResponse(), nil
 }
