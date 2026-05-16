@@ -113,20 +113,6 @@ resource "aws_api_gateway_integration" "users_integration" {
   uri                     = aws_lambda_function.users_lambda.invoke_arn
 }
 
-resource "aws_api_gateway_method_response" "users_response" {
-  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
-  resource_id = aws_api_gateway_resource.users_resource.id
-  http_method = aws_api_gateway_method.users_post.http_method
-  status_code = "200"
-}
-
-resource "aws_api_gateway_integration_response" "users_integration_response" {
-  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
-  resource_id = aws_api_gateway_resource.users_resource.id
-  http_method = aws_api_gateway_method.users_post.http_method
-  status_code = aws_api_gateway_method_response.users_response.status_code
-}
-
 # Lambda permission for API Gateway
 resource "aws_lambda_permission" "api_gateway" {
   statement_id  = "AllowAPIGatewayInvoke"
@@ -199,6 +185,34 @@ resource "aws_api_gateway_integration" "profile_integration" {
   rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
   resource_id             = aws_api_gateway_resource.profile_resource.id
   http_method             = aws_api_gateway_method.profile_get.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.users_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_resource" "show_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.users_resource.id
+  path_part   = "show"
+}
+
+resource "aws_api_gateway_resource" "show_id_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.show_resource.id
+  path_part   = "{id}"
+}
+
+resource "aws_api_gateway_method" "show_get" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.show_id_resource.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "show_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.show_id_resource.id
+  http_method             = aws_api_gateway_method.show_get.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.users_lambda.invoke_arn

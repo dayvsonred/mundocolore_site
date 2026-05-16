@@ -7,6 +7,7 @@ Este backend consiste em Lambdas AWS escritas em Go, cada uma responsável por u
 - `addresses/` - Lambda para gerenciamento de endereços
 - `dynamoDB/` - Infraestrutura Terraform para tabelas DynamoDB
 - `lambdas_gateway_externo/` - API Gateway para expor as Lambdas
+- `login/` - Lambda de autenticacao (rota `/login`)
 - `orders/` - Lambda para gerenciamento de pedidos
 - `payments/` - Lambda para processamento de pagamentos
 - `products/` - Lambda para catálogo de produtos
@@ -68,8 +69,11 @@ zip lambda.zip main
 
 ### Users
 - `POST /users/register` - Registrar usuário
-- `POST /users/login` - Login
 - `GET /users/profile` - Perfil do usuário
+- `GET /users/show/{id}` - Buscar usuário público por ID
+
+### Login
+- `POST /login` - Login com `application/x-www-form-urlencoded`
 
 ### Addresses
 - `POST /addresses` - Criar endereço

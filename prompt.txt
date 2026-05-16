@@ -1,0 +1,38 @@
+
+no meu back end atual tenho o gateway externo:
+C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\back\lambdas_gateway_externo
+
+onde se pode chamar as lambdas 
+elas devem ser divididas por dominios e estruturadas como a lambda modelo users no diretorio: C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\back\users
+
+desejo que seja criado as lambdas por domino por enquanto vou divide em 
+Users  =  dados do usuario como login, nome, email, endereço...
+orders = dados do pedidos, codigo de produtos e produtos 
+products = dados do produtos e 
+payments = pagamentos e relacionados...
+
+
+
+preciso criar o 
+
+na rota minha-conta do modulo do front em:
+
+C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\site\src\app\app-routing.module.ts
+
+
+  {
+    path: 'minha-conta',
+    loadChildren: () => import('./features/account/account.module').then(m => m.AccountModule),
+    canActivate: [AuthGuard]
+  },
+
+componente em: 
+C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\site\src\app\features\account
+
+
+esta tela tem sub menus para editar e cadastra dados 
+
+
+
+
+

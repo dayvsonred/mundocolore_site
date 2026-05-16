@@ -31,14 +31,7 @@ export class AuthenticationService {
   }
 
   login(email: string, password: string): Observable<any> {
-    const body = { email, password };
-    return this.http.post<any>(`${this.apiUrl}/users/login`, body).pipe(
-      map((response) => {
-        this.localStorage.setItem('currentUser', JSON.stringify(response));
-        return response;
-      }),
-      catchError((error) => throwError(() => error))
-    );
+    return this.sign({ email, password }).pipe(map(() => this.getCurrentUser()));
   }
 
   sign(payload: { email: string; password: string }): Observable<boolean> {
@@ -279,8 +272,9 @@ export class AuthenticationService {
       throw new Error('Token nao encontrado na resposta de autenticacao.');
     }
 
-    const userEmail = response?.user?.email || fallbackEmail;
-    const userId = response?.user?.id || '';
+    const userEmail = response?.user?.email || response?.email || fallbackEmail;
+    const userId = response?.user?.id || response?.id || '';
+    const userName = response?.user?.name || response?.name || '';
     const contaNivel = response?.conta_nivel ?? {};
 
     this.localStorage.removeItem('access_token');
@@ -298,7 +292,7 @@ export class AuthenticationService {
         id_user: userId,
         alias: userEmail.includes('@') ? userEmail.split('@')[0] : userEmail,
         expiration: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-        fullName: response?.user?.name || '',
+        fullName: userName,
         conta_nivel_ativo: contaNivel.ativo ?? null,
         conta_nivel_data_update: contaNivel.data_update ?? null,
         conta_nivel_data_nivel: contaNivel.nivel ?? null,

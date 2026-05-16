@@ -62,6 +62,9 @@ func init() {
 		Region: aws.String("sa-east-1"),
 	}))
 	dynamoClient = dynamodb.New(sess)
+	if value := os.Getenv("TABLE_NAME"); value != "" {
+		tableName = value
+	}
 	if secret := os.Getenv("JWT_SECRET"); secret != "" {
 		jwtSecret = []byte(secret)
 	}
@@ -104,15 +107,32 @@ func HandleLogin(_ context.Context, request events.APIGatewayProxyRequest) (even
 }
 
 func HandleProfile(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	token := getAuthorizationHeader(request.Headers)
+	token := extractBearerToken(request.Headers)
 	if token == "" {
 		return unauthorizedResponse("no token"), nil
 	}
 
-	token = strings.TrimPrefix(token, "Bearer ")
 	userID, err := validateJWT(token)
 	if err != nil {
 		return unauthorizedResponse("invalid token"), nil
+	}
+
+	user, err := getUser(userID)
+	if err != nil {
+		return events.APIGatewayProxyResponse{StatusCode: 404, Body: fmt.Sprintf(`{"error": "%s"}`, err.Error())}, nil
+	}
+
+	body, _ := json.Marshal(user)
+	return events.APIGatewayProxyResponse{
+		StatusCode: 200,
+		Body:       string(body),
+	}, nil
+}
+
+func HandleGetUserByID(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	userID := extractUserIDFromShowPath(request.Path)
+	if userID == "" {
+		return badRequestResponse("invalid user id"), nil
 	}
 
 	user, err := getUser(userID)
@@ -211,11 +231,13 @@ func HandleHealthData(_ context.Context, _ events.APIGatewayProxyRequest) (event
 }
 
 func createUser(req CreateUserRequest) (UserResponse, error) {
+	email := strings.ToLower(strings.TrimSpace(req.Email))
+
 	result, err := dynamoClient.Scan(&dynamodb.ScanInput{
 		TableName:        aws.String(tableName),
 		FilterExpression: aws.String("email = :email"),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":email": {S: aws.String(req.Email)},
+			":email": {S: aws.String(email)},
 		},
 	})
 	if err != nil {
@@ -232,7 +254,7 @@ func createUser(req CreateUserRequest) (UserResponse, error) {
 
 	user := User{
 		ID:        generateID(),
-		Email:     req.Email,
+		Email:     email,
 		Name:      req.Name,
 		Password:  hashedPassword,
 		CreatedAt: time.Now().Format(time.RFC3339),
@@ -265,11 +287,13 @@ func createUser(req CreateUserRequest) (UserResponse, error) {
 }
 
 func loginUser(req LoginRequest) (UserResponse, error) {
+	email := strings.ToLower(strings.TrimSpace(req.Email))
+
 	result, err := dynamoClient.Scan(&dynamodb.ScanInput{
 		TableName:        aws.String(tableName),
 		FilterExpression: aws.String("email = :email"),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
-			":email": {S: aws.String(req.Email)},
+			":email": {S: aws.String(email)},
 		},
 	})
 	if err != nil {
@@ -348,8 +372,11 @@ func validateJWT(tokenString string) (string, error) {
 		return "", err
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if userID, ok := claims["user_id"].(string); ok {
+		if userID, ok := claims["user_id"].(string); ok && userID != "" {
 			return userID, nil
+		}
+		if subject, ok := claims["sub"].(string); ok && subject != "" {
+			return subject, nil
 		}
 	}
 	return "", fmt.Errorf("invalid token")
@@ -393,4 +420,33 @@ func getAuthorizationHeader(headers map[string]string) string {
 		}
 	}
 	return ""
+}
+
+func extractBearerToken(headers map[string]string) string {
+	value := strings.TrimSpace(getAuthorizationHeader(headers))
+	if value == "" {
+		return ""
+	}
+
+	parts := strings.SplitN(value, " ", 2)
+	if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+		return strings.TrimSpace(parts[1])
+	}
+
+	return value
+}
+
+func extractUserIDFromShowPath(path string) string {
+	parts := strings.Split(path, "/users/show/")
+	if len(parts) < 2 {
+		return ""
+	}
+
+	userID := strings.TrimSpace(parts[len(parts)-1])
+	userID = strings.TrimPrefix(userID, "/")
+	if userID == "" {
+		return ""
+	}
+
+	return strings.Split(userID, "/")[0]
 }
