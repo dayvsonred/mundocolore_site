@@ -22,7 +22,7 @@ export class ProductDetailPageComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    const id = +this.route.snapshot.paramMap.get('id')!;
+    const id = this.route.snapshot.paramMap.get('id') ?? '';
     this.productService.getProductById(id).subscribe(product => {
       this.product = product;
       if (product && product.size.length > 0) {

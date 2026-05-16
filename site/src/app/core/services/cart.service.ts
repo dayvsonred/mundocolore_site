@@ -22,12 +22,12 @@ export class CartService {
     this.cartItems.next([...currentItems]);
   }
 
-  removeFromCart(productId: number, size: string): void {
+  removeFromCart(productId: string, size: string): void {
     const currentItems = this.cartItems.value.filter(item => !(item.product.id === productId && item.size === size));
     this.cartItems.next(currentItems);
   }
 
-  updateQuantity(productId: number, size: string, quantity: number): void {
+  updateQuantity(productId: string, size: string, quantity: number): void {
     const currentItems = this.cartItems.value;
     const item = currentItems.find(i => i.product.id === productId && i.size === size);
     if (item) {

@@ -68,3 +68,21 @@ cd infra/terraform
 terraform output -raw site_url
 # ou
 terraform output -raw cloudfront_domain_name
+
+site URL
+https://dsea6qltqtd1y.cloudfront.net
+
+
+cd "C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\infra\terraform"
+
+Remove-Item Env:AWS_ACCESS_KEY_ID,Env:AWS_SECRET_ACCESS_KEY,Env:AWS_SESSION_TOKEN -ErrorAction SilentlyContinue
+$env:AWS_PROFILE = "mundocolore"
+
+# Configurar (one-time)
+$env:AWS_PROFILE="mundocolore"
+$env:AWS_REGION="sa-east-1"
+
+aws sts get-caller-identity --query Account --output text
+terraform plan
+terraform apply
+terraform output -raw site_url

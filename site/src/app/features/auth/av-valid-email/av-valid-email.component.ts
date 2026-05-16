@@ -30,8 +30,8 @@ export class AvValidEmailComponent implements OnInit {
   indeterminate = 'indeterminate';
   validEmailOk = false;
   validEmail = true;
-  userId = null;
-  emailId = null;
+  userId: string | null = null;
+  emailId: string | null = null;
 
   
   constructor(private router: Router,
@@ -46,7 +46,7 @@ export class AvValidEmailComponent implements OnInit {
     this.emailId = this.route.snapshot.params['email'];
 
     if(this.userId != null && this.emailId != null){
-      let aaa = this.delayGo();
+      this.delayGo();
       this.goValidEmail();
     }
   }
@@ -60,6 +60,10 @@ export class AvValidEmailComponent implements OnInit {
     console.log(this.userId);
     console.log(this.emailId);
 
+
+    if (!this.emailId || !this.userId) {
+      return;
+    }
 
     this.authService.validEmailUser({
       email: this.emailId,
