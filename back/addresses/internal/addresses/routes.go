@@ -17,12 +17,11 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		}
 	}
 
-	token := getAuthorizationHeader(request.Headers)
+	token := extractBearerToken(request.Headers)
 	if token == "" {
 		return unauthorizedResponse("no token"), nil
 	}
 
-	token = strings.TrimPrefix(token, "Bearer ")
 	userID, err := validateJWT(token)
 	if err != nil {
 		return unauthorizedResponse("invalid token"), nil
@@ -32,6 +31,14 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	case "POST":
 		if strings.HasSuffix(request.Path, "/addresses") {
 			return HandleCreateAddress(ctx, request, userID)
+		}
+	case "PUT":
+		if strings.HasSuffix(request.Path, "/addresses") {
+			return HandleUpdateAddress(ctx, request, userID)
+		}
+	case "DELETE":
+		if strings.HasSuffix(request.Path, "/addresses") {
+			return HandleDeleteAddress(ctx, request, userID)
 		}
 	case "GET":
 		if strings.HasSuffix(request.Path, "/addresses") {

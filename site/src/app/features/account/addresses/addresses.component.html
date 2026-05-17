@@ -1,43 +1,133 @@
 <div class="addresses-page">
   <div class="page-header">
-    <h1>Meus Endereços</h1>
-    <p>Gerencie seus endereços de entrega e cobrança</p>
+    <h1>Meus Enderecos</h1>
+    <p>Gerencie seus enderecos de entrega</p>
   </div>
 
-  <div class="addresses-grid">
-    <!-- Existing Addresses -->
+  <div class="loading-state" *ngIf="loading">
+    <mat-spinner diameter="32"></mat-spinner>
+  </div>
+
+  <div class="addresses-grid" *ngIf="!loading">
     <div *ngFor="let address of addresses" class="address-card">
       <div class="card-header">
         <div class="address-name">
-          <h3>{{ address.name }}</h3>
-          <span *ngIf="address.isDefault" class="default-badge">Padrão</span>
+          <h3>{{ address.observation }}</h3>
+          <span *ngIf="address.is_default" class="default-badge">Padrao</span>
         </div>
         <div class="card-actions">
-          <button mat-icon-button (click)="editAddress(address)">
+          <button mat-icon-button type="button" (click)="editAddress(address)" aria-label="Editar endereco">
             <mat-icon>edit</mat-icon>
           </button>
-          <button mat-icon-button (click)="deleteAddress(address)">
+          <button mat-icon-button type="button" (click)="deleteAddress(address)" aria-label="Excluir endereco">
             <mat-icon>delete</mat-icon>
           </button>
         </div>
       </div>
 
       <div class="address-details">
-        <p class="street">{{ address.street }}</p>
-        <p class="city">{{ address.city }}</p>
-        <p class="zip-phone">
-          <span>CEP: {{ address.zipCode }}</span>
-          <span>Tel: {{ address.phone }}</span>
-        </p>
+        <p>{{ address.street }}, {{ address.number }}</p>
+        <p>{{ address.neighborhood }} - {{ address.city }}/{{ address.state }}</p>
+        <p>{{ address.complement }}</p>
+        <p>CEP: {{ address.zip_code }}</p>
+        <p>Pais: {{ address.country }}</p>
+      </div>
+
+      <div class="address-footer">
+        <button
+          mat-stroked-button
+          type="button"
+          class="default-action"
+          *ngIf="!address.is_default"
+          (click)="setAsDefault(address)">
+          Tornar padrao
+        </button>
       </div>
     </div>
 
-    <!-- Add New Address Card -->
-    <div class="add-address-card" (click)="addNewAddress()">
+    <div class="add-address-card" *ngIf="canAddAddress" (click)="addNewAddress()">
       <div class="add-content">
         <mat-icon>add</mat-icon>
-        <h3>Adicionar novo endereço</h3>
+        <h3>Adicionar novo endereco</h3>
       </div>
     </div>
+  </div>
+
+  <div class="limit-warning" *ngIf="!loading && !canAddAddress">
+    Voce atingiu o limite de 10 enderecos.
+  </div>
+
+  <div class="address-form-card" *ngIf="isFormOpen">
+    <div class="form-header">
+      <h2>{{ isEditing ? 'Editar endereco' : 'Adicionar endereco' }}</h2>
+    </div>
+
+    <form [formGroup]="addressForm">
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Observacao</mat-label>
+          <input matInput formControlName="observation" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Complemento</mat-label>
+          <input matInput formControlName="complement" />
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Numero</mat-label>
+          <input matInput formControlName="number" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Rua</mat-label>
+          <input matInput formControlName="street" />
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Bairro</mat-label>
+          <input matInput formControlName="neighborhood" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Cidade</mat-label>
+          <input matInput formControlName="city" />
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Estado</mat-label>
+          <input matInput formControlName="state" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>CEP</mat-label>
+          <input matInput formControlName="zip_code" mask="00000-000" />
+        </mat-form-field>
+      </div>
+
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Pais</mat-label>
+          <input matInput formControlName="country" readonly />
+        </mat-form-field>
+      </div>
+
+      <div class="form-row checkbox-row">
+        <mat-checkbox formControlName="is_default">Definir como endereco padrao</mat-checkbox>
+      </div>
+
+      <div class="form-actions">
+        <button mat-stroked-button type="button" (click)="cancelForm()">Cancelar</button>
+        <button mat-raised-button color="primary" type="button" (click)="saveAddress()" [disabled]="saving">
+          Salvar
+        </button>
+      </div>
+    </form>
   </div>
 </div>

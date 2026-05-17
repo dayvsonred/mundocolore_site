@@ -10,12 +10,12 @@ export const environment = {
   link_creat_valid_email: '/core/valid/email',
   link_donation_creat: '/donation',
   urlBase: '/api',
-  assetsBaseUrl: 'https://d39d9tndfl7lxp.cloudfront.net',
+  assetsBaseUrl: 'https://b8i4etrh23.execute-api.sa-east-1.amazonaws.com/prod',
   paymentsBaseUrl: '/api',
   stripePublishableKey: 'pk_test_51SwZqYDGla8YTkh15TvwJGILoOZoR9bFrlklKteced2TDjmCxUmoQMIGH3RnhCIhaCOiOFtvlnA4GgHQlOSG2axl00e6evIRTb',
   defaultCampaignId: '',
   nomeProjetoTitulo: 'mundocolorestore',
-  apiUrl: '/api',
+  apiUrl: 'https://b8i4etrh23.execute-api.sa-east-1.amazonaws.com/prod',
   labels: {
     menu: {
       dashboard: 'Dashboard',

@@ -2,7 +2,7 @@
   max-width: 1000px;
 
   .page-header {
-    margin-bottom: 32px;
+    margin-bottom: 24px;
 
     h1 {
       font-size: 28px;
@@ -17,23 +17,32 @@
     }
   }
 
+  .loading-state {
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+  }
+
   .addresses-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 24px;
+    margin-bottom: 24px;
 
     .address-card {
       background: #fff;
       border-radius: 8px;
-      padding: 24px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       border: 1px solid #e0e0e0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
 
       .card-header {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
-        margin-bottom: 16px;
 
         .address-name {
           display: flex;
@@ -49,7 +58,7 @@
 
           .default-badge {
             background: #d32f2f;
-            color: white;
+            color: #fff;
             padding: 2px 8px;
             border-radius: 12px;
             font-size: 12px;
@@ -64,27 +73,16 @@
       }
 
       .address-details {
-        .street {
-          margin: 0 0 8px 0;
-          font-weight: 500;
-          color: #333;
-        }
-
-        .city {
-          margin: 0 0 12px 0;
-          color: #666;
-        }
-
-        .zip-phone {
-          display: flex;
-          justify-content: space-between;
+        p {
+          margin: 0 0 4px 0;
+          color: #555;
           font-size: 14px;
-          color: #666;
-
-          span {
-            flex: 1;
-          }
+          line-height: 1.4;
         }
+      }
+
+      .address-footer {
+        margin-top: auto;
       }
     }
 
@@ -101,7 +99,6 @@
 
       &:hover {
         background: #ffebee;
-        border-color: #b71c1c;
       }
 
       .add-content {
@@ -109,18 +106,63 @@
         color: #d32f2f;
 
         mat-icon {
-          font-size: 48px;
-          width: 48px;
-          height: 48px;
-          margin-bottom: 8px;
+          font-size: 42px;
+          width: 42px;
+          height: 42px;
         }
 
         h3 {
-          margin: 0;
+          margin: 8px 0 0 0;
           font-size: 16px;
           font-weight: 500;
         }
       }
+    }
+  }
+
+  .limit-warning {
+    margin-bottom: 16px;
+    color: #d32f2f;
+    font-weight: 500;
+  }
+
+  .address-form-card {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e0e0e0;
+    padding: 20px;
+
+    .form-header {
+      margin-bottom: 16px;
+
+      h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+      }
+    }
+
+    .form-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 10px;
+
+      mat-form-field {
+        flex: 1 1 280px;
+      }
+    }
+
+    .checkbox-row {
+      margin: 8px 0 16px 0;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
     }
   }
 }

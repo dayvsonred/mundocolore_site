@@ -53,6 +53,7 @@ resource "aws_iam_role_policy" "dynamodb_policy" {
         Action = [
           "dynamodb:GetItem",
           "dynamodb:PutItem",
+          "dynamodb:DeleteItem",
           "dynamodb:Query",
           "dynamodb:Scan"
         ]
@@ -129,6 +130,38 @@ resource "aws_api_gateway_integration" "addresses_get_integration" {
   rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
   resource_id             = aws_api_gateway_resource.addresses_resource.id
   http_method             = aws_api_gateway_method.addresses_get.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.addresses_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_method" "addresses_put" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.addresses_resource.id
+  http_method   = "PUT"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "addresses_put_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.addresses_resource.id
+  http_method             = aws_api_gateway_method.addresses_put.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.addresses_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_method" "addresses_delete" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.addresses_resource.id
+  http_method   = "DELETE"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "addresses_delete_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.addresses_resource.id
+  http_method             = aws_api_gateway_method.addresses_delete.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.addresses_lambda.invoke_arn
