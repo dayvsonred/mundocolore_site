@@ -1,0 +1,77 @@
+<section class="product-registration-page">
+  <header class="page-header">
+    <div>
+      <h1>Cadastro de produtos</h1>
+      <p *ngIf="selectedBrand">{{ selectedBrand.label }}</p>
+    </div>
+
+    <button
+      *ngIf="selectedBrand"
+      type="button"
+      mat-stroked-button
+      color="primary"
+      (click)="backToBrands()">
+      <mat-icon>arrow_back</mat-icon>
+      Marcas
+    </button>
+  </header>
+
+  <div *ngIf="!selectedBrand" class="brand-grid">
+    <button
+      *ngFor="let brand of brands"
+      type="button"
+      class="brand-button"
+      (click)="selectBrand(brand)">
+      <span>{{ brand.label }}</span>
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+  </div>
+
+  <form *ngIf="selectedBrand" class="product-form" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Data lancamento</mat-label>
+        <input matInput type="date" formControlName="release_date">
+        <mat-error *ngIf="form.controls.release_date.hasError('required')">
+          Informe a data de lancamento
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Data finalizacao</mat-label>
+        <input matInput type="date" formControlName="finalization_date">
+        <mat-error *ngIf="form.controls.finalization_date.hasError('required')">
+          Informe a data de finalizacao
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="wide-field">
+        <mat-label>Colecao</mat-label>
+        <input matInput formControlName="collection" maxlength="80">
+        <mat-error *ngIf="form.controls.collection.hasError('required')">
+          Informe a colecao
+        </mat-error>
+      </mat-form-field>
+
+      <div class="image-field wide-field">
+        <label for="product-image">Imagem</label>
+        <input id="product-image" type="file" accept="image/*" (change)="onImageSelected($event)">
+        <span>{{ imageFileName || 'Nenhuma imagem selecionada' }}</span>
+        <mat-error *ngIf="form.controls.image_url.touched && form.controls.image_url.hasError('required')">
+          Selecione uma imagem
+        </mat-error>
+      </div>
+
+      <div *ngIf="imagePreview" class="image-preview wide-field">
+        <img [src]="imagePreview" alt="Preview do produto">
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" mat-raised-button color="primary" [disabled]="saving">
+        <mat-icon>save</mat-icon>
+        {{ saving ? 'Salvando...' : 'Cadastrar produto' }}
+      </button>
+    </div>
+  </form>
+</section>

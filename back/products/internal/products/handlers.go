@@ -17,33 +17,45 @@ import (
 )
 
 type Product struct {
-	ID          string  `json:"id" dynamodbav:"id"`
-	Name        string  `json:"name" dynamodbav:"name"`
-	Description string  `json:"description" dynamodbav:"description"`
-	Price       float64 `json:"price" dynamodbav:"price"`
-	Category    string  `json:"category" dynamodbav:"category"`
-	ImageURL    string  `json:"image_url" dynamodbav:"image_url"`
-	Stock       int     `json:"stock" dynamodbav:"stock"`
-	CreatedAt   string  `json:"created_at" dynamodbav:"created_at"`
+	ID               string  `json:"id" dynamodbav:"id"`
+	Name             string  `json:"name" dynamodbav:"name"`
+	Description      string  `json:"description" dynamodbav:"description"`
+	Price            float64 `json:"price" dynamodbav:"price"`
+	Category         string  `json:"category" dynamodbav:"category"`
+	Brand            string  `json:"brand,omitempty" dynamodbav:"brand,omitempty"`
+	Collection       string  `json:"collection,omitempty" dynamodbav:"collection,omitempty"`
+	ReleaseDate      string  `json:"release_date,omitempty" dynamodbav:"release_date,omitempty"`
+	FinalizationDate string  `json:"finalization_date,omitempty" dynamodbav:"finalization_date,omitempty"`
+	ImageURL         string  `json:"image_url" dynamodbav:"image_url"`
+	Stock            int     `json:"stock" dynamodbav:"stock"`
+	CreatedAt        string  `json:"created_at" dynamodbav:"created_at"`
 }
 
 type CreateProductRequest struct {
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Price       float64 `json:"price"`
-	Category    string  `json:"category"`
-	ImageURL    string  `json:"image_url"`
-	Stock       int     `json:"stock"`
+	Name             string  `json:"name"`
+	Description      string  `json:"description"`
+	Price            float64 `json:"price"`
+	Category         string  `json:"category"`
+	Brand            string  `json:"brand"`
+	Collection       string  `json:"collection"`
+	ReleaseDate      string  `json:"release_date"`
+	FinalizationDate string  `json:"finalization_date"`
+	ImageURL         string  `json:"image_url"`
+	Stock            int     `json:"stock"`
 }
 
 type ProductResponse struct {
-	ID          string  `json:"id"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Price       float64 `json:"price"`
-	Category    string  `json:"category"`
-	ImageURL    string  `json:"image_url"`
-	Stock       int     `json:"stock"`
+	ID               string  `json:"id"`
+	Name             string  `json:"name"`
+	Description      string  `json:"description"`
+	Price            float64 `json:"price"`
+	Category         string  `json:"category"`
+	Brand            string  `json:"brand,omitempty"`
+	Collection       string  `json:"collection,omitempty"`
+	ReleaseDate      string  `json:"release_date,omitempty"`
+	FinalizationDate string  `json:"finalization_date,omitempty"`
+	ImageURL         string  `json:"image_url"`
+	Stock            int     `json:"stock"`
 }
 
 type ProductsListResponse struct {
@@ -198,14 +210,18 @@ func HandleHealthData(_ context.Context, _ events.APIGatewayProxyRequest) (event
 
 func createProduct(req CreateProductRequest) (ProductResponse, error) {
 	product := Product{
-		ID:          generateID(),
-		Name:        req.Name,
-		Description: req.Description,
-		Price:       req.Price,
-		Category:    req.Category,
-		ImageURL:    req.ImageURL,
-		Stock:       req.Stock,
-		CreatedAt:   time.Now().Format(time.RFC3339),
+		ID:               generateID(),
+		Name:             req.Name,
+		Description:      req.Description,
+		Price:            req.Price,
+		Category:         req.Category,
+		Brand:            req.Brand,
+		Collection:       req.Collection,
+		ReleaseDate:      req.ReleaseDate,
+		FinalizationDate: req.FinalizationDate,
+		ImageURL:         req.ImageURL,
+		Stock:            req.Stock,
+		CreatedAt:        time.Now().Format(time.RFC3339),
 	}
 
 	item, err := dynamodbattribute.MarshalMap(product)
@@ -222,13 +238,17 @@ func createProduct(req CreateProductRequest) (ProductResponse, error) {
 	}
 
 	return ProductResponse{
-		ID:          product.ID,
-		Name:        product.Name,
-		Description: product.Description,
-		Price:       product.Price,
-		Category:    product.Category,
-		ImageURL:    product.ImageURL,
-		Stock:       product.Stock,
+		ID:               product.ID,
+		Name:             product.Name,
+		Description:      product.Description,
+		Price:            product.Price,
+		Category:         product.Category,
+		Brand:            product.Brand,
+		Collection:       product.Collection,
+		ReleaseDate:      product.ReleaseDate,
+		FinalizationDate: product.FinalizationDate,
+		ImageURL:         product.ImageURL,
+		Stock:            product.Stock,
 	}, nil
 }
 
@@ -263,13 +283,17 @@ func getProducts(category string, limit int, lastKey string) (ProductsListRespon
 			continue
 		}
 		products = append(products, ProductResponse{
-			ID:          prod.ID,
-			Name:        prod.Name,
-			Description: prod.Description,
-			Price:       prod.Price,
-			Category:    prod.Category,
-			ImageURL:    prod.ImageURL,
-			Stock:       prod.Stock,
+			ID:               prod.ID,
+			Name:             prod.Name,
+			Description:      prod.Description,
+			Price:            prod.Price,
+			Category:         prod.Category,
+			Brand:            prod.Brand,
+			Collection:       prod.Collection,
+			ReleaseDate:      prod.ReleaseDate,
+			FinalizationDate: prod.FinalizationDate,
+			ImageURL:         prod.ImageURL,
+			Stock:            prod.Stock,
 		})
 	}
 

@@ -33,6 +33,7 @@ export class AuthenticationService {
   login(email: string, password: string): Observable<any> {
     return this.sign({ email, password }).pipe(
       switchMap(() => this.getProfile()),
+      switchMap(() => this.refreshAdminStatus()),
       map(() => this.getCurrentUser()),
       catchError(() => of(this.getCurrentUser()))
     );
@@ -78,6 +79,25 @@ export class AuthenticationService {
         return profile;
       }),
       catchError((error) => throwError(() => error))
+    );
+  }
+
+  refreshAdminStatus(): Observable<boolean> {
+    const token = this.getToken();
+    if (!token) {
+      return of(false);
+    }
+
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.get<{ is_admin: boolean }>(`${this.apiUrl}/users/admin/check`, { headers }).pipe(
+      map((response) => {
+        this.syncCurrentUserAdminStatus(!!response?.is_admin);
+        return !!response?.is_admin;
+      }),
+      catchError(() => {
+        this.syncCurrentUserAdminStatus(false);
+        return of(false);
+      })
     );
   }
 
@@ -380,7 +400,7 @@ export class AuthenticationService {
     const userGender = response?.user?.gender || response?.gender || '';
     const userRole = response?.user?.role ?? response?.role ?? false;
     const contaNivel = response?.conta_nivel ?? {};
-    const isAdmin = !!(response?.user?.is_admin ?? response?.is_admin ?? response?.user?.role ?? response?.role);
+    const isAdmin = !!(response?.user?.is_admin ?? response?.is_admin ?? false);
 
     this.localStorage.removeItem('access_token');
     this.localStorage.removeItem('token');
@@ -466,5 +486,20 @@ export class AuthenticationService {
     };
 
     this.localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+  }
+
+  private syncCurrentUserAdminStatus(isAdmin: boolean): void {
+    const currentUser = this.getCurrentUser();
+    if (!currentUser) {
+      return;
+    }
+
+    this.localStorage.setItem(
+      'currentUser',
+      JSON.stringify({
+        ...currentUser,
+        isAdmin
+      })
+    );
   }
 }

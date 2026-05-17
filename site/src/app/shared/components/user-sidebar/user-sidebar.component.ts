@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthenticationService } from 'src/app/core/services/auth.service';
 
@@ -14,10 +14,17 @@ interface MenuItem {
   templateUrl: './user-sidebar.component.html',
   styleUrls: ['./user-sidebar.component.scss']
 })
-export class UserSidebarComponent {
+export class UserSidebarComponent implements OnInit {
   @Input() activeRoute: string = '';
+  isAdmin = false;
 
-  menuItems: MenuItem[] = [
+  private readonly adminMenuItem: MenuItem = {
+    label: 'Cadastro de produtos',
+    route: '/minha-conta/cadastro-produtos',
+    icon: 'inventory_2'
+  };
+
+  private readonly baseMenuItems: MenuItem[] = [
     { label: 'Minha Conta', route: '/minha-conta', icon: 'account_circle' },
     { label: 'Meus Pedidos', route: '/minha-conta/meus-pedidos', icon: 'shopping_bag' },
     { label: 'Meus Dados', route: '/minha-conta/meus-dados', icon: 'person' },
@@ -32,8 +39,28 @@ export class UserSidebarComponent {
 
   constructor(private router: Router, private authService: AuthenticationService) {}
 
+  ngOnInit(): void {
+    this.isAdmin = !!this.authService.getCurrentUser()?.isAdmin;
+    this.authService.refreshAdminStatus().subscribe((isAdmin) => {
+      this.isAdmin = isAdmin;
+    });
+  }
+
+  get menuItems(): MenuItem[] {
+    console.log('UserSidebarComponent: isAdmin =', this.isAdmin);
+    if (!this.isAdmin) {
+      return this.baseMenuItems;
+    }
+
+    return [...this.baseMenuItems, this.adminMenuItem];
+  }
+
   isActive(route: string): boolean {
-    return this.activeRoute === route;
+    if (route === '/minha-conta') {
+      return this.activeRoute === route;
+    }
+
+    return this.activeRoute === route || this.activeRoute.startsWith(`${route}/`);
   }
 
   navigateTo(route: string): void {
