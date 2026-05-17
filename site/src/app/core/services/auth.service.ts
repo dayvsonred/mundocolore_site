@@ -378,7 +378,9 @@ export class AuthenticationService {
     const userPhone = response?.user?.phone || response?.phone || '';
     const userBirthDate = response?.user?.birth_date || response?.birth_date || '';
     const userGender = response?.user?.gender || response?.gender || '';
+    const userRole = response?.user?.role ?? response?.role ?? false;
     const contaNivel = response?.conta_nivel ?? {};
+    const isAdmin = !!(response?.user?.is_admin ?? response?.is_admin ?? response?.user?.role ?? response?.role);
 
     this.localStorage.removeItem('access_token');
     this.localStorage.removeItem('token');
@@ -389,7 +391,7 @@ export class AuthenticationService {
       'currentUser',
       JSON.stringify({
         token,
-        isAdmin: false,
+        isAdmin,
         email: userEmail,
         id: userId,
         id_user: userId,
@@ -401,6 +403,7 @@ export class AuthenticationService {
         phone: userPhone,
         birth_date: userBirthDate,
         gender: userGender,
+        role: userRole,
         conta_nivel_ativo: contaNivel.ativo ?? null,
         conta_nivel_data_update: contaNivel.data_update ?? null,
         conta_nivel_data_nivel: contaNivel.nivel ?? null,
@@ -457,7 +460,9 @@ export class AuthenticationService {
       cpf: profile?.cpf || currentUser.cpf || '',
       phone: profile?.phone || currentUser.phone || '',
       birth_date: profile?.birth_date || currentUser.birth_date || '',
-      gender: profile?.gender || currentUser.gender || ''
+      gender: profile?.gender || currentUser.gender || '',
+      role: profile?.role ?? currentUser.role ?? false,
+      isAdmin: profile?.is_admin ?? currentUser.isAdmin ?? false
     };
 
     this.localStorage.setItem('currentUser', JSON.stringify(updatedUser));

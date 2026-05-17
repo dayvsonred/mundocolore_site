@@ -18,6 +18,9 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		if strings.Contains(request.Path, "/users/show/") {
 			return HandleGetUserByID(ctx, request)
 		}
+		if strings.HasSuffix(request.Path, "/admin/check") {
+			return HandleAdminCheck(ctx, request)
+		}
 	}
 
 	if request.HTTPMethod == "POST" && strings.HasSuffix(request.Path, "/register") {

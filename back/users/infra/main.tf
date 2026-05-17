@@ -58,7 +58,8 @@ resource "aws_iam_role_policy" "dynamodb_policy" {
         ]
         Resource = [
           "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-users",
-          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-users/index/*"
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-users/index/*",
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-role"
         ]
       }
     ]
@@ -80,8 +81,9 @@ resource "aws_lambda_function" "users_lambda" {
 
   environment {
     variables = {
-      TABLE_NAME = "mundocolore-users"
-      JWT_SECRET = var.jwt_secret
+      TABLE_NAME      = "mundocolore-users"
+      ROLE_TABLE_NAME = "mundocolore-role"
+      JWT_SECRET      = var.jwt_secret
     }
   }
 }
@@ -212,6 +214,34 @@ resource "aws_api_gateway_integration" "profile_put_integration" {
   uri                     = aws_lambda_function.users_lambda.invoke_arn
 }
 
+resource "aws_api_gateway_resource" "admin_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.users_resource.id
+  path_part   = "admin"
+}
+
+resource "aws_api_gateway_resource" "admin_check_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.admin_resource.id
+  path_part   = "check"
+}
+
+resource "aws_api_gateway_method" "admin_check_get" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.admin_check_resource.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "admin_check_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.admin_check_resource.id
+  http_method             = aws_api_gateway_method.admin_check_get.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.users_lambda.invoke_arn
+}
+
 resource "aws_api_gateway_resource" "show_resource" {
   rest_api_id = data.aws_api_gateway_rest_api.gateway.id
   parent_id   = aws_api_gateway_resource.users_resource.id
@@ -296,6 +326,8 @@ locals {
     users_register      = aws_api_gateway_resource.register_resource.id
     users_login         = aws_api_gateway_resource.login_resource.id
     users_profile       = aws_api_gateway_resource.profile_resource.id
+    users_admin         = aws_api_gateway_resource.admin_resource.id
+    users_admin_check   = aws_api_gateway_resource.admin_check_resource.id
     users_show_id       = aws_api_gateway_resource.show_id_resource.id
     users_health_online = aws_api_gateway_resource.health_online_resource.id
     users_health_data   = aws_api_gateway_resource.health_data_resource.id

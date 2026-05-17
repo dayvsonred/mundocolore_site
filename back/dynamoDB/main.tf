@@ -12,7 +12,7 @@ resource "aws_dynamodb_table" "tables" {
         name = each.value.hash_key
         type = each.value.hash_key_type
       }
-    ], each.value.range_key != null ? [
+      ], each.value.range_key != null ? [
       {
         name = each.value.range_key
         type = each.value.range_key_type
@@ -33,12 +33,12 @@ resource "aws_dynamodb_table" "tables" {
     for_each = each.value.global_secondary_indexes != null ? each.value.global_secondary_indexes : []
 
     content {
-      name               = global_secondary_index.value.name
-      hash_key           = global_secondary_index.value.hash_key
-      range_key          = global_secondary_index.value.range_key
-      projection_type    = global_secondary_index.value.projection_type
-      read_capacity      = global_secondary_index.value.read_capacity
-      write_capacity     = global_secondary_index.value.write_capacity
+      name            = global_secondary_index.value.name
+      hash_key        = global_secondary_index.value.hash_key
+      range_key       = global_secondary_index.value.range_key
+      projection_type = global_secondary_index.value.projection_type
+      read_capacity   = global_secondary_index.value.read_capacity
+      write_capacity  = global_secondary_index.value.write_capacity
     }
   }
 
@@ -64,6 +64,41 @@ resource "aws_dynamodb_table" "tables" {
     Environment = var.environment
     Project     = var.project_name
   }
+}
+
+locals {
+  role_seed_users = {
+    admin_ficticio_001 = {
+      id         = "user-ficticio-admin-001"
+      created_at = "2026-05-17T00:00:00-03:00"
+    }
+    admin_ficticio_002 = {
+      id         = "user-ficticio-admin-002"
+      created_at = "2026-05-17T00:00:00-03:00"
+    }
+  }
+}
+
+resource "aws_dynamodb_table_item" "role_seed_users" {
+  for_each = local.role_seed_users
+
+  table_name = aws_dynamodb_table.tables["role"].name
+  hash_key   = aws_dynamodb_table.tables["role"].hash_key
+
+  item = jsonencode({
+    id = {
+      S = each.value.id
+    }
+    created_at = {
+      S = each.value.created_at
+    }
+    active = {
+      BOOL = true
+    }
+    deactivated_at = {
+      NULL = true
+    }
+  })
 }
 
 # IAM Policy for DynamoDB access

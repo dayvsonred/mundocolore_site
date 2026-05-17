@@ -31,22 +31,22 @@ variable "dynamodb_tables" {
       type = string
     })), [])
     global_secondary_indexes = optional(list(object({
-      name               = string
-      hash_key           = string
-      range_key          = optional(string)
-      projection_type    = string
-      read_capacity      = optional(number)
-      write_capacity     = optional(number)
+      name            = string
+      hash_key        = string
+      range_key       = optional(string)
+      projection_type = string
+      read_capacity   = optional(number)
+      write_capacity  = optional(number)
     })), [])
     read_capacity  = optional(number, 5)
     write_capacity = optional(number, 5)
   }))
   default = {
     users = {
-      name           = "mundocolore-users"
-      billing_mode   = "PAY_PER_REQUEST"
-      hash_key       = "id"
-      hash_key_type  = "S"
+      name          = "mundocolore-users"
+      billing_mode  = "PAY_PER_REQUEST"
+      hash_key      = "id"
+      hash_key_type = "S"
       attributes = [
         {
           name = "id"
@@ -65,11 +65,17 @@ variable "dynamodb_tables" {
         }
       ]
     }
+    role = {
+      name          = "mundocolore-role"
+      billing_mode  = "PAY_PER_REQUEST"
+      hash_key      = "id"
+      hash_key_type = "S"
+    }
     products = {
-      name           = "mundocolore-products"
-      billing_mode   = "PAY_PER_REQUEST"
-      hash_key       = "id"
-      hash_key_type  = "S"
+      name          = "mundocolore-products"
+      billing_mode  = "PAY_PER_REQUEST"
+      hash_key      = "id"
+      hash_key_type = "S"
       attributes = [
         {
           name = "id"

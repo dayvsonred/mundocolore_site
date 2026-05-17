@@ -27,6 +27,12 @@ Esta estrutura cria as tabelas DynamoDB necessárias para o backend do e-commerc
 - **Chave primária:** `id` (String) + `order_id` (String)
 - **Uso:** Dados de pagamento dos pedidos
 
+### Role (`mundocolore-role`)
+- **Chave primaria:** `id` (String), usando o mesmo ID do usuario.
+- **Atributos:** `created_at`, `active`, `deactivated_at`.
+- **Uso:** validacao server-side de administradores. Usuarios comuns nascem com `ROLE=false` em `mundocolore-users`; para ser admin, o usuario precisa ter `ROLE=true` e registro com `active=true` em `mundocolore-role`.
+- **Seeds:** o Terraform cria dois registros ficticios: `user-ficticio-admin-001` e `user-ficticio-admin-002`.
+
 ## Requisitos
 - Terraform >= 1.5
 - AWS CLI configurada

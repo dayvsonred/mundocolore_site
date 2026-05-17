@@ -27,8 +27,16 @@ type User struct {
 	Phone     string `json:"phone,omitempty" dynamodbav:"phone"`
 	BirthDate string `json:"birth_date,omitempty" dynamodbav:"birth_date"`
 	Gender    string `json:"gender,omitempty" dynamodbav:"gender"`
+	Role      bool   `json:"role" dynamodbav:"ROLE"`
 	Password  string `json:"-" dynamodbav:"password"`
 	CreatedAt string `json:"created_at" dynamodbav:"created_at"`
+}
+
+type UserRole struct {
+	ID            string `json:"id" dynamodbav:"id"`
+	CreatedAt     string `json:"created_at" dynamodbav:"created_at"`
+	Active        bool   `json:"active" dynamodbav:"active"`
+	DeactivatedAt string `json:"deactivated_at,omitempty" dynamodbav:"deactivated_at,omitempty"`
 }
 
 type CreateUserRequest struct {
@@ -65,13 +73,16 @@ type UserResponse struct {
 	Phone     string `json:"phone,omitempty"`
 	BirthDate string `json:"birth_date,omitempty"`
 	Gender    string `json:"gender,omitempty"`
+	Role      bool   `json:"role"`
+	IsAdmin   bool   `json:"is_admin"`
 	Token     string `json:"token,omitempty"`
 }
 
 var (
-	dynamoClient *dynamodb.DynamoDB
-	tableName    = "mundocolore-users"
-	jwtSecret    = []byte("your-secret-key")
+	dynamoClient  *dynamodb.DynamoDB
+	tableName     = "mundocolore-users"
+	roleTableName = "mundocolore-role"
+	jwtSecret     = []byte("your-secret-key")
 )
 
 const (
@@ -87,6 +98,9 @@ func init() {
 	dynamoClient = dynamodb.New(sess)
 	if value := os.Getenv("TABLE_NAME"); value != "" {
 		tableName = value
+	}
+	if value := os.Getenv("ROLE_TABLE_NAME"); value != "" {
+		roleTableName = value
 	}
 	if secret := os.Getenv("JWT_SECRET"); secret != "" {
 		jwtSecret = []byte(secret)
@@ -189,6 +203,33 @@ func HandleGetUserByID(_ context.Context, request events.APIGatewayProxyRequest)
 	return successJSONResponse(200, string(body)), nil
 }
 
+func HandleAdminCheck(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	token := extractBearerToken(request.Headers)
+	if token == "" {
+		return unauthorizedResponse("no token"), nil
+	}
+
+	userID, err := validateJWT(token)
+	if err != nil {
+		return unauthorizedResponse("invalid token"), nil
+	}
+
+	user, err := getUserEntity(userID)
+	if err != nil {
+		return unauthorizedResponse(err.Error()), nil
+	}
+
+	if !isUserAdmin(user) {
+		return forbiddenResponse("admin access required"), nil
+	}
+
+	body, _ := json.Marshal(map[string]interface{}{
+		"id":       user.ID,
+		"is_admin": true,
+	})
+	return successJSONResponse(200, string(body)), nil
+}
+
 func HandleHealthOnline(_ context.Context, _ events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	body, _ := json.Marshal(map[string]interface{}{
 		"lambda":    lambdaName,
@@ -236,6 +277,7 @@ func HandleHealthData(_ context.Context, _ events.APIGatewayProxyRequest) (event
 		"email":      {S: aws.String("health@mundocolore.local")},
 		"name":       {S: aws.String("health user")},
 		"password":   {S: aws.String("health")},
+		"ROLE":       {BOOL: aws.Bool(false)},
 		"created_at": {S: aws.String(now.Format(time.RFC3339))},
 		"health_key": {S: aws.String(healthKeyValue)},
 	}
@@ -305,6 +347,7 @@ func createUser(req CreateUserRequest) (UserResponse, error) {
 		Phone:     strings.TrimSpace(req.Phone),
 		BirthDate: strings.TrimSpace(req.BirthDate),
 		Gender:    strings.TrimSpace(req.Gender),
+		Role:      false,
 		Password:  hashedPassword,
 		CreatedAt: time.Now().Format(time.RFC3339),
 	}
@@ -434,7 +477,32 @@ func updateUserProfile(userID string, req UpdateProfileRequest) (UserResponse, e
 	return toUserResponse(user, ""), nil
 }
 
+func isUserAdmin(user User) bool {
+	if !user.Role {
+		return false
+	}
+
+	result, err := dynamoClient.GetItem(&dynamodb.GetItemInput{
+		TableName: aws.String(roleTableName),
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {S: aws.String(user.ID)},
+		},
+		ConsistentRead: aws.Bool(true),
+	})
+	if err != nil || result.Item == nil {
+		return false
+	}
+
+	var role UserRole
+	if err := dynamodbattribute.UnmarshalMap(result.Item, &role); err != nil {
+		return false
+	}
+
+	return role.Active && strings.TrimSpace(role.DeactivatedAt) == ""
+}
+
 func toUserResponse(user User, token string) UserResponse {
+	isAdmin := isUserAdmin(user)
 	return UserResponse{
 		ID:        user.ID,
 		Email:     user.Email,
@@ -443,6 +511,8 @@ func toUserResponse(user User, token string) UserResponse {
 		Phone:     user.Phone,
 		BirthDate: user.BirthDate,
 		Gender:    user.Gender,
+		Role:      user.Role,
+		IsAdmin:   isAdmin,
 		Token:     token,
 	}
 }
@@ -521,6 +591,14 @@ func serverErrorResponse(err error) events.APIGatewayProxyResponse {
 	return events.APIGatewayProxyResponse{
 		StatusCode: 500,
 		Body:       fmt.Sprintf(`{"error": "%s"}`, err.Error()),
+		Headers:    defaultHeaders(),
+	}
+}
+
+func forbiddenResponse(message string) events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
+		StatusCode: 403,
+		Body:       fmt.Sprintf(`{"error": "%s"}`, message),
 		Headers:    defaultHeaders(),
 	}
 }
