@@ -97,5 +97,48 @@ go.work.sum
 
 .rote53
 
+# Python / app local
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+venv/
+env/
+ENV/
+**/.venv/
+**/venv/
+pip-wheel-metadata/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
 
+# Python package/build outputs
+*.egg-info/
+.eggs/
+htmlcov/
+*.spec
+
+# Executables and installer outputs
+*.exe
+*.msi
+*.dll
+*.pyd
+*.so
+*.dylib
+*.app
+*.deb
+*.rpm
+*.pkg
+
+# Cadastrador generated product files
+cadastrador/**/*.pdf
+cadastrador/**/1_PRODUTOS_PARA_CADASTRA/*.json
+cadastrador/**/1_PRODUTOS_PARA_CADASTRA/*.xlsx
+cadastrador/**/1_PRODUTOS_ENVIADOS/*.json
+cadastrador/**/1_PRODUTOS_ENVIADOS/*.xlsx
+cadastrador/**/dist/
+cadastrador/**/build/
 

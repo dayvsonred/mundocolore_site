@@ -1,0 +1,7847 @@
+[
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46584",
+    "descricao": "CAPA DE CHUVA TECIDO IMPERMEAVEL",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46584",
+    "descricao": "CAPA DE CHUVA TECIDO IMPERMEAVEL",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46584",
+    "descricao": "CAPA DE CHUVA TECIDO IMPERMEAVEL",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 134.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46585",
+    "descricao": "JAQUETA PUFFER MATELASSE E MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 134.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46585",
+    "descricao": "JAQUETA PUFFER MATELASSE E MEIA MALHA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 154.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46585",
+    "descricao": "JAQUETA PUFFER MATELASSE E MEIA MALHA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 179.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46586",
+    "descricao": "CONJUNTO BLUSA RIBANA SHORT VELUDO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46586",
+    "descricao": "CONJUNTO BLUSA RIBANA SHORT VELUDO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 119.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46586",
+    "descricao": "CONJUNTO BLUSA RIBANA SHORT VELUDO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 139.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46587",
+    "descricao": "JAQUETA VELUDO COTELE E MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 129.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46587",
+    "descricao": "JAQUETA VELUDO COTELE E MEIA MALHA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 149.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46587",
+    "descricao": "JAQUETA VELUDO COTELE E MEIA MALHA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 174.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46588",
+    "descricao": "CONJUNTO BLUSA EM TECIDO E SAIA EM VELUD",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 139.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46588",
+    "descricao": "CONJUNTO BLUSA EM TECIDO E SAIA EM VELUD",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 159.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46588",
+    "descricao": "CONJUNTO BLUSA EM TECIDO E SAIA EM VELUD",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 184.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46589",
+    "descricao": "VESTIDO EM VELUDO E MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46589",
+    "descricao": "VESTIDO EM VELUDO E MEIA MALHA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 134.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46589",
+    "descricao": "VESTIDO EM VELUDO E MEIA MALHA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 159.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46590",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM VELUDO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46590",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM VELUDO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 134.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46590",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM VELUDO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 159.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46591",
+    "descricao": "VESTIDO JEANS COM ELASTANO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46591",
+    "descricao": "VESTIDO JEANS COM ELASTANO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 119.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46591",
+    "descricao": "VESTIDO JEANS COM ELASTANO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 139.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46592",
+    "descricao": "CALCA EM MALHA CIRRE PELUCIADO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46592",
+    "descricao": "CALCA EM MALHA CIRRE PELUCIADO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46592",
+    "descricao": "CALCA EM MALHA CIRRE PELUCIADO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46594",
+    "descricao": "CALCA JEANS COM ELASTANO",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46594",
+    "descricao": "CALCA JEANS COM ELASTANO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46594",
+    "descricao": "CALCA JEANS COM ELASTANO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46594",
+    "descricao": "CALCA JEANS COM ELASTANO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46595",
+    "descricao": "CONJUNTO JAQUETA E SAIA EM MALHA TERMOSO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 119.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46595",
+    "descricao": "CONJUNTO JAQUETA E SAIA EM MALHA TERMOSO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 139.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46595",
+    "descricao": "CONJUNTO JAQUETA E SAIA EM MALHA TERMOSO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 164.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46596",
+    "descricao": "CONJUNTO BLUSAO MOLETOM E CALCA EM MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46596",
+    "descricao": "CONJUNTO BLUSAO MOLETOM E CALCA EM MALHA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 119.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46596",
+    "descricao": "CONJUNTO BLUSAO MOLETOM E CALCA EM MALHA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 139.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46597",
+    "descricao": "JAQUETA CORTA-VENTO EM TECIDO SUBLIMADO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46597",
+    "descricao": "JAQUETA CORTA-VENTO EM TECIDO SUBLIMADO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46597",
+    "descricao": "JAQUETA CORTA-VENTO EM TECIDO SUBLIMADO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46598",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM SUPER COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46598",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM SUPER COTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46598",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM SUPER COTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 129.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46599",
+    "descricao": "VESTIDO EM RIBANA CANELADA E TECIDO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46599",
+    "descricao": "VESTIDO EM RIBANA CANELADA E TECIDO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46599",
+    "descricao": "VESTIDO EM RIBANA CANELADA E TECIDO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46600",
+    "descricao": "BLUSAO EM MOLETOM",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46600",
+    "descricao": "BLUSAO EM MOLETOM",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46600",
+    "descricao": "BLUSAO EM MOLETOM",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46603",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46603",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46603",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46604",
+    "descricao": "BLUSA MANGA LONGA EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46604",
+    "descricao": "BLUSA MANGA LONGA EM COTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46604",
+    "descricao": "BLUSA MANGA LONGA EM COTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46605",
+    "descricao": "CALCA WIDE LEG JEANS COM ELASTANO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46605",
+    "descricao": "CALCA WIDE LEG JEANS COM ELASTANO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46605",
+    "descricao": "CALCA WIDE LEG JEANS COM ELASTANO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46606",
+    "descricao": "CONJUNTO BLUSA COTTON E SHORT TECIDO E C",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46606",
+    "descricao": "CONJUNTO BLUSA COTTON E SHORT TECIDO E C",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46606",
+    "descricao": "CONJUNTO BLUSA COTTON E SHORT TECIDO E C",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46607",
+    "descricao": "VESTIDO EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46607",
+    "descricao": "VESTIDO EM COTTON",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46609",
+    "descricao": "CONJUNTO BLUSA EM RIBANA E SAIA EM TULE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 119.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46609",
+    "descricao": "CONJUNTO BLUSA EM RIBANA E SAIA EM TULE",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 139.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46609",
+    "descricao": "CONJUNTO BLUSA EM RIBANA E SAIA EM TULE",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 164.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46610",
+    "descricao": "VESTIDO EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46610",
+    "descricao": "VESTIDO EM COTTON",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46611",
+    "descricao": "CONJUNTO BLUSA E LEGGING EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46611",
+    "descricao": "CONJUNTO BLUSA E LEGGING EM COTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46611",
+    "descricao": "CONJUNTO BLUSA E LEGGING EM COTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46612",
+    "descricao": "CONJUNTO BLUSA MEIA MALHA E SHORT MOLETO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46612",
+    "descricao": "CONJUNTO BLUSA MEIA MALHA E SHORT MOLETO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46612",
+    "descricao": "CONJUNTO BLUSA MEIA MALHA E SHORT MOLETO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46613",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46613",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 134.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46613",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 159.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46614",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON E CALCA SUPER",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46614",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON E CALCA SUPER",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46615",
+    "descricao": "CONJUNTO BLUSA COTTON E SHORT-SAIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46615",
+    "descricao": "CONJUNTO BLUSA COTTON E SHORT-SAIA MALHA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46615",
+    "descricao": "CONJUNTO BLUSA COTTON E SHORT-SAIA MALHA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 144.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46616",
+    "descricao": "CASACO EM MALHA TWEED",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46616",
+    "descricao": "CASACO EM MALHA TWEED",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46616",
+    "descricao": "CASACO EM MALHA TWEED",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46617",
+    "descricao": "BLUSA MANGA LONGA EM MALHA CANELADA COMF",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46617",
+    "descricao": "BLUSA MANGA LONGA EM MALHA CANELADA COMF",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46617",
+    "descricao": "BLUSA MANGA LONGA EM MALHA CANELADA COMF",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46618",
+    "descricao": "BLUSA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46618",
+    "descricao": "BLUSA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46618",
+    "descricao": "BLUSA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46619",
+    "descricao": "VESTIDO EM MALHA JACQUARD PONTILHADA E T",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46619",
+    "descricao": "VESTIDO EM MALHA JACQUARD PONTILHADA E T",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46619",
+    "descricao": "VESTIDO EM MALHA JACQUARD PONTILHADA E T",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46620",
+    "descricao": "CALCA EM MALHA JACQUARD PONTILHADA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46620",
+    "descricao": "CALCA EM MALHA JACQUARD PONTILHADA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46620",
+    "descricao": "CALCA EM MALHA JACQUARD PONTILHADA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46621",
+    "descricao": "BLUSA MANGA LONGA EM TRICOLINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46621",
+    "descricao": "BLUSA MANGA LONGA EM TRICOLINE",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46621",
+    "descricao": "BLUSA MANGA LONGA EM TRICOLINE",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46622",
+    "descricao": "VESTIDO EM SUPER COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46622",
+    "descricao": "VESTIDO EM SUPER COTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46622",
+    "descricao": "VESTIDO EM SUPER COTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46623",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON E CALCA EM SU",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46623",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON E CALCA EM SU",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46624",
+    "descricao": "BLUSA MANGA LONGA EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46624",
+    "descricao": "BLUSA MANGA LONGA EM COTTON",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46625",
+    "descricao": "VESTIDO EM COTTON E TECIDO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46625",
+    "descricao": "VESTIDO EM COTTON E TECIDO",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46626",
+    "descricao": "CONJUNTO BLUSA E SAIA COM SHORT EM COTTO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46626",
+    "descricao": "CONJUNTO BLUSA E SAIA COM SHORT EM COTTO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46626",
+    "descricao": "CONJUNTO BLUSA E SAIA COM SHORT EM COTTO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46627",
+    "descricao": "VESTIDO EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46627",
+    "descricao": "VESTIDO EM COTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46627",
+    "descricao": "VESTIDO EM COTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46628",
+    "descricao": "VESTIDO MANGA LONGA EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46628",
+    "descricao": "VESTIDO MANGA LONGA EM COTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46628",
+    "descricao": "VESTIDO MANGA LONGA EM COTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46629",
+    "descricao": "CONJUNTO BLUSA E BERMUDA EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46629",
+    "descricao": "CONJUNTO BLUSA E BERMUDA EM COTTON",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46630",
+    "descricao": "CONJUNTO BLUSA E CALCA COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46630",
+    "descricao": "CONJUNTO BLUSA E CALCA COTTON",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46632",
+    "descricao": "VESTIDO EM MOLETOM SEM FELPA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46632",
+    "descricao": "VESTIDO EM MOLETOM SEM FELPA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46632",
+    "descricao": "VESTIDO EM MOLETOM SEM FELPA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46633",
+    "descricao": "CONJUNTO BLUSA COTTON E CALCA MALHA PELU",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46633",
+    "descricao": "CONJUNTO BLUSA COTTON E CALCA MALHA PELU",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46633",
+    "descricao": "CONJUNTO BLUSA COTTON E CALCA MALHA PELU",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46634",
+    "descricao": "BLUSA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46634",
+    "descricao": "BLUSA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46634",
+    "descricao": "BLUSA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46635",
+    "descricao": "CONJUNTO BLUSA MEIA MALHA E SHORT MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46635",
+    "descricao": "CONJUNTO BLUSA MEIA MALHA E SHORT MALHA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46635",
+    "descricao": "CONJUNTO BLUSA MEIA MALHA E SHORT MALHA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 129.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46636",
+    "descricao": "BLUSAO EM MOLETOM SEM FELPA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46636",
+    "descricao": "BLUSAO EM MOLETOM SEM FELPA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46636",
+    "descricao": "BLUSAO EM MOLETOM SEM FELPA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46637",
+    "descricao": "CALCA EM MALHA TWEED",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46637",
+    "descricao": "CALCA EM MALHA TWEED",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46637",
+    "descricao": "CALCA EM MALHA TWEED",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46638",
+    "descricao": "CONJUNTO BLUSAO MOLETOM E CALCA MALHA PE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46638",
+    "descricao": "CONJUNTO BLUSAO MOLETOM E CALCA MALHA PE",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46638",
+    "descricao": "CONJUNTO BLUSAO MOLETOM E CALCA MALHA PE",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 134.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46639",
+    "descricao": "CALCA LEGGING EM MALHA PELUCIADA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46639",
+    "descricao": "CALCA LEGGING EM MALHA PELUCIADA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46639",
+    "descricao": "CALCA LEGGING EM MALHA PELUCIADA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46640",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLECOTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46640",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLECOTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 134.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46640",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLECOTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 159.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46641",
+    "descricao": "CAMISA MANGA LONGA EM TECIDO OXFORDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46641",
+    "descricao": "CAMISA MANGA LONGA EM TECIDO OXFORDINE",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46641",
+    "descricao": "CAMISA MANGA LONGA EM TECIDO OXFORDINE",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46642",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46642",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46643",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON E CALCA EM MO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46643",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON E CALCA EM MO",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46644",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46644",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46645",
+    "descricao": "CONJUNTO BLUSAO MALHA SUBLIMADA E CALCA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46645",
+    "descricao": "CONJUNTO BLUSAO MALHA SUBLIMADA E CALCA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46645",
+    "descricao": "CONJUNTO BLUSAO MALHA SUBLIMADA E CALCA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 144.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46646",
+    "descricao": "JAQUETA CORTA-VENTO EM TECIDO SUBLIMADO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46646",
+    "descricao": "JAQUETA CORTA-VENTO EM TECIDO SUBLIMADO",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46647",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46647",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46648",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46648",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46649",
+    "descricao": "JAQUETA EM TECIDO XADREZ FLANELADO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46649",
+    "descricao": "JAQUETA EM TECIDO XADREZ FLANELADO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46649",
+    "descricao": "JAQUETA EM TECIDO XADREZ FLANELADO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 129.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46650",
+    "descricao": "BLAZER EM MALHA ALFAIATARIA COMFY",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 129.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46650",
+    "descricao": "BLAZER EM MALHA ALFAIATARIA COMFY",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 149.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46650",
+    "descricao": "BLAZER EM MALHA ALFAIATARIA COMFY",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 174.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46651",
+    "descricao": "CALCA EM MALHA ALFAIATARIA COMFY",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46651",
+    "descricao": "CALCA EM MALHA ALFAIATARIA COMFY",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46651",
+    "descricao": "CALCA EM MALHA ALFAIATARIA COMFY",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 129.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46652",
+    "descricao": "PARKA EM TECIDO IMPERMEAVEL",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 119.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46652",
+    "descricao": "PARKA EM TECIDO IMPERMEAVEL",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 139.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46652",
+    "descricao": "PARKA EM TECIDO IMPERMEAVEL",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 164.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46653",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46653",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46654",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46654",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46654",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46655",
+    "descricao": "CONJUNTO CAMISETA MALHA E BERMUDA EM MOL",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46655",
+    "descricao": "CONJUNTO CAMISETA MALHA E BERMUDA EM MOL",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46655",
+    "descricao": "CONJUNTO CAMISETA MALHA E BERMUDA EM MOL",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46656",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46656",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46657",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46657",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46658",
+    "descricao": "BLUSAO EM MOLETOM GORGURAO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46658",
+    "descricao": "BLUSAO EM MOLETOM GORGURAO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46658",
+    "descricao": "BLUSAO EM MOLETOM GORGURAO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46659",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46659",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46660",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46660",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46660",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46661",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLECOTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46661",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLECOTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46661",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLECOTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 144.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46663",
+    "descricao": "JAQUETA PUFFER",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 129.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46663",
+    "descricao": "JAQUETA PUFFER",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 149.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46663",
+    "descricao": "JAQUETA PUFFER",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 174.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46664",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM MOLETOM SEM",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 129.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46664",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM MOLETOM SEM",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 149.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46664",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM MOLETOM SEM",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 174.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46665",
+    "descricao": "BLUSAO EM MOLETOM SEM FELPA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46665",
+    "descricao": "BLUSAO EM MOLETOM SEM FELPA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46665",
+    "descricao": "BLUSAO EM MOLETOM SEM FELPA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46667",
+    "descricao": "COLETE TECIDO PUFFER",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46667",
+    "descricao": "COLETE TECIDO PUFFER",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46667",
+    "descricao": "COLETE TECIDO PUFFER",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 144.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46669",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM MOLECOTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 134.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46669",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM MOLECOTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 154.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46669",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM MOLECOTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 179.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46671",
+    "descricao": "CONJUNTO CAMISETA MALHA E CALCA EM MOLET",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46671",
+    "descricao": "CONJUNTO CAMISETA MALHA E CALCA EM MOLET",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46672",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46672",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46673",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46673",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 134.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46674",
+    "descricao": "CALCA EM MALHA JACQUARD PONTILHADA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46674",
+    "descricao": "CALCA EM MALHA JACQUARD PONTILHADA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46674",
+    "descricao": "CALCA EM MALHA JACQUARD PONTILHADA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46675",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46675",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46676",
+    "descricao": "CONJUNTO CAMISETA MALHA E CALCA EM MOLET",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46676",
+    "descricao": "CONJUNTO CAMISETA MALHA E CALCA EM MOLET",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46677",
+    "descricao": "CONJUNTO CAMISETA MALHA E BERMUDA EM MOL",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46677",
+    "descricao": "CONJUNTO CAMISETA MALHA E BERMUDA EM MOL",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46678",
+    "descricao": "CAMISETA MANGA CURTA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 2.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46678",
+    "descricao": "CAMISETA MANGA CURTA EM MEIA MALHA",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 7.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46679",
+    "descricao": "CAMISETA MANGA CURTA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 2.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46679",
+    "descricao": "CAMISETA MANGA CURTA EM MEIA MALHA",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 7.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46680",
+    "descricao": "CONJUNTO CAMISETA MALHA E BERMUDA EM MOL",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46680",
+    "descricao": "CONJUNTO CAMISETA MALHA E BERMUDA EM MOL",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46681",
+    "descricao": "CONJUNTO CAMISETA MALHA E SHORT MICROFIB",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46681",
+    "descricao": "CONJUNTO CAMISETA MALHA E SHORT MICROFIB",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46682",
+    "descricao": "CONJUNTO CAMISETA MALHA E BERMUDA EM MOL",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46682",
+    "descricao": "CONJUNTO CAMISETA MALHA E BERMUDA EM MOL",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46682",
+    "descricao": "CONJUNTO CAMISETA MALHA E BERMUDA EM MOL",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46683",
+    "descricao": "MACACAO MANGA LONGA EM SUPER COTTON",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46684",
+    "descricao": "CALCA JEANS COM ELASTANO",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46684",
+    "descricao": "CALCA JEANS COM ELASTANO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46684",
+    "descricao": "CALCA JEANS COM ELASTANO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 119.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46684",
+    "descricao": "CALCA JEANS COM ELASTANO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 139.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46685",
+    "descricao": "JAQUETA JEANS COM ELASTANO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 129.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46685",
+    "descricao": "JAQUETA JEANS COM ELASTANO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 149.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46685",
+    "descricao": "JAQUETA JEANS COM ELASTANO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 174.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46686",
+    "descricao": "CONJUNTO BLUSAO SUPER COTTON E CALCA EM",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46686",
+    "descricao": "CONJUNTO BLUSAO SUPER COTTON E CALCA EM",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 134.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46687",
+    "descricao": "CAMISA EM TECIDO XADREZ FLANELADO",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46687",
+    "descricao": "CAMISA EM TECIDO XADREZ FLANELADO",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46687",
+    "descricao": "CAMISA EM TECIDO XADREZ FLANELADO",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46688",
+    "descricao": "CAMISA POLO MANGA LONGA EM PIQUET COM EL",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46688",
+    "descricao": "CAMISA POLO MANGA LONGA EM PIQUET COM EL",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46688",
+    "descricao": "CAMISA POLO MANGA LONGA EM PIQUET COM EL",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46689",
+    "descricao": "CONJUNTO BODY SUEDINE, COLETE PELO SINTE",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 129.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46696",
+    "descricao": "CALCA EM MALHA CIRRE",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46696",
+    "descricao": "CALCA EM MALHA CIRRE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46697",
+    "descricao": "MACACAO COM FAIXA EM SUPER COTTON",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46699",
+    "descricao": "CONJUNTO BLUSAO E CALCA MOLETOM SEM FELP",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46699",
+    "descricao": "CONJUNTO BLUSAO E CALCA MOLETOM SEM FELP",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46701",
+    "descricao": "CONJUNTO BODY SUEDINE E CALCA MALHA THER",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46702",
+    "descricao": "BODY MANGA LONGA EM SUEDINE",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46703",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46703",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46704",
+    "descricao": "MACACAO EM MALHA PELUCIADA",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46705",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON E CALCA MALHA",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46705",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON E CALCA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46706",
+    "descricao": "VESTIDO EM MALHA PELUCIADA",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46706",
+    "descricao": "VESTIDO EM MALHA PELUCIADA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46707",
+    "descricao": "VESTIDO EM MOLECOTTON COM TULE E MEIA MA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46707",
+    "descricao": "VESTIDO EM MOLECOTTON COM TULE E MEIA MA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 114.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46707",
+    "descricao": "VESTIDO EM MOLECOTTON COM TULE E MEIA MA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 134.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46709",
+    "descricao": "VESTIDO EM MALHA TWEED E SUEDINE",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46709",
+    "descricao": "VESTIDO EM MALHA TWEED E SUEDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46710",
+    "descricao": "CONJUNTO BODY SUEDINE E SAIA MALHA TWEED",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46711",
+    "descricao": "MACACAO MANGA LONGA EM MALHA CANELADA CO",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46712",
+    "descricao": "VESTIDO EM MALHA JACQUARD PONTILHADA",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46712",
+    "descricao": "VESTIDO EM MALHA JACQUARD PONTILHADA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46713",
+    "descricao": "CONJUNTO BODY SUEDINE E CALCA JACQUARD P",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46714",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON COM FELPA E C",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46714",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON COM FELPA E C",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46715",
+    "descricao": "VESTIDO EM COTTON",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46715",
+    "descricao": "VESTIDO EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46716",
+    "descricao": "CONJUNTO BLUSA E CALCA EM COTTON",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46716",
+    "descricao": "CONJUNTO BLUSA E CALCA EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46717",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46717",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46717",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46718",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46718",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46718",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 129.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46719",
+    "descricao": "MACACAO MANGA LONGA EM MOLETOM",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46720",
+    "descricao": "CALCA EM MOLECOTTON",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46720",
+    "descricao": "CALCA EM MOLECOTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46721",
+    "descricao": "CALCA EM MOLECOTTON E MALHA SOFT",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46721",
+    "descricao": "CALCA EM MOLECOTTON E MALHA SOFT",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46722",
+    "descricao": "CONJUNTO BODY MALHA E CALCA MOLETOM SEM",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 2.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46723",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46723",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46724",
+    "descricao": "CONJUNTO JAQUETA TECIDO E CALCA MOLECOTT",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46724",
+    "descricao": "CONJUNTO JAQUETA TECIDO E CALCA MOLECOTT",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46725",
+    "descricao": "CONJUNTO BLUSAO MOLETOM E CALCA EM MOLEC",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46725",
+    "descricao": "CONJUNTO BLUSAO MOLETOM E CALCA EM MOLEC",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46726",
+    "descricao": "BODY MANGA LONGA EM SUEDINE",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46727",
+    "descricao": "CONJUNTO BLUSAO MALHA THERMOSOFT SUBLIMA",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46727",
+    "descricao": "CONJUNTO BLUSAO MALHA THERMOSOFT SUBLIMA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46728",
+    "descricao": "MACACAO MANGA LONGA EM MALHA THERMOSOFT",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46729",
+    "descricao": "CONJUNTO BLUSAO SUPER COTTON E CALCA MOL",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46729",
+    "descricao": "CONJUNTO BLUSAO SUPER COTTON E CALCA MOL",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46730",
+    "descricao": "MACACAO MANGA LONGA EM MALHA CANELADA CO",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46731",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46731",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46732",
+    "descricao": "CONJUNTO JARDINEIRA MOLECOTTON E BODY SU",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46733",
+    "descricao": "CONJUNTO CAMISETA MEIA MALHA E CALCA MOL",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46733",
+    "descricao": "CONJUNTO CAMISETA MEIA MALHA E CALCA MOL",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46734",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46734",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46735",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLECOTTON",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46735",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLECOTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46736",
+    "descricao": "CONJUNTO JAQUETA MATELASSE E MOLECOTTON",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 119.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46736",
+    "descricao": "CONJUNTO JAQUETA MATELASSE E MOLECOTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 134.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46737",
+    "descricao": "CONJUNTO BLUSAO E CALCA MOLECOTTON",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46737",
+    "descricao": "CONJUNTO BLUSAO E CALCA MOLECOTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46738",
+    "descricao": "BODY CAMISA MANGA LONGA EM TECIDO XADREZ",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46739",
+    "descricao": "CALCA MALHA ALFAIATARIA",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46739",
+    "descricao": "CALCA MALHA ALFAIATARIA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46740",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46740",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46741",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46741",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46808",
+    "descricao": "BLUSA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46808",
+    "descricao": "BLUSA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46808",
+    "descricao": "BLUSA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46809",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON E CALCA SUPER",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46809",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON E CALCA SUPER",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 119.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46809",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON E CALCA SUPER",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 139.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46810",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLECOTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46810",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLECOTTON",
+    "tamanho_original": "4 a 10",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 10,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "preco": 119.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46811",
+    "descricao": "MACACAO MANGA LONGA EM MALHA PELUCIADA",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46811",
+    "descricao": "MACACAO MANGA LONGA EM MALHA PELUCIADA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46815",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46815",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46815",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLETOM SEM F",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 144.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46824",
+    "descricao": "CALCA EM MALHA PELUCIADA",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46829",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46829",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 144.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46829",
+    "descricao": "BLUSAO EM TRICOT",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 169.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46830",
+    "descricao": "CASACO EM TRICOT",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 109.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46830",
+    "descricao": "CASACO EM TRICOT",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 124.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46858",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON E CALCA SUPER",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "UP BABY",
+    "produto_id": "46858",
+    "descricao": "CONJUNTO BLUSAO MOLECOTTON E CALCA SUPER",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "SPORT",
+    "produto_id": "46691",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM MALHA ACTIVE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 134.9
+  },
+  {
+    "nome_tabela": "SPORT",
+    "produto_id": "46691",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM MALHA ACTIVE",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 154.9
+  },
+  {
+    "nome_tabela": "SPORT",
+    "produto_id": "46691",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM MALHA ACTIVE",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 179.9
+  },
+  {
+    "nome_tabela": "SPORT",
+    "produto_id": "46692",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MALHA ACTIVE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 139.9
+  },
+  {
+    "nome_tabela": "SPORT",
+    "produto_id": "46692",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MALHA ACTIVE",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 159.9
+  },
+  {
+    "nome_tabela": "SPORT",
+    "produto_id": "46692",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MALHA ACTIVE",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 184.9
+  },
+  {
+    "nome_tabela": "SPORT",
+    "produto_id": "46693",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM MALHA FLEX",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 139.9
+  },
+  {
+    "nome_tabela": "SPORT",
+    "produto_id": "46693",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM MALHA FLEX",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 159.9
+  },
+  {
+    "nome_tabela": "SPORT",
+    "produto_id": "46693",
+    "descricao": "CONJUNTO JAQUETA E CALCA EM MALHA FLEX",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 184.9
+  },
+  {
+    "nome_tabela": "SPORT",
+    "produto_id": "46694",
+    "descricao": "CONJUNTO BLUSAO E BERMUDA EM MALHA FLEX",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 134.9
+  },
+  {
+    "nome_tabela": "SPORT",
+    "produto_id": "46694",
+    "descricao": "CONJUNTO BLUSAO E BERMUDA EM MALHA FLEX",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 154.9
+  },
+  {
+    "nome_tabela": "SPORT",
+    "produto_id": "46694",
+    "descricao": "CONJUNTO BLUSAO E BERMUDA EM MALHA FLEX",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 179.9
+  },
+  {
+    "nome_tabela": "PIMA",
+    "produto_id": "46845",
+    "descricao": "KIT BODY E CALCA EM SUEDINE PIMA",
+    "tamanho_original": "RN a P",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "P",
+    "tamanhos_array": [
+      "RN",
+      "P"
+    ],
+    "preco": 5.9
+  },
+  {
+    "nome_tabela": "PIMA",
+    "produto_id": "46846",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE PIMA",
+    "tamanho_original": "RN a P",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "P",
+    "tamanhos_array": [
+      "RN",
+      "P"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "PIMA",
+    "produto_id": "46856",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE PIMA",
+    "tamanho_original": "RN a P",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "P",
+    "tamanhos_array": [
+      "RN",
+      "P"
+    ],
+    "preco": 5.9
+  },
+  {
+    "nome_tabela": "NATURE",
+    "produto_id": "46743",
+    "descricao": "CONJUNTO BODY RIBANA E CALCA RIBANA DIGI",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "NATURE",
+    "produto_id": "46744",
+    "descricao": "MACACAO EM RIBANA SUSTENTAVEL",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "NATURE",
+    "produto_id": "46745",
+    "descricao": "CONJUNTO BODY E CALCA RIBANA SUSTENTAVEL",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "NATURE",
+    "produto_id": "46746",
+    "descricao": "CONJUNTO BLUSAO E CALCA EM MOLECOTTON SU",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46749",
+    "descricao": "CONJUNTO BODY E CALCA EM SUEDINE",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46750",
+    "descricao": "CONJUNTO BODY E CALCA EM SUEDINE",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46751",
+    "descricao": "CONJUNTO VESTIDO COM CALCINHA EM SUEDINE",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46752",
+    "descricao": "CONJUNTO CASACO E CALCA EM SUEDINE E MAL",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 119.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46753",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46754",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46756",
+    "descricao": "CONJUNTO BODY E CALCA EM SUEDINE",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46759",
+    "descricao": "FAIXA CABELO EM SUEDINE",
+    "tamanho_original": "ÚNICO",
+    "tamanho_inicio": "ÚNICO",
+    "tamanho_fim": "ÚNICO",
+    "tamanhos_array": [
+      "ÚNICO"
+    ],
+    "preco": 3.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46760",
+    "descricao": "GORRO EM SUEDINE",
+    "tamanho_original": "ÚNICO",
+    "tamanho_inicio": "ÚNICO",
+    "tamanho_fim": "ÚNICO",
+    "tamanhos_array": [
+      "ÚNICO"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46761",
+    "descricao": "MANTA EM SUEDINE",
+    "tamanho_original": "ÚNICO",
+    "tamanho_inicio": "ÚNICO",
+    "tamanho_fim": "ÚNICO",
+    "tamanhos_array": [
+      "ÚNICO"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46762",
+    "descricao": "BABADOR EM SUEDINE",
+    "tamanho_original": "ÚNICO",
+    "tamanho_inicio": "ÚNICO",
+    "tamanho_fim": "ÚNICO",
+    "tamanhos_array": [
+      "ÚNICO"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46763",
+    "descricao": "MACACAO MANGA LONGA SUEDINE ESTAMPA DIG",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46764",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE DIG COM P",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46765",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46766",
+    "descricao": "CONJUNTO BODY ESTAMPA DIG E CALCA EM SUE",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46767",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE DIG",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46768",
+    "descricao": "CONJUNTO CASACO E CALCA EM SUEDINE E MAL",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 119.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46769",
+    "descricao": "CONJUNTO BODY E CALCA EM SUEDINE",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46770",
+    "descricao": "CONJUNTO BODY E CALCA EM SUEDINE",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46771",
+    "descricao": "CONJUNTO BODY/CALCA E BABADOR EM SUEDIN",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46772",
+    "descricao": "CONJUNTO BODY DIG E CALCA EM SUEDINE",
+    "tamanho_original": "RN a GG",
+    "tamanho_inicio": "RN",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "RN",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "COMFY",
+    "produto_id": "46827",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE ESTA DIG",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46775",
+    "descricao": "BODY MANGA LONGA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46776",
+    "descricao": "BODY MANGA LONGA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 7.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46777",
+    "descricao": "BODY MANGA CURTA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46778",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "PR a G",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46778",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46779",
+    "descricao": "MACAQUINHO MANGA CURTA EM SUEDINE",
+    "tamanho_original": "PR a G",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 7.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46779",
+    "descricao": "MACAQUINHO MANGA CURTA EM SUEDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 0.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46780",
+    "descricao": "CALCA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 2.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46781",
+    "descricao": "FAIXA PARA CABELO EM SUEDINE",
+    "tamanho_original": "ÚNICO",
+    "tamanho_inicio": "ÚNICO",
+    "tamanho_fim": "ÚNICO",
+    "tamanhos_array": [
+      "ÚNICO"
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46782",
+    "descricao": "BABADOR BANDANA EM SUEDINE",
+    "tamanho_original": "ÚNICO",
+    "tamanho_inicio": "ÚNICO",
+    "tamanho_fim": "ÚNICO",
+    "tamanhos_array": [
+      "ÚNICO"
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46784",
+    "descricao": "BODY MANGA LONGA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46785",
+    "descricao": "BODY MANGA LONGA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 7.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46786",
+    "descricao": "BODY MANGA CURTA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46787",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "PR a G",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46787",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46788",
+    "descricao": "MACAQUINHO MANGA CURTA EM SUEDINE",
+    "tamanho_original": "PR a G",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 7.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46788",
+    "descricao": "MACAQUINHO MANGA CURTA EM SUEDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 0.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46789",
+    "descricao": "CALCA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 2.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46791",
+    "descricao": "CONJUNTO BODY E CALCA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46818",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "PR a G",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46818",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46819",
+    "descricao": "MANTA EM SUEDINE PREMIUM ESSENTIALS",
+    "tamanho_original": "ÚNICO",
+    "tamanho_inicio": "ÚNICO",
+    "tamanho_fim": "ÚNICO",
+    "tamanhos_array": [
+      "ÚNICO"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46820",
+    "descricao": "BABADOR BANDANA EM SUEDINE",
+    "tamanho_original": "ÚNICO",
+    "tamanho_inicio": "ÚNICO",
+    "tamanho_fim": "ÚNICO",
+    "tamanhos_array": [
+      "ÚNICO"
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46826",
+    "descricao": "CONJUNTO BODY E CALCA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46833",
+    "descricao": "CONJUNTO BODY E CALCA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46834",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "PR a G",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46834",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46835",
+    "descricao": "CONJUNTO BODY MANGA LONGA E CALCA EM SU",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "ESSENTIALS",
+    "produto_id": "46859",
+    "descricao": "MANTA EM SUEDINE ESSENTIALS",
+    "tamanho_original": "ÚNICO",
+    "tamanho_inicio": "ÚNICO",
+    "tamanho_fim": "ÚNICO",
+    "tamanhos_array": [
+      "ÚNICO"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "45968",
+    "descricao": "CAMISETA MANGA LONGA EM MALHA TERMICA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 2.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "45968",
+    "descricao": "CAMISETA MANGA LONGA EM MALHA TERMICA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 7.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "45968",
+    "descricao": "CAMISETA MANGA LONGA EM MALHA TERMICA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 2.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "45969",
+    "descricao": "CALCA EM MALHA TERMICA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 2.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "45969",
+    "descricao": "CALCA EM MALHA TERMICA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 7.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "45969",
+    "descricao": "CALCA EM MALHA TERMICA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 2.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46792",
+    "descricao": "PIJAMA BLUSA E CALCA EM MALHA SOFT",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46792",
+    "descricao": "PIJAMA BLUSA E CALCA EM MALHA SOFT",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46792",
+    "descricao": "PIJAMA BLUSA E CALCA EM MALHA SOFT",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46793",
+    "descricao": "MACACAO (PIJAMA) MANGA LONGA MALHA SOFT",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46793",
+    "descricao": "MACACAO (PIJAMA) MANGA LONGA MALHA SOFT",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46794",
+    "descricao": "PIJAMA BLUSA E CALCA EM SUEDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46794",
+    "descricao": "PIJAMA BLUSA E CALCA EM SUEDINE",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46794",
+    "descricao": "PIJAMA BLUSA E CALCA EM SUEDINE",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46795",
+    "descricao": "PIJAMA BLUSA E CALCA EM SUEDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46795",
+    "descricao": "PIJAMA BLUSA E CALCA EM SUEDINE",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46795",
+    "descricao": "PIJAMA BLUSA E CALCA EM SUEDINE",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46796",
+    "descricao": "PIJAMA BLUSA E CALCA SUEDINE COM TULE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46796",
+    "descricao": "PIJAMA BLUSA E CALCA SUEDINE COM TULE",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46796",
+    "descricao": "PIJAMA BLUSA E CALCA SUEDINE COM TULE",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46797",
+    "descricao": "PIJAMA BLUSA E CALCA EM MALHA TERMICA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46797",
+    "descricao": "PIJAMA BLUSA E CALCA EM MALHA TERMICA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46797",
+    "descricao": "PIJAMA BLUSA E CALCA EM MALHA TERMICA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46800",
+    "descricao": "MACACAO MANGA LONGA EM MALHA TERMICA",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46800",
+    "descricao": "MACACAO MANGA LONGA EM MALHA TERMICA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46801",
+    "descricao": "PIJAMA CAMISETA E CALCA EM SUEDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46801",
+    "descricao": "PIJAMA CAMISETA E CALCA EM SUEDINE",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46801",
+    "descricao": "PIJAMA CAMISETA E CALCA EM SUEDINE",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46828",
+    "descricao": "CONJUNTO BODY E CALCA EM MALHA TERMICA",
+    "tamanho_original": "P a G",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "PIJAMA",
+    "produto_id": "46828",
+    "descricao": "CONJUNTO BODY E CALCA EM MALHA TERMICA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45062",
+    "descricao": "BLUSA MANGA LONGA EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 7.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45062",
+    "descricao": "BLUSA MANGA LONGA EM COTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 2.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45062",
+    "descricao": "BLUSA MANGA LONGA EM COTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 7.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45072",
+    "descricao": "BLUSAO EM MOLETOM",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45072",
+    "descricao": "BLUSAO EM MOLETOM",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45072",
+    "descricao": "BLUSAO EM MOLETOM",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45073",
+    "descricao": "CALCA EM MOLETOM",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45073",
+    "descricao": "CALCA EM MOLETOM",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45073",
+    "descricao": "CALCA EM MOLETOM",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45074",
+    "descricao": "JAQUETA EM MOLETOM",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45074",
+    "descricao": "JAQUETA EM MOLETOM",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45074",
+    "descricao": "JAQUETA EM MOLETOM",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 104.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45376",
+    "descricao": "BLUSA MANGA CURTA EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45376",
+    "descricao": "BLUSA MANGA CURTA EM COTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45376",
+    "descricao": "BLUSA MANGA CURTA EM COTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45383",
+    "descricao": "CAMISETA MANGA CURTA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45383",
+    "descricao": "CAMISETA MANGA CURTA EM MEIA MALHA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45383",
+    "descricao": "CAMISETA MANGA CURTA EM MEIA MALHA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45385",
+    "descricao": "CAMISA POLO MANGA CURTA EM SUEDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45385",
+    "descricao": "CAMISA POLO MANGA CURTA EM SUEDINE",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45385",
+    "descricao": "CAMISA POLO MANGA CURTA EM SUEDINE",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45978",
+    "descricao": "CAMISA POLO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45978",
+    "descricao": "CAMISA POLO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45978",
+    "descricao": "CAMISA POLO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45979",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45979",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45979",
+    "descricao": "CAMISETA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45981",
+    "descricao": "CALCA EM MOLETOM",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45981",
+    "descricao": "CALCA EM MOLETOM",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "45981",
+    "descricao": "CALCA EM MOLETOM",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46268",
+    "descricao": "MACAQUINHO MANGA CURTA EM SUEDINE",
+    "tamanho_original": "PR a G",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46268",
+    "descricao": "MACAQUINHO MANGA CURTA EM SUEDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46271",
+    "descricao": "BODY MANGA LONGA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 5.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46272",
+    "descricao": "CALCA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 1.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46273",
+    "descricao": "BODY MANGA CURTA EM SUEDINE",
+    "tamanho_original": "PR a GG",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 3.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46274",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "PR a G",
+    "tamanho_inicio": "PR",
+    "tamanho_fim": "G",
+    "tamanhos_array": [
+      "PR",
+      "P",
+      "M",
+      "G"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46274",
+    "descricao": "MACACAO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46783",
+    "descricao": "CALCA LEGGING EM MOLECOTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46783",
+    "descricao": "CALCA LEGGING EM MOLECOTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46783",
+    "descricao": "CALCA LEGGING EM MOLECOTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46802",
+    "descricao": "BLUSA MANGA LONGA EM RIBANA CANELADA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46802",
+    "descricao": "BLUSA MANGA LONGA EM RIBANA CANELADA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46802",
+    "descricao": "BLUSA MANGA LONGA EM RIBANA CANELADA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46803",
+    "descricao": "CALCA EM MOLECOTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46803",
+    "descricao": "CALCA EM MOLECOTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46803",
+    "descricao": "CALCA EM MOLECOTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46804",
+    "descricao": "CALCA LEGGING EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46804",
+    "descricao": "CALCA LEGGING EM COTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46804",
+    "descricao": "CALCA LEGGING EM COTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46805",
+    "descricao": "BLUSA MANGA LONGA EM RIBANA CANELADA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46805",
+    "descricao": "BLUSA MANGA LONGA EM RIBANA CANELADA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46805",
+    "descricao": "BLUSA MANGA LONGA EM RIBANA CANELADA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46806",
+    "descricao": "CALCA EM RIBANA CANELADA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46806",
+    "descricao": "CALCA EM RIBANA CANELADA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46806",
+    "descricao": "CALCA EM RIBANA CANELADA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46807",
+    "descricao": "BLUSA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46807",
+    "descricao": "BLUSA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46807",
+    "descricao": "BLUSA MANGA LONGA EM MEIA MALHA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46812",
+    "descricao": "BLUSAO MANGA LONGA EM MOLECOTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46812",
+    "descricao": "BLUSAO MANGA LONGA EM MOLECOTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46812",
+    "descricao": "BLUSAO MANGA LONGA EM MOLECOTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46813",
+    "descricao": "CALCA EM MOLETOM SEM FELPA",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46813",
+    "descricao": "CALCA EM MOLETOM SEM FELPA",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46813",
+    "descricao": "CALCA EM MOLETOM SEM FELPA",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 6.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "46817",
+    "descricao": "BODY POLO MANGA LONGA EM SUEDINE",
+    "tamanho_original": "P a GG",
+    "tamanho_inicio": "P",
+    "tamanho_fim": "GG",
+    "tamanhos_array": [
+      "P",
+      "M",
+      "G",
+      "GG"
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "47147",
+    "descricao": "CALCA EM SUPER COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "47147",
+    "descricao": "CALCA EM SUPER COTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "BÁSICO",
+    "produto_id": "47147",
+    "descricao": "CALCA EM SUPER COTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "ACESSÓRIOS",
+    "produto_id": "46580",
+    "descricao": "KIT 2 CUECAS EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "ACESSÓRIOS",
+    "produto_id": "46580",
+    "descricao": "KIT 2 CUECAS EM COTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "ACESSÓRIOS",
+    "produto_id": "46580",
+    "descricao": "KIT 2 CUECAS EM COTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "ACESSÓRIOS",
+    "produto_id": "46822",
+    "descricao": "GORRO EM TRICOT",
+    "tamanho_original": "ÚNICO",
+    "tamanho_inicio": "ÚNICO",
+    "tamanho_fim": "ÚNICO",
+    "tamanhos_array": [
+      "ÚNICO"
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "ACESSÓRIOS",
+    "produto_id": "47102",
+    "descricao": "KIT 2 CALCINHAS EM COTTON",
+    "tamanho_original": "1 a 3",
+    "tamanho_inicio": 1,
+    "tamanho_fim": 3,
+    "tamanhos_array": [
+      1,
+      2,
+      3
+    ],
+    "preco": 9.9
+  },
+  {
+    "nome_tabela": "ACESSÓRIOS",
+    "produto_id": "47102",
+    "descricao": "KIT 2 CALCINHAS EM COTTON",
+    "tamanho_original": "4 a 8",
+    "tamanho_inicio": 4,
+    "tamanho_fim": 8,
+    "tamanhos_array": [
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "preco": 4.9
+  },
+  {
+    "nome_tabela": "ACESSÓRIOS",
+    "produto_id": "47102",
+    "descricao": "KIT 2 CALCINHAS EM COTTON",
+    "tamanho_original": "10 a 12",
+    "tamanho_inicio": 10,
+    "tamanho_fim": 12,
+    "tamanhos_array": [
+      10,
+      11,
+      12
+    ],
+    "preco": 9.9
+  }
+]
