@@ -4,6 +4,7 @@ import sys
 import traceback
 from pathlib import Path
 
+from catalog_image_finder import find_latest_price_json, process_catalog_images
 from price_extractor import ExtractionError, count_pdf_pages, process_price_pdf, validate_price_pdf
 
 
@@ -40,7 +41,8 @@ DATA_DIR = APP_DIR.parent
 UP_BABY_DIR = DATA_DIR / "UP_BABY"
 UP_BABY_PENDING_DIR = UP_BABY_DIR / "1_PRODUTOS_PARA_CADASTRA"
 UP_BABY_SENT_DIR = UP_BABY_DIR / "1_PRODUTOS_ENVIADOS"
-SYSTEM_FOLDERS = {"1_PRODUTOS_PARA_CADASTRA", "1_PRODUTOS_ENVIADOS"}
+UP_BABY_COLORS_DIR = UP_BABY_DIR / "CORES"
+SYSTEM_FOLDERS = {"1_PRODUTOS_PARA_CADASTRA", "1_PRODUTOS_ENVIADOS", "CORES"}
 BRANDS = ["UP-BABY", "3EJA", "QUIMIBY", "PRECOCE"]
 
 
@@ -90,6 +92,47 @@ class PriceValidationWorker(QObject):
             result = validate_price_pdf(
                 pdf_path=self.pdf_path,
                 output_dir=self.output_dir,
+                collection_name=self.collection,
+                start_page=self.start_page,
+                end_page=self.end_page,
+            )
+            self.finished.emit(result)
+        except Exception as exc:
+            detail = f"{exc}\n\n{traceback.format_exc()}"
+            self.failed.emit(detail)
+
+
+class CatalogImageWorker(QObject):
+    finished = Signal(object)
+    failed = Signal(str)
+
+    def __init__(
+        self,
+        catalog_pdf_path: Path,
+        price_json_path: Path,
+        output_dir: Path,
+        colors_dir: Path,
+        collection: str,
+        start_page: int,
+        end_page: int,
+    ) -> None:
+        super().__init__()
+        self.catalog_pdf_path = catalog_pdf_path
+        self.price_json_path = price_json_path
+        self.output_dir = output_dir
+        self.colors_dir = colors_dir
+        self.collection = collection
+        self.start_page = start_page
+        self.end_page = end_page
+
+    @Slot()
+    def run(self) -> None:
+        try:
+            result = process_catalog_images(
+                catalog_pdf_path=self.catalog_pdf_path,
+                price_json_path=self.price_json_path,
+                output_dir=self.output_dir,
+                colors_dir=self.colors_dir,
                 collection_name=self.collection,
                 start_page=self.start_page,
                 end_page=self.end_page,
@@ -213,8 +256,8 @@ class MainWindow(QMainWindow):
         self.process_price_btn.clicked.connect(self.process_price_table)
         self.validate_price_btn = QPushButton("Validar tabela de valores")
         self.validate_price_btn.clicked.connect(self.validate_price_table)
-        self.catalog_btn = QPushButton("Analisar catalogo de produtos")
-        self.catalog_btn.clicked.connect(self._catalog_not_implemented)
+        self.catalog_btn = QPushButton("Buscar imagen")
+        self.catalog_btn.clicked.connect(self.search_catalog_images)
         self.site_btn = QPushButton("Cadastrar no site")
         self.site_btn.clicked.connect(self._site_not_implemented)
         actions.addWidget(self.process_price_btn)
@@ -247,6 +290,7 @@ class MainWindow(QMainWindow):
     def _ensure_default_dirs(self) -> None:
         UP_BABY_PENDING_DIR.mkdir(parents=True, exist_ok=True)
         UP_BABY_SENT_DIR.mkdir(parents=True, exist_ok=True)
+        UP_BABY_COLORS_DIR.mkdir(parents=True, exist_ok=True)
 
     def refresh_collections(self) -> None:
         self.collections_list.clear()
@@ -367,6 +411,53 @@ class MainWindow(QMainWindow):
         self.thread.finished.connect(self._thread_finished)
         self.thread.start()
 
+    def search_catalog_images(self) -> None:
+        current = self.collections_list.currentItem()
+        catalog_pdf_path = self.catalog_pdf_combo.currentData()
+        if not current or not catalog_pdf_path:
+            QMessageBox.warning(self, "Dados incompletos", "Selecione a colecao e o PDF do catalogo de produtos.")
+            return
+
+        start_page = self.catalog_start.value()
+        end_page = self.catalog_end.value()
+        if end_page < start_page:
+            QMessageBox.warning(self, "Paginas invalidas", "A pagina final do catalogo deve ser maior ou igual a inicial.")
+            return
+
+        price_json_path = find_latest_price_json(UP_BABY_PENDING_DIR, current.text())
+        if not price_json_path:
+            QMessageBox.warning(
+                self,
+                "Tabela de valores obrigatoria",
+                "Antes de buscar imagens, gere o JSON usando o botao 'Processar tabela de valores'.",
+            )
+            return
+
+        self._set_price_buttons_enabled(False)
+        self._log(f"Buscando imagens no catalogo: {Path(catalog_pdf_path).name}, paginas {start_page}-{end_page}.")
+        self._log(f"JSON de tabela usado: {price_json_path}")
+
+        self.thread = QThread()
+        self.worker = CatalogImageWorker(
+            catalog_pdf_path=Path(catalog_pdf_path),
+            price_json_path=price_json_path,
+            output_dir=UP_BABY_PENDING_DIR,
+            colors_dir=UP_BABY_COLORS_DIR,
+            collection=current.text(),
+            start_page=start_page,
+            end_page=end_page,
+        )
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self._catalog_image_finished)
+        self.worker.failed.connect(self._catalog_image_failed)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.failed.connect(self.thread.quit)
+        self.thread.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.thread.finished.connect(self._thread_finished)
+        self.thread.start()
+
     def _get_price_selection(self) -> tuple[QListWidgetItem, Path, int, int] | None:
         current = self.collections_list.currentItem()
         pdf_path = self.price_pdf_combo.currentData()
@@ -418,6 +509,28 @@ class MainWindow(QMainWindow):
         self._log(detail)
         QMessageBox.critical(self, "Erro ao validar", detail.splitlines()[0] if detail else "Erro desconhecido.")
 
+    @Slot(object)
+    def _catalog_image_finished(self, result: object) -> None:
+        self._log(f"Produtos no JSON: {result.products_count}")
+        self._log(f"Imagens salvas: {result.images_count}")
+        self._log(f"Produtos sem imagem: {result.products_without_images}")
+        self._log(f"Cores encontradas no catalogo: {result.colors_found_count}")
+        self._log(f"Cores novas cadastradas: {result.new_colors_count}")
+        self._log(f"Pasta de imagens: {result.image_dir}")
+        self._log(f"JSON com imagens: {result.output_json_path}")
+        self._log(f"JSON de cores: {result.colors_json_path}")
+        QMessageBox.information(
+            self,
+            "Busca concluida",
+            f"{result.images_count} imagem(ns) salva(s). {result.products_without_images} produto(s) ficaram sem imagem.",
+        )
+
+    @Slot(str)
+    def _catalog_image_failed(self, detail: str) -> None:
+        self._log("Falha ao buscar imagens.")
+        self._log(detail)
+        QMessageBox.critical(self, "Erro ao buscar imagens", detail.splitlines()[0] if detail else "Erro desconhecido.")
+
     def _thread_finished(self) -> None:
         self._set_price_buttons_enabled(True)
         self.thread = None
@@ -426,19 +539,13 @@ class MainWindow(QMainWindow):
     def _set_price_buttons_enabled(self, enabled: bool) -> None:
         self.process_price_btn.setEnabled(enabled)
         self.validate_price_btn.setEnabled(enabled)
+        self.catalog_btn.setEnabled(enabled)
 
     def _site_not_implemented(self) -> None:
         QMessageBox.information(
             self,
             "Cadastro no site",
             "Este botao fica reservado para a proxima etapa: envio dos produtos para o site.",
-        )
-
-    def _catalog_not_implemented(self) -> None:
-        QMessageBox.information(
-            self,
-            "Catalogo de produtos",
-            "Este botao fica reservado para a proxima etapa: leitura das fotos e dados do catalogo.",
         )
 
     def _show_pending_brand(self, brand: str) -> None:

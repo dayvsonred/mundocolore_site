@@ -6,6 +6,8 @@ Aplicacao local em Python/PySide6 para preparar produtos do site `mundocoloresto
 
 No terminal, dentro da pasta `cadastrador\APP`:
 
+cd "C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\cadastrador\APP"
+
 ```powershell
 python -m venv .venv
 .\.venv\Scripts\python -m pip install -r requirements.txt
@@ -32,6 +34,10 @@ Para OCR de PDFs escaneados, tambem e necessario instalar:
 - Mostra a quantidade de paginas de cada PDF.
 - Processa a tabela de valores e salva JSON/XLSX em:
 - Valida a tabela de valores e gera relatorio JSON/XLSX com uma aba `revisar` para conferir divergencias ou linhas ambiguas.
+- Busca imagens no PDF do catalogo usando o JSON de tabela mais recente da colecao.
+- Salva imagens em `..\UP_BABY\1_PRODUTOS_PARA_CADASTRA\IMAGEMS`.
+- Gera um novo JSON com os atributos `imagem` e `cores`.
+- Atualiza o cadastro de cores em `..\UP_BABY\CORES\cores_catalogo.json`.
 
 ```text
 ..\UP_BABY\1_PRODUTOS_PARA_CADASTRA

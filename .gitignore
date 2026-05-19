@@ -139,6 +139,11 @@ cadastrador/**/1_PRODUTOS_PARA_CADASTRA/*.json
 cadastrador/**/1_PRODUTOS_PARA_CADASTRA/*.xlsx
 cadastrador/**/1_PRODUTOS_ENVIADOS/*.json
 cadastrador/**/1_PRODUTOS_ENVIADOS/*.xlsx
+cadastrador/**/1_PRODUTOS_PARA_CADASTRA/IMAGEMS/
+cadastrador/**/CORES/*.json
 cadastrador/**/dist/
 cadastrador/**/build/
 
+
+cadastrador/dell/
+cadastrador/dell/*
