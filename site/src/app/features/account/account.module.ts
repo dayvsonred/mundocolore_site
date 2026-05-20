@@ -9,6 +9,8 @@ import { SharedModule } from 'src/app/shared/shared.module';
 import { ProfileDataComponent } from './profile-data/profile-data.component';
 import { ProfileDataPixComponent } from './profile-data-pix/profile-data-pix.component';
 import { ProfileChangeNameComponent } from './profile-change-name/profile-change-name.component';
+import { BrandRegistrationComponent } from './brand-registration/brand-registration.component';
+import { CollectionRegistrationComponent } from './collection-registration/collection-registration.component';
 import { ProductRegistrationComponent } from './product-registration/product-registration.component';
 
 @NgModule({
@@ -17,7 +19,17 @@ import { ProductRegistrationComponent } from './product-registration/product-reg
     SharedModule,
     AccountRoutingModule
   ],
-  declarations: [AccountPageComponent, ChangePasswordComponent, ProfileDetailsComponent, ProfileDataComponent, ProfileDataPixComponent, ProfileChangeNameComponent, ProductRegistrationComponent],
+  declarations: [
+    AccountPageComponent,
+    ChangePasswordComponent,
+    ProfileDetailsComponent,
+    ProfileDataComponent,
+    ProfileDataPixComponent,
+    ProfileChangeNameComponent,
+    BrandRegistrationComponent,
+    CollectionRegistrationComponent,
+    ProductRegistrationComponent
+  ],
   exports: [AccountPageComponent]
 })
 export class AccountModule { }

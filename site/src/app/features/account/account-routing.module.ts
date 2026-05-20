@@ -4,6 +4,8 @@ import { UserLayoutComponent } from 'src/app/shared/layouts/user-layout/user-lay
 import { AdminGuard } from 'src/app/core/guards/admin.guard';
 
 import { AccountPageComponent } from './account-page/account-page.component';
+import { BrandRegistrationComponent } from './brand-registration/brand-registration.component';
+import { CollectionRegistrationComponent } from './collection-registration/collection-registration.component';
 import { ProductRegistrationComponent } from './product-registration/product-registration.component';
 
 const routes: Routes = [
@@ -16,6 +18,8 @@ const routes: Routes = [
       { path: 'meus-dados', loadChildren: () => import('./profile/profile.module').then(m => m.ProfileModule) },
       { path: 'meus-enderecos', loadChildren: () => import('./addresses/addresses.module').then(m => m.AddressesModule) },
       { path: 'meus-cartoes', loadChildren: () => import('./cards/cards.module').then(m => m.CardsModule) },
+      { path: 'cadastro-marcas', component: BrandRegistrationComponent, canActivate: [AdminGuard] },
+      { path: 'cadastro-colecoes', component: CollectionRegistrationComponent, canActivate: [AdminGuard] },
       { path: 'cadastro-produtos', component: ProductRegistrationComponent, canActivate: [AdminGuard] },
       { path: 'cadastro-produtos/:brand', component: ProductRegistrationComponent, canActivate: [AdminGuard] },
     ]

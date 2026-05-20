@@ -1,0 +1,95 @@
+<section class="admin-registration-page">
+  <header class="page-header">
+    <div>
+      <h1>Cadastro de colecoes</h1>
+      <p>Vincule uma colecao a uma marca e defina o ano de exibicao.</p>
+    </div>
+  </header>
+
+  <form class="admin-form" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Marca</mat-label>
+        <mat-select formControlName="brand">
+          <mat-option *ngFor="let brand of brands" [value]="getBrandValue(brand)">
+            {{ brand.name }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="form.controls.brand.hasError('required')">
+          Selecione uma marca
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Ano</mat-label>
+        <input matInput formControlName="year" maxlength="4">
+        <mat-error *ngIf="form.controls.year.hasError('required')">
+          Informe o ano
+        </mat-error>
+        <mat-error *ngIf="form.controls.year.hasError('pattern')">
+          Use um ano com 4 digitos
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Nome da colecao</mat-label>
+        <input matInput formControlName="collection" maxlength="80">
+        <mat-error *ngIf="form.controls.collection.hasError('required')">
+          Informe a colecao
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Slug</mat-label>
+        <input matInput formControlName="slug" maxlength="80" placeholder="Ex.: inverno-verao-a">
+        <mat-hint>Opcional. Se ficar vazio, sera gerado pelo backend.</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Inicio da exibicao</mat-label>
+        <input matInput type="date" formControlName="display_start_at">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Fim da exibicao</mat-label>
+        <input matInput type="date" formControlName="display_end_at">
+      </mat-form-field>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" mat-raised-button color="primary" [disabled]="saving || loadingBrands">
+        <mat-icon>save</mat-icon>
+        {{ saving ? 'Salvando...' : 'Cadastrar colecao' }}
+      </button>
+    </div>
+  </form>
+
+  <section class="records-section">
+    <header class="section-header">
+      <h2>Colecoes cadastradas</h2>
+      <button
+        type="button"
+        mat-stroked-button
+        color="primary"
+        (click)="loadCollections()"
+        [disabled]="loadingCollections">
+        <mat-icon>refresh</mat-icon>
+        Atualizar
+      </button>
+    </header>
+
+    <div *ngIf="!loadingCollections && !collections.length" class="empty-state">
+      Nenhuma colecao cadastrada.
+    </div>
+
+    <div *ngIf="collections.length" class="record-list">
+      <article *ngFor="let collection of collections" class="record-item">
+        <div>
+          <h3>{{ collection.name }}</h3>
+          <p>{{ getBrandLabel(collection.brand_key || collection.brand) }} / {{ collection.year }}</p>
+        </div>
+        <span>{{ collection.s3_prefix || collection.collection_key || '-' }}</span>
+      </article>
+    </div>
+  </section>
+</section>

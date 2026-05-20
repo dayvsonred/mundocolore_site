@@ -18,11 +18,23 @@ export class UserSidebarComponent implements OnInit {
   @Input() activeRoute: string = '';
   isAdmin = false;
 
-  private readonly adminMenuItem: MenuItem = {
-    label: 'Cadastro de produtos',
-    route: '/minha-conta/cadastro-produtos',
-    icon: 'inventory_2'
-  };
+  private readonly adminMenuItems: MenuItem[] = [
+    {
+      label: 'Cadastro de marcas',
+      route: '/minha-conta/cadastro-marcas',
+      icon: 'sell'
+    },
+    {
+      label: 'Cadastro de colecoes',
+      route: '/minha-conta/cadastro-colecoes',
+      icon: 'collections_bookmark'
+    },
+    {
+      label: 'Cadastro de produtos',
+      route: '/minha-conta/cadastro-produtos',
+      icon: 'inventory_2'
+    }
+  ];
 
   private readonly baseMenuItems: MenuItem[] = [
     { label: 'Minha Conta', route: '/minha-conta', icon: 'account_circle' },
@@ -47,12 +59,11 @@ export class UserSidebarComponent implements OnInit {
   }
 
   get menuItems(): MenuItem[] {
-    console.log('UserSidebarComponent: isAdmin =', this.isAdmin);
     if (!this.isAdmin) {
       return this.baseMenuItems;
     }
 
-    return [...this.baseMenuItems, this.adminMenuItem];
+    return [...this.baseMenuItems, ...this.adminMenuItems];
   }
 
   isActive(route: string): boolean {

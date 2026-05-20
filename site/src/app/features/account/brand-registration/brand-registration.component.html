@@ -1,0 +1,57 @@
+<section class="admin-registration-page">
+  <header class="page-header">
+    <div>
+      <h1>Cadastro de marcas</h1>
+      <p>Crie a marca e o prefixo base usado no bucket de imagens.</p>
+    </div>
+  </header>
+
+  <form class="admin-form" [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Nome da marca</mat-label>
+        <input matInput formControlName="name" maxlength="80">
+        <mat-error *ngIf="form.controls.name.hasError('required')">
+          Informe o nome da marca
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Identificador</mat-label>
+        <input matInput formControlName="brand" maxlength="80" placeholder="Ex.: UP-BABY">
+        <mat-hint>Se ficar vazio, sera usado o nome da marca.</mat-hint>
+      </mat-form-field>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" mat-raised-button color="primary" [disabled]="saving">
+        <mat-icon>save</mat-icon>
+        {{ saving ? 'Salvando...' : 'Cadastrar marca' }}
+      </button>
+    </div>
+  </form>
+
+  <section class="records-section">
+    <header class="section-header">
+      <h2>Marcas cadastradas</h2>
+      <button type="button" mat-stroked-button color="primary" (click)="loadBrands()" [disabled]="loading">
+        <mat-icon>refresh</mat-icon>
+        Atualizar
+      </button>
+    </header>
+
+    <div *ngIf="!loading && !brands.length" class="empty-state">
+      Nenhuma marca cadastrada.
+    </div>
+
+    <div *ngIf="brands.length" class="record-list">
+      <article *ngFor="let brand of brands" class="record-item">
+        <div>
+          <h3>{{ brand.name }}</h3>
+          <p>{{ brand.brand_key || brand.brand }}</p>
+        </div>
+        <span>{{ brand.s3_prefix || '-' }}</span>
+      </article>
+    </div>
+  </section>
+</section>
