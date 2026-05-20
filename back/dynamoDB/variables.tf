@@ -78,11 +78,27 @@ variable "dynamodb_tables" {
       hash_key_type = "S"
       attributes = [
         {
-          name = "id"
+          name = "category"
           type = "S"
         },
         {
-          name = "category"
+          name = "entity_type"
+          type = "S"
+        },
+        {
+          name = "brand_key"
+          type = "S"
+        },
+        {
+          name = "collection_key"
+          type = "S"
+        },
+        {
+          name = "type_key"
+          type = "S"
+        },
+        {
+          name = "product_id"
           type = "S"
         }
       ]
@@ -90,6 +106,36 @@ variable "dynamodb_tables" {
         {
           name            = "category-index"
           hash_key        = "category"
+          projection_type = "ALL"
+        },
+        {
+          name            = "entity-type-index"
+          hash_key        = "entity_type"
+          range_key       = "id"
+          projection_type = "ALL"
+        },
+        {
+          name            = "brand-index"
+          hash_key        = "brand_key"
+          range_key       = "id"
+          projection_type = "ALL"
+        },
+        {
+          name            = "collection-index"
+          hash_key        = "collection_key"
+          range_key       = "product_id"
+          projection_type = "ALL"
+        },
+        {
+          name            = "type-index"
+          hash_key        = "type_key"
+          range_key       = "id"
+          projection_type = "ALL"
+        },
+        {
+          name            = "product-id-index"
+          hash_key        = "product_id"
+          range_key       = "id"
           projection_type = "ALL"
         }
       ]

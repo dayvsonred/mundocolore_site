@@ -36,7 +36,7 @@ resource "aws_iam_role" "lambda_role" {
 
 # IAM Policy for DynamoDB access
 resource "aws_iam_role_policy" "dynamodb_policy" {
-  name = "lb_mundocolore-products-dynamodb-policy"
+  name = "lb_mundocolore-products-data-policy"
   role = aws_iam_role.lambda_role.id
 
   policy = jsonencode({
@@ -45,11 +45,27 @@ resource "aws_iam_role_policy" "dynamodb_policy" {
       {
         Effect = "Allow"
         Action = [
+          "dynamodb:GetItem",
+          "dynamodb:Query",
           "dynamodb:Scan",
-          "dynamodb:PutItem"
+          "dynamodb:PutItem",
+          "dynamodb:UpdateItem"
         ]
         Resource = [
-          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-products"
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-products",
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-products/index/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          "arn:aws:s3:::mundocolorestore-imagems",
+          "arn:aws:s3:::mundocolorestore-imagems/*"
         ]
       }
     ]
@@ -65,13 +81,15 @@ resource "aws_lambda_function" "products_lambda" {
   timeout       = 30
 
   filename         = "../lambda.zip"
-  source_code_hash = filebase64sha256("../lambda.zip")
+  source_code_hash = fileexists("../lambda.zip") ? filebase64sha256("../lambda.zip") : null
 
   role = aws_iam_role.lambda_role.arn
 
   environment {
     variables = {
-      TABLE_NAME = "mundocolore-products"
+      TABLE_NAME     = "mundocolore-products"
+      IMAGE_BUCKET   = "mundocolorestore-imagems"
+      IMAGE_BASE_URL = "https://mundocolorestore-imagems.s3.sa-east-1.amazonaws.com"
     }
   }
 }
@@ -120,6 +138,88 @@ resource "aws_api_gateway_integration" "products_get_integration" {
   rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
   resource_id             = aws_api_gateway_resource.products_resource.id
   http_method             = aws_api_gateway_method.products_get.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.products_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_method" "products_options" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.products_resource.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "products_options_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.products_resource.id
+  http_method             = aws_api_gateway_method.products_options.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.products_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_resource" "products_brands_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.products_resource.id
+  path_part   = "brands"
+}
+
+resource "aws_api_gateway_method" "products_brands_any" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.products_brands_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "products_brands_any_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.products_brands_resource.id
+  http_method             = aws_api_gateway_method.products_brands_any.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.products_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_resource" "products_collections_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.products_resource.id
+  path_part   = "collections"
+}
+
+resource "aws_api_gateway_method" "products_collections_any" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.products_collections_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "products_collections_any_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.products_collections_resource.id
+  http_method             = aws_api_gateway_method.products_collections_any.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.products_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_resource" "products_id_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.products_resource.id
+  path_part   = "{product_id}"
+}
+
+resource "aws_api_gateway_method" "products_id_get" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.products_id_resource.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "products_id_get_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.products_id_resource.id
+  http_method             = aws_api_gateway_method.products_id_get.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.products_lambda.invoke_arn

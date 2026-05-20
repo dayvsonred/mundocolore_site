@@ -1,0 +1,10 @@
+aws_region         = "sa-east-1"
+environment        = "dev"
+project_name       = "mundocolore"
+images_bucket_name = "mundocolorestore-imagems"
+
+# Use the site origins here when the final domains are stable.
+allowed_cors_origins = ["*"]
+
+# Product catalog images are public by default so the site can render them.
+public_read_images = true

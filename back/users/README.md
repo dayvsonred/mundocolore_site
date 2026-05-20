@@ -23,17 +23,6 @@ terraform plan
 terraform apply
 ```
 
-## Deploy Terraform (terraform)
-
-No diretorio `back/users/terraform` (espelho de `infra`):
-
-```powershell
-$env:AWS_PROFILE = "mundocolore"
-terraform init
-terraform plan
-terraform apply
-```
-
 ## Redeploy API Gateway
 
 Depois do apply, publicar o stage:
