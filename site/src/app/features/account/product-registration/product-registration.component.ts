@@ -2,13 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { finalize } from 'rxjs';
 
-import { ProductService } from 'src/app/core/services/product.service';
-
-interface ProductBrand {
-  label: string;
-  slug: string;
-}
+import {
+  ProductBrandRecord,
+  ProductCollectionRecord,
+  ProductService
+} from 'src/app/core/services/product.service';
 
 @Component({
   selector: 'app-product-registration',
@@ -16,23 +16,28 @@ interface ProductBrand {
   styleUrls: ['./product-registration.component.scss']
 })
 export class ProductRegistrationComponent implements OnInit {
-  readonly brands: ProductBrand[] = [
-    { label: 'UP-BABY', slug: 'up-baby' },
-    { label: '3EJA', slug: '3eja' },
-    { label: 'QUIMIBY', slug: 'quimiby' },
-    { label: 'PRECOCE', slug: 'precoce' }
-  ];
-
-  selectedBrand: ProductBrand | null = null;
-  imagePreview = '';
-  imageFileName = '';
+  brands: ProductBrandRecord[] = [];
+  collections: ProductCollectionRecord[] = [];
+  selectedBrand: ProductBrandRecord | null = null;
+  loadingBrands = false;
+  loadingCollections = false;
   saving = false;
 
+  private routeBrand = '';
+
   readonly form = this.formBuilder.group({
-    release_date: ['', Validators.required],
-    finalization_date: ['', Validators.required],
-    collection: ['', [Validators.required, Validators.maxLength(80)]],
-    image_url: ['', Validators.required]
+    collection: [null, Validators.required],
+    Number: [null],
+    UUID: [''],
+    produto_id: ['', [Validators.required, Validators.maxLength(40)]],
+    descricao: ['', [Validators.required, Validators.maxLength(180)]],
+    tamanho_original: ['', [Validators.maxLength(40)]],
+    tamanho_inicio: [null],
+    tamanho_fim: [null],
+    tamanhos_array: [''],
+    preco: ['', [Validators.required, Validators.pattern(/^[0-9]+([.,][0-9]{1,2})?$/)]],
+    imagem: [''],
+    cores: ['']
   });
 
   constructor(
@@ -45,51 +50,51 @@ export class ProductRegistrationComponent implements OnInit {
 
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
-      const brandSlug = params.get('brand');
-      this.selectedBrand = brandSlug
-        ? this.brands.find((brand) => brand.slug === brandSlug) || null
-        : null;
-
-      if (brandSlug && !this.selectedBrand) {
-        this.router.navigate(['/minha-conta/cadastro-produtos']);
-      }
+      this.routeBrand = params.get('brand') || '';
+      this.resolveSelectedBrand();
     });
+
+    this.loadBrands();
   }
 
-  selectBrand(brand: ProductBrand): void {
-    this.router.navigate(['/minha-conta/cadastro-produtos', brand.slug]);
+  loadBrands(): void {
+    this.loadingBrands = true;
+    this.productService.getBrands()
+      .pipe(finalize(() => this.loadingBrands = false))
+      .subscribe({
+        next: (brands) => {
+          this.brands = brands;
+          this.resolveSelectedBrand();
+        },
+        error: () => {
+          this.snackBar.open('Nao foi possivel carregar as marcas.', 'Fechar', { duration: 4000 });
+        }
+      });
+  }
+
+  loadCollections(brand: ProductBrandRecord): void {
+    this.loadingCollections = true;
+    this.collections = [];
+    this.form.patchValue({ collection: null });
+
+    this.productService.getCollections(this.getBrandValue(brand))
+      .pipe(finalize(() => this.loadingCollections = false))
+      .subscribe({
+        next: (collections) => {
+          this.collections = collections;
+        },
+        error: () => {
+          this.snackBar.open('Nao foi possivel carregar as colecoes da marca.', 'Fechar', { duration: 4000 });
+        }
+      });
+  }
+
+  selectBrand(brand: ProductBrandRecord): void {
+    this.router.navigate(['/minha-conta/cadastro-produtos', this.getRouteToken(brand)]);
   }
 
   backToBrands(): void {
     this.router.navigate(['/minha-conta/cadastro-produtos']);
-  }
-
-  onImageSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-
-    if (!file) {
-      return;
-    }
-
-    if (!file.type.startsWith('image/')) {
-      this.form.patchValue({ image_url: '' });
-      this.imagePreview = '';
-      this.imageFileName = '';
-      this.snackBar.open('Selecione uma imagem valida.', 'Fechar', { duration: 3000 });
-      return;
-    }
-
-    this.imageFileName = file.name;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const imageUrl = String(reader.result || '');
-      this.imagePreview = imageUrl;
-      this.form.patchValue({ image_url: imageUrl });
-      this.form.controls.image_url.markAsTouched();
-    };
-    reader.readAsDataURL(file);
   }
 
   submit(): void {
@@ -103,33 +108,165 @@ export class ProductRegistrationComponent implements OnInit {
     }
 
     const value = this.form.getRawValue();
-    const collection = String(value.collection || '').trim();
+    const collection = value.collection as unknown as ProductCollectionRecord;
+    const description = String(value.descricao || '').trim();
+    const sizeStart = this.toOptionalNumber(value.tamanho_inicio);
+    const sizeEnd = this.toOptionalNumber(value.tamanho_fim);
+    const sizes = this.parseNumberList(value.tamanhos_array);
+    const sizesArray = sizes.length ? sizes : this.buildSizeRange(sizeStart, sizeEnd);
 
     this.saving = true;
     this.productService.createProduct({
-      name: `${this.selectedBrand.label} - ${collection}`,
-      description: collection,
-      price: 0,
-      category: this.selectedBrand.label,
-      brand: this.selectedBrand.label,
-      collection,
-      release_date: value.release_date || '',
-      finalization_date: value.finalization_date || '',
-      image: value.image_url || '',
-      image_url: value.image_url || '',
+      Number: this.toOptionalNumber(value.Number),
+      UUID: this.toOptionalString(value.UUID),
+      nome_tabela: this.getBrandLabel(this.selectedBrand),
+      produto_id: String(value.produto_id || '').trim(),
+      name: description,
+      description,
+      descricao: description,
+      brand: this.getBrandValue(this.selectedBrand),
+      collection: collection.name || collection.slug,
+      collection_slug: collection.slug,
+      year: collection.year,
+      preco: String(value.preco || '').trim(),
+      tamanho_original: this.toOptionalString(value.tamanho_original),
+      tamanho_inicio: sizeStart,
+      tamanho_fim: sizeEnd,
+      tamanhos_array: sizesArray,
+      imagem: this.parseStringList(value.imagem),
+      cores: this.parseStringList(value.cores),
       stock: 0
-    } as any).subscribe({
-      next: () => {
-        this.saving = false;
-        this.form.reset();
-        this.imagePreview = '';
-        this.imageFileName = '';
-        this.snackBar.open('Produto cadastrado.', 'Fechar', { duration: 3000 });
-      },
-      error: () => {
-        this.saving = false;
-        this.snackBar.open('Nao foi possivel cadastrar o produto.', 'Fechar', { duration: 4000 });
-      }
-    });
+    }).pipe(finalize(() => this.saving = false))
+      .subscribe({
+        next: () => {
+          const selectedCollection = value.collection;
+          this.form.reset({
+            collection: selectedCollection,
+            Number: null,
+            UUID: '',
+            produto_id: '',
+            descricao: '',
+            tamanho_original: '',
+            tamanho_inicio: null,
+            tamanho_fim: null,
+            tamanhos_array: '',
+            preco: '',
+            imagem: '',
+            cores: ''
+          });
+          this.snackBar.open('Produto cadastrado.', 'Fechar', { duration: 3000 });
+        },
+        error: () => {
+          this.snackBar.open('Nao foi possivel cadastrar o produto.', 'Fechar', { duration: 4000 });
+        }
+      });
+  }
+
+  getBrandLabel(brand: ProductBrandRecord): string {
+    return brand.name || brand.brand || brand.brand_key || '-';
+  }
+
+  getBrandValue(brand: ProductBrandRecord): string {
+    return brand.brand_key || brand.brand || brand.name;
+  }
+
+  getRouteToken(brand: ProductBrandRecord): string {
+    return this.slugify(this.getBrandValue(brand));
+  }
+
+  getCollectionLabel(collection: ProductCollectionRecord): string {
+    return `${collection.name || collection.slug} / ${collection.year}`;
+  }
+
+  private resolveSelectedBrand(): void {
+    if (!this.routeBrand) {
+      this.selectedBrand = null;
+      this.collections = [];
+      this.form.reset({
+        collection: null,
+        Number: null,
+        UUID: '',
+        produto_id: '',
+        descricao: '',
+        tamanho_original: '',
+        tamanho_inicio: null,
+        tamanho_fim: null,
+        tamanhos_array: '',
+        preco: '',
+        imagem: '',
+        cores: ''
+      });
+      return;
+    }
+
+    if (!this.brands.length) {
+      return;
+    }
+
+    const selected = this.brands.find((brand) => {
+      const routeToken = this.slugify(this.routeBrand);
+      return [
+        brand.name,
+        brand.brand,
+        brand.brand_key,
+        this.getRouteToken(brand)
+      ].some((value) => this.slugify(value || '') === routeToken);
+    }) || null;
+
+    if (!selected) {
+      this.router.navigate(['/minha-conta/cadastro-produtos']);
+      return;
+    }
+
+    if (this.selectedBrand && this.getBrandValue(this.selectedBrand) === this.getBrandValue(selected)) {
+      return;
+    }
+
+    this.selectedBrand = selected;
+    this.loadCollections(selected);
+  }
+
+  private parseStringList(value: unknown): string[] {
+    return String(value || '')
+      .split(/[\n,;]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  private parseNumberList(value: unknown): number[] {
+    return this.parseStringList(value)
+      .map((item) => Number(item))
+      .filter((item) => Number.isFinite(item));
+  }
+
+  private buildSizeRange(start?: number, end?: number): number[] {
+    if (start === undefined || end === undefined || end < start) {
+      return [];
+    }
+
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+  }
+
+  private toOptionalNumber(value: unknown): number | undefined {
+    if (value === null || value === undefined || String(value).trim() === '') {
+      return undefined;
+    }
+
+    const number = Number(value);
+    return Number.isFinite(number) ? number : undefined;
+  }
+
+  private toOptionalString(value: unknown): string | undefined {
+    const text = String(value || '').trim();
+    return text || undefined;
+  }
+
+  private slugify(value: string): string {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 }

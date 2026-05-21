@@ -2,7 +2,8 @@
   <header class="page-header">
     <div>
       <h1>Cadastro de produtos</h1>
-      <p *ngIf="selectedBrand">{{ selectedBrand.label }}</p>
+      <p *ngIf="selectedBrand">{{ getBrandLabel(selectedBrand) }}</p>
+      <p *ngIf="!selectedBrand">Selecione uma marca cadastrada na API de produtos.</p>
     </div>
 
     <button
@@ -16,59 +17,125 @@
     </button>
   </header>
 
-  <div *ngIf="!selectedBrand" class="brand-grid">
+  <div *ngIf="loadingBrands" class="loading-state">
+    <mat-spinner diameter="32"></mat-spinner>
+    <span>Carregando marcas...</span>
+  </div>
+
+  <div *ngIf="!loadingBrands && !selectedBrand && !brands.length" class="empty-state">
+    Nenhuma marca cadastrada.
+  </div>
+
+  <div *ngIf="!loadingBrands && !selectedBrand && brands.length" class="brand-grid">
     <button
       *ngFor="let brand of brands"
       type="button"
       class="brand-button"
       (click)="selectBrand(brand)">
-      <span>{{ brand.label }}</span>
+      <span>{{ getBrandLabel(brand) }}</span>
       <mat-icon>chevron_right</mat-icon>
     </button>
   </div>
 
   <form *ngIf="selectedBrand" class="product-form" [formGroup]="form" (ngSubmit)="submit()">
     <div class="form-grid">
-      <mat-form-field appearance="outline">
-        <mat-label>Data lancamento</mat-label>
-        <input matInput type="date" formControlName="release_date">
-        <mat-error *ngIf="form.controls.release_date.hasError('required')">
-          Informe a data de lancamento
+      <mat-form-field appearance="outline" class="wide-field">
+        <mat-label>Colecao</mat-label>
+        <mat-select formControlName="collection" [disabled]="loadingCollections">
+          <mat-option *ngFor="let collection of collections" [value]="collection">
+            {{ getCollectionLabel(collection) }}
+          </mat-option>
+        </mat-select>
+        <mat-hint *ngIf="loadingCollections">Carregando colecoes da marca...</mat-hint>
+        <mat-hint *ngIf="!loadingCollections && !collections.length">
+          Cadastre uma colecao para esta marca antes de criar produtos.
+        </mat-hint>
+        <mat-error *ngIf="form.controls.collection.hasError('required')">
+          Selecione uma colecao
         </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>Data finalizacao</mat-label>
-        <input matInput type="date" formControlName="finalization_date">
-        <mat-error *ngIf="form.controls.finalization_date.hasError('required')">
-          Informe a data de finalizacao
+        <mat-label>Numero</mat-label>
+        <input matInput type="number" formControlName="Number">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>UUID</mat-label>
+        <input matInput formControlName="UUID">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Codigo do produto</mat-label>
+        <input matInput formControlName="produto_id" maxlength="40">
+        <mat-error *ngIf="form.controls.produto_id.hasError('required')">
+          Informe o codigo do produto
+        </mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Preco</mat-label>
+        <input matInput formControlName="preco" placeholder="99.90">
+        <mat-error *ngIf="form.controls.preco.hasError('required')">
+          Informe o preco
+        </mat-error>
+        <mat-error *ngIf="form.controls.preco.hasError('pattern')">
+          Use o formato 99.90 ou 99,90
         </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="wide-field">
-        <mat-label>Colecao</mat-label>
-        <input matInput formControlName="collection" maxlength="80">
-        <mat-error *ngIf="form.controls.collection.hasError('required')">
-          Informe a colecao
+        <mat-label>Descricao</mat-label>
+        <textarea matInput formControlName="descricao" rows="3" maxlength="180"></textarea>
+        <mat-error *ngIf="form.controls.descricao.hasError('required')">
+          Informe a descricao
         </mat-error>
       </mat-form-field>
 
-      <div class="image-field wide-field">
-        <label for="product-image">Imagem</label>
-        <input id="product-image" type="file" accept="image/*" (change)="onImageSelected($event)">
-        <span>{{ imageFileName || 'Nenhuma imagem selecionada' }}</span>
-        <mat-error *ngIf="form.controls.image_url.touched && form.controls.image_url.hasError('required')">
-          Selecione uma imagem
-        </mat-error>
-      </div>
+      <mat-form-field appearance="outline">
+        <mat-label>Tamanho original</mat-label>
+        <input matInput formControlName="tamanho_original" placeholder="1 a 3">
+      </mat-form-field>
 
-      <div *ngIf="imagePreview" class="image-preview wide-field">
-        <img [src]="imagePreview" alt="Preview do produto">
-      </div>
+      <mat-form-field appearance="outline">
+        <mat-label>Tamanho inicio</mat-label>
+        <input matInput type="number" formControlName="tamanho_inicio">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Tamanho fim</mat-label>
+        <input matInput type="number" formControlName="tamanho_fim">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Tamanhos array</mat-label>
+        <input matInput formControlName="tamanhos_array" placeholder="1, 2, 3">
+        <mat-hint>Opcional. Se ficar vazio, sera gerado pelo inicio/fim.</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="wide-field">
+        <mat-label>Imagens</mat-label>
+        <textarea
+          matInput
+          formControlName="imagem"
+          rows="3"
+          placeholder="A_uuid_46584_1-2-3_1.jpg"></textarea>
+        <mat-hint>Separe nomes de arquivos por linha, virgula ou ponto e virgula.</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="wide-field">
+        <mat-label>Cores</mat-label>
+        <input matInput formControlName="cores" placeholder="120000">
+        <mat-hint>Separe codigos por virgula ou ponto e virgula.</mat-hint>
+      </mat-form-field>
     </div>
 
     <div class="form-actions">
-      <button type="submit" mat-raised-button color="primary" [disabled]="saving">
+      <button
+        type="submit"
+        mat-raised-button
+        color="primary"
+        [disabled]="saving || loadingCollections || !collections.length">
         <mat-icon>save</mat-icon>
         {{ saving ? 'Salvando...' : 'Cadastrar produto' }}
       </button>

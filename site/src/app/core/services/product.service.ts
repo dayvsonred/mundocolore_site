@@ -46,6 +46,37 @@ export interface CreateProductCollectionPayload {
   finalization_date?: string;
 }
 
+export interface CreateProductPayload {
+  id?: string;
+  UUID?: string;
+  Number?: number;
+  nome_tabela?: string;
+  produto_id: string;
+  name?: string;
+  description?: string;
+  descricao?: string;
+  price?: string | number;
+  preco?: string | number;
+  category?: string;
+  type?: string;
+  brand: string;
+  collection: string;
+  collection_slug?: string;
+  year?: string;
+  release_date?: string;
+  finalization_date?: string;
+  tamanho_original?: string;
+  tamanho_inicio?: number;
+  tamanho_fim?: number;
+  tamanhos_array?: number[];
+  cores?: string[];
+  imagem?: string[];
+  image?: string;
+  image_url?: string;
+  images?: string[];
+  stock?: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -74,7 +105,7 @@ export class ProductService {
     );
   }
 
-  createProduct(product: Partial<Product>): Observable<Product> {
+  createProduct(product: CreateProductPayload): Observable<Product> {
     return this.http.post<Product>(`${this.apiUrl}/products`, product).pipe(
       catchError((error) => throwError(() => error))
     );
