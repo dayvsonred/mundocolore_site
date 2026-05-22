@@ -45,6 +45,14 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		if strings.Contains(request.Path, "/products/") {
 			return HandleGetProduct(ctx, request)
 		}
+	case "PUT", "PATCH":
+		if strings.Contains(request.Path, "/products/") {
+			return HandleUpdateProduct(ctx, request)
+		}
+	case "DELETE":
+		if strings.Contains(request.Path, "/products/") {
+			return HandleDeleteProduct(ctx, request)
+		}
 	}
 
 	return notFoundResponse(), nil

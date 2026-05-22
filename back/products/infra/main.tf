@@ -300,7 +300,7 @@ resource "aws_api_gateway_resource" "products_id_resource" {
 resource "aws_api_gateway_method" "products_id_get" {
   rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
   resource_id   = aws_api_gateway_resource.products_id_resource.id
-  http_method   = "GET"
+  http_method   = "ANY"
   authorization = "NONE"
 }
 

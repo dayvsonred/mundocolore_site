@@ -74,7 +74,23 @@ export interface CreateProductPayload {
   image?: string;
   image_url?: string;
   images?: string[];
+  image_base64?: string;
+  image_file_name?: string;
+  image_content_type?: string;
   stock?: number;
+  is_active?: boolean;
+}
+
+export interface ProductListQuery {
+  category?: string;
+  type?: string;
+  produto_id?: string;
+  brand?: string;
+  year?: string;
+  collection?: string;
+  include_inactive?: boolean;
+  limit?: number;
+  last_key?: string;
 }
 
 @Injectable({
@@ -86,10 +102,20 @@ export class ProductService {
   constructor(private http: HttpClient) {}
 
   getProducts(category?: string, limit?: number, lastKey?: string): Observable<Product[]> {
+    return this.getProductsByQuery({ category, limit, last_key: lastKey });
+  }
+
+  getProductsByQuery(query: ProductListQuery = {}): Observable<Product[]> {
     let params = new HttpParams();
-    if (category) params = params.set('category', category);
-    if (limit) params = params.set('limit', limit.toString());
-    if (lastKey) params = params.set('last_key', lastKey);
+    if (query.category) params = params.set('category', query.category);
+    if (query.type) params = params.set('type', query.type);
+    if (query.produto_id) params = params.set('produto_id', query.produto_id);
+    if (query.brand) params = params.set('brand', query.brand);
+    if (query.year) params = params.set('year', query.year);
+    if (query.collection) params = params.set('collection', query.collection);
+    if (query.include_inactive) params = params.set('include_inactive', 'true');
+    if (query.limit) params = params.set('limit', query.limit.toString());
+    if (query.last_key) params = params.set('last_key', query.last_key);
 
     return this.http
       .get<Product[] | { products: Product[] }>(`${this.apiUrl}/products`, { params })
@@ -100,13 +126,25 @@ export class ProductService {
   }
 
   getProductById(id: string): Observable<Product | undefined> {
-    return this.getProducts().pipe(
-      map((products) => products.find((product) => product.id === id))
+    return this.http.get<Product>(`${this.apiUrl}/products/${encodeURIComponent(id)}`).pipe(
+      catchError((error) => throwError(() => error))
     );
   }
 
   createProduct(product: CreateProductPayload): Observable<Product> {
     return this.http.post<Product>(`${this.apiUrl}/products`, product).pipe(
+      catchError((error) => throwError(() => error))
+    );
+  }
+
+  updateProduct(id: string, product: Partial<CreateProductPayload>): Observable<Product> {
+    return this.http.patch<Product>(`${this.apiUrl}/products/${encodeURIComponent(id)}`, product).pipe(
+      catchError((error) => throwError(() => error))
+    );
+  }
+
+  deleteProduct(id: string): Observable<{ deleted: boolean; id: string }> {
+    return this.http.delete<{ deleted: boolean; id: string }>(`${this.apiUrl}/products/${encodeURIComponent(id)}`).pipe(
       catchError((error) => throwError(() => error))
     );
   }

@@ -1,0 +1,183 @@
+<section class="product-list-page">
+  <header class="page-header">
+    <div>
+      <h1>Lista Produtos</h1>
+      <p>Busque, edite, inative ou delete produtos cadastrados.</p>
+    </div>
+  </header>
+
+  <form class="filters-form" [formGroup]="filtersForm" (ngSubmit)="loadProducts()">
+    <mat-form-field appearance="outline">
+      <mat-label>Buscar produto</mat-label>
+      <input matInput formControlName="search" placeholder="Codigo, nome ou descricao">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Marca</mat-label>
+      <input matInput formControlName="brand" placeholder="UP-BABY">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Colecao</mat-label>
+      <input matInput formControlName="collection" placeholder="2025-verao-a">
+    </mat-form-field>
+
+    <mat-checkbox formControlName="include_inactive">Mostrar inativos</mat-checkbox>
+
+    <button type="submit" mat-raised-button color="primary" [disabled]="loading">
+      <mat-icon>search</mat-icon>
+      Buscar
+    </button>
+  </form>
+
+  <div class="content-grid">
+    <section class="records-section">
+      <div *ngIf="loading" class="loading-state">
+        <mat-spinner diameter="32"></mat-spinner>
+        <span>Carregando produtos...</span>
+      </div>
+
+      <div *ngIf="!loading && !products.length" class="empty-state">
+        Nenhum produto encontrado.
+      </div>
+
+      <div *ngIf="products.length" class="record-list">
+        <article
+          *ngFor="let product of products"
+          class="record-item"
+          [class.selected]="selectedProduct?.id === product.id"
+          [class.inactive]="product.is_active === false"
+          (click)="selectProduct(product)">
+          <img *ngIf="product.image || product.image_url" [src]="product.image_url || product.image" alt="">
+          <div>
+            <h3>{{ product.name || product.description }}</h3>
+            <p>{{ product.produto_id || product.id }} / {{ product.brand }} / {{ product.collection }}</p>
+          </div>
+          <span>{{ product.is_active === false ? 'Inativo' : 'Ativo' }}</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="edit-panel" *ngIf="selectedProduct">
+      <header class="section-header">
+        <div>
+          <h2>Dados do produto</h2>
+          <p>{{ selectedProduct.id }}</p>
+        </div>
+        <button type="button" mat-icon-button color="primary" (click)="clearSelection()">
+          <mat-icon>close</mat-icon>
+        </button>
+      </header>
+
+      <form [formGroup]="editForm" (ngSubmit)="saveSelectedProduct()">
+        <div class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Codigo</mat-label>
+            <input matInput formControlName="produto_id">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Preco</mat-label>
+            <input matInput formControlName="preco">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="wide-field">
+            <mat-label>Nome</mat-label>
+            <input matInput formControlName="name">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="wide-field">
+            <mat-label>Descricao</mat-label>
+            <textarea matInput formControlName="description" rows="3"></textarea>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Marca</mat-label>
+            <input matInput formControlName="brand">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Ano</mat-label>
+            <input matInput formControlName="year" maxlength="4">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Colecao</mat-label>
+            <input matInput formControlName="collection">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Slug da colecao</mat-label>
+            <input matInput formControlName="collection_slug">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Categoria</mat-label>
+            <input matInput formControlName="category">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Tipo</mat-label>
+            <input matInput formControlName="type">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Tamanho original</mat-label>
+            <input matInput formControlName="tamanho_original">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Tamanho inicio</mat-label>
+            <input matInput type="number" formControlName="tamanho_inicio">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Tamanho fim</mat-label>
+            <input matInput type="number" formControlName="tamanho_fim">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Tamanhos array</mat-label>
+            <input matInput formControlName="tamanhos_array">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="wide-field">
+            <mat-label>Imagens S3</mat-label>
+            <textarea matInput formControlName="imagem" rows="3"></textarea>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="wide-field">
+            <mat-label>Cores</mat-label>
+            <input matInput formControlName="cores">
+          </mat-form-field>
+
+          <mat-checkbox formControlName="is_active" class="wide-field">
+            Produto ativo e visivel para usuarios comuns
+          </mat-checkbox>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" mat-raised-button color="primary" [disabled]="saving || deleting">
+            <mat-icon>save</mat-icon>
+            {{ saving ? 'Salvando...' : 'Salvar alteracoes' }}
+          </button>
+
+          <button
+            type="button"
+            mat-stroked-button
+            color="primary"
+            [disabled]="saving || deleting"
+            (click)="setSelectedProductActive(selectedProduct.is_active === false)">
+            <mat-icon>{{ selectedProduct.is_active === false ? 'visibility' : 'visibility_off' }}</mat-icon>
+            {{ selectedProduct.is_active === false ? 'Ativar' : 'Inativar' }}
+          </button>
+
+          <button type="button" mat-stroked-button color="warn" [disabled]="saving || deleting" (click)="deleteSelectedProduct()">
+            <mat-icon>delete</mat-icon>
+            {{ deleting ? 'Deletando...' : 'Deletar' }}
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+</section>

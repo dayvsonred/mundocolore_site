@@ -6,6 +6,7 @@ import { AdminGuard } from 'src/app/core/guards/admin.guard';
 import { AccountPageComponent } from './account-page/account-page.component';
 import { BrandRegistrationComponent } from './brand-registration/brand-registration.component';
 import { CollectionRegistrationComponent } from './collection-registration/collection-registration.component';
+import { ProductListComponent } from './product-list/product-list.component';
 import { ProductRegistrationComponent } from './product-registration/product-registration.component';
 
 const routes: Routes = [
@@ -22,6 +23,7 @@ const routes: Routes = [
       { path: 'cadastro-colecoes', component: CollectionRegistrationComponent, canActivate: [AdminGuard] },
       { path: 'cadastro-produtos', component: ProductRegistrationComponent, canActivate: [AdminGuard] },
       { path: 'cadastro-produtos/:brand', component: ProductRegistrationComponent, canActivate: [AdminGuard] },
+      { path: 'lista-produtos', component: ProductListComponent, canActivate: [AdminGuard] },
     ]
   }
 ];

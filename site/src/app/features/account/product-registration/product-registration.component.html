@@ -120,8 +120,41 @@
           formControlName="imagem"
           rows="3"
           placeholder="A_uuid_46584_1-2-3_1.jpg"></textarea>
-        <mat-hint>Separe nomes de arquivos por linha, virgula ou ponto e virgula.</mat-hint>
+        <mat-hint>Use nomes/caminhos ja existentes no S3, separados por linha, virgula ou ponto e virgula.</mat-hint>
       </mat-form-field>
+
+      <div class="image-upload wide-field">
+        <div>
+          <label for="product-image">Anexar imagem</label>
+          <span>{{ imageFileName || 'Nenhum arquivo selecionado' }}</span>
+        </div>
+
+        <div class="image-upload-actions">
+          <input
+            #productImageInput
+            id="product-image"
+            type="file"
+            accept="image/*"
+            (change)="onImageSelected($event)">
+          <button
+            *ngIf="imageFileName"
+            type="button"
+            mat-stroked-button
+            color="primary"
+            (click)="clearSelectedImage(productImageInput)">
+            <mat-icon>close</mat-icon>
+            Remover
+          </button>
+        </div>
+
+        <p>
+          Quando anexada, a imagem sera salva automaticamente na pasta S3 da colecao selecionada.
+        </p>
+      </div>
+
+      <div *ngIf="imagePreview" class="image-preview wide-field">
+        <img [src]="imagePreview" alt="Preview do produto">
+      </div>
 
       <mat-form-field appearance="outline" class="wide-field">
         <mat-label>Cores</mat-label>

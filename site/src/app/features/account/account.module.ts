@@ -11,6 +11,7 @@ import { ProfileDataPixComponent } from './profile-data-pix/profile-data-pix.com
 import { ProfileChangeNameComponent } from './profile-change-name/profile-change-name.component';
 import { BrandRegistrationComponent } from './brand-registration/brand-registration.component';
 import { CollectionRegistrationComponent } from './collection-registration/collection-registration.component';
+import { ProductListComponent } from './product-list/product-list.component';
 import { ProductRegistrationComponent } from './product-registration/product-registration.component';
 
 @NgModule({
@@ -28,6 +29,7 @@ import { ProductRegistrationComponent } from './product-registration/product-reg
     ProfileChangeNameComponent,
     BrandRegistrationComponent,
     CollectionRegistrationComponent,
+    ProductListComponent,
     ProductRegistrationComponent
   ],
   exports: [AccountPageComponent]

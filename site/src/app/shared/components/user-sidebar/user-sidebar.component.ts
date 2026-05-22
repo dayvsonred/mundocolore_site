@@ -33,6 +33,11 @@ export class UserSidebarComponent implements OnInit {
       label: 'Cadastro de produtos',
       route: '/minha-conta/cadastro-produtos',
       icon: 'inventory_2'
+    },
+    {
+      label: 'Lista Produtos',
+      route: '/minha-conta/lista-produtos',
+      icon: 'manage_search'
     }
   ];
 

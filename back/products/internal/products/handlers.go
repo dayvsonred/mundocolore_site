@@ -88,6 +88,7 @@ type Product struct {
 	ImageKeys        []string `json:"image_keys,omitempty" dynamodbav:"image_keys,omitempty"`
 	S3Prefix         string   `json:"s3_prefix" dynamodbav:"s3_prefix"`
 	Stock            int      `json:"stock" dynamodbav:"stock"`
+	IsActive         bool     `json:"is_active" dynamodbav:"is_active"`
 	CreatedAt        string   `json:"created_at" dynamodbav:"created_at"`
 	UpdatedAt        string   `json:"updated_at" dynamodbav:"updated_at"`
 }
@@ -152,6 +153,7 @@ type CreateProductRequest struct {
 	ImageContentType string        `json:"image_content_type"`
 	UploadImages     []UploadImage `json:"upload_images"`
 	Stock            int           `json:"stock"`
+	IsActive         *bool         `json:"is_active"`
 }
 
 type ProductsListResponse struct {
@@ -271,19 +273,59 @@ func HandleGetProduct(_ context.Context, request events.APIGatewayProxyRequest) 
 	return successJSONResponse(200, string(body)), nil
 }
 
+func HandleUpdateProduct(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	id := extractProductIDFromPath(request.Path)
+	if id == "" {
+		return badRequestResponse("invalid product id"), nil
+	}
+
+	var req CreateProductRequest
+	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
+		return badRequestResponse("invalid request"), nil
+	}
+	applyProductDefaultsFromQuery(&req, request.QueryStringParameters)
+
+	product, err := updateProduct(id, req)
+	if err != nil {
+		return badRequestResponse(err.Error()), nil
+	}
+
+	body, _ := json.Marshal(product)
+	return successJSONResponse(200, string(body)), nil
+}
+
+func HandleDeleteProduct(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	id := extractProductIDFromPath(request.Path)
+	if id == "" {
+		return badRequestResponse("invalid product id"), nil
+	}
+
+	product, err := getProduct(id)
+	if err != nil {
+		return notFoundWithMessage(err.Error()), nil
+	}
+	if err := deleteProduct(product.ID); err != nil {
+		return serverErrorResponse(err), nil
+	}
+
+	body, _ := json.Marshal(map[string]interface{}{"deleted": true, "id": product.ID})
+	return successJSONResponse(200, string(body)), nil
+}
+
 func HandleGetProducts(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	limit := parseLimit(request.QueryStringParameters["limit"], 20)
 	lastKey := request.QueryStringParameters["last_key"]
 
 	products, err := getProducts(ProductQuery{
-		Category:   request.QueryStringParameters["category"],
-		Type:       request.QueryStringParameters["type"],
-		ProductID:  firstNonEmpty(request.QueryStringParameters["produto_id"], request.QueryStringParameters["product_id"]),
-		Brand:      request.QueryStringParameters["brand"],
-		Year:       request.QueryStringParameters["year"],
-		Collection: request.QueryStringParameters["collection"],
-		Limit:      limit,
-		LastKey:    lastKey,
+		Category:        request.QueryStringParameters["category"],
+		Type:            request.QueryStringParameters["type"],
+		ProductID:       firstNonEmpty(request.QueryStringParameters["produto_id"], request.QueryStringParameters["product_id"]),
+		Brand:           request.QueryStringParameters["brand"],
+		Year:            request.QueryStringParameters["year"],
+		Collection:      request.QueryStringParameters["collection"],
+		IncludeInactive: strings.EqualFold(request.QueryStringParameters["include_inactive"], "true"),
+		Limit:           limit,
+		LastKey:         lastKey,
 	})
 	if err != nil {
 		return serverErrorResponse(err), nil
@@ -482,7 +524,10 @@ func createProduct(req CreateProductRequest) (Product, error) {
 	category := strings.TrimSpace(req.Category)
 	productType := firstNonEmpty(req.Type, category)
 	if category == "" {
-		category = productType
+		category = "produto"
+	}
+	if productType == "" {
+		productType = category
 	}
 
 	size := req.Size
@@ -578,8 +623,12 @@ func createProduct(req CreateProductRequest) (Product, error) {
 		ImageKeys:        imageKeys,
 		S3Prefix:         s3Prefix,
 		Stock:            req.Stock,
+		IsActive:         true,
 		CreatedAt:        now,
 		UpdatedAt:        now,
+	}
+	if req.IsActive != nil {
+		product.IsActive = *req.IsActive
 	}
 
 	if err := ensureS3Prefix(brandKey + "/"); err != nil {
@@ -593,6 +642,177 @@ func createProduct(req CreateProductRequest) (Product, error) {
 	}
 
 	return product, putEntity(product)
+}
+
+func updateProduct(id string, req CreateProductRequest) (Product, error) {
+	product, err := getProduct(id)
+	if err != nil {
+		return Product{}, err
+	}
+
+	if req.UUID != "" {
+		product.UUID = strings.TrimSpace(req.UUID)
+	}
+	if req.Number != 0 {
+		product.Number = req.Number
+	}
+	if req.ProductID != "" {
+		product.ProductID = strings.TrimSpace(req.ProductID)
+	}
+	if req.Name != "" || req.Description != "" || req.Descricao != "" {
+		description := firstNonEmpty(req.Description, req.Descricao, req.Name)
+		product.Name = firstNonEmpty(req.Name, description, product.Name)
+		product.Description = description
+	}
+	if req.Price != nil || req.Preco != nil {
+		price, priceRaw := parsePrice(req.Price)
+		if priceRaw == "" {
+			price, priceRaw = parsePrice(req.Preco)
+		}
+		product.Price = price
+		product.PriceRaw = priceRaw
+	}
+	if req.Category != "" {
+		product.Category = strings.TrimSpace(req.Category)
+	}
+	if product.Category == "" {
+		product.Category = "produto"
+	}
+	if req.Type != "" {
+		product.Type = strings.TrimSpace(req.Type)
+	}
+	if product.Type == "" {
+		product.Type = product.Category
+	}
+	product.TypeKey = normalizeKey(product.Type)
+	if req.Brand != "" || req.NomeTabela != "" {
+		product.BrandKey = normalizeBrand(firstNonEmpty(req.Brand, req.NomeTabela))
+		product.Brand = product.BrandKey
+	}
+	if req.Year != "" {
+		product.Year = strings.TrimSpace(req.Year)
+	}
+	if req.Collection != "" || req.CollectionSlug != "" {
+		product.Collection = firstNonEmpty(strings.TrimSpace(req.Collection), product.Collection)
+		product.CollectionSlug = slugify(firstNonEmpty(req.CollectionSlug, req.Collection, product.CollectionSlug))
+	}
+	if product.CollectionSlug == "" {
+		product.CollectionSlug = slugify(product.Collection)
+	}
+	product.CollectionKey = buildCollectionKey(product.BrandKey, product.Year, product.CollectionSlug)
+	product.S3Prefix = buildS3Prefix(product.BrandKey, product.Year, product.CollectionSlug)
+
+	if req.ReleaseDate != "" {
+		product.ReleaseDate = req.ReleaseDate
+	}
+	if req.FinalizationDate != "" {
+		product.FinalizationDate = req.FinalizationDate
+	}
+	if req.DisplayStartAt != "" {
+		product.DisplayStartAt = req.DisplayStartAt
+	}
+	if req.DisplayEndAt != "" {
+		product.DisplayEndAt = req.DisplayEndAt
+	}
+	if len(req.Size) > 0 {
+		product.Size = req.Size
+	} else if len(req.SizesArray) > 0 {
+		product.Size = sizesToStrings(req.SizesArray)
+	}
+	if req.SizeOriginal != "" {
+		product.SizeOriginal = req.SizeOriginal
+		if len(product.Size) == 0 {
+			product.Size = []string{strings.TrimSpace(req.SizeOriginal)}
+		}
+	}
+	if req.SizeStart != 0 {
+		product.SizeStart = req.SizeStart
+	}
+	if req.SizeEnd != 0 {
+		product.SizeEnd = req.SizeEnd
+	}
+	if len(req.SizesArray) > 0 {
+		product.SizesArray = req.SizesArray
+	}
+	if len(req.Colors) > 0 {
+		product.Colors = req.Colors
+	}
+	if req.Stock != 0 {
+		product.Stock = req.Stock
+	}
+	if req.IsActive != nil {
+		product.IsActive = *req.IsActive
+	}
+
+	imageChanged := len(req.Imagem) > 0 || len(req.Images) > 0 || req.Image != "" || req.ImageFileName != "" || req.ImageBase64 != "" || len(req.UploadImages) > 0 || req.ImageURL != ""
+	imageNames := product.Images
+	if len(req.Imagem) > 0 || len(req.Images) > 0 || req.Image != "" {
+		imageNames = mergeStrings(req.Imagem, req.Images)
+	}
+	if req.Image != "" {
+		imageNames = appendIfMissing(imageNames, req.Image)
+	}
+	if req.ImageFileName != "" {
+		imageNames = appendIfMissing(imageNames, req.ImageFileName)
+	}
+	if req.ImageBase64 != "" {
+		fileName := firstNonEmpty(req.ImageFileName, imageFileName(product.UUID, product.ProductID, len(imageNames)+1, req.ImageContentType))
+		if err := uploadImage(product.S3Prefix+fileName, req.ImageBase64, req.ImageContentType); err != nil {
+			return Product{}, err
+		}
+		imageNames = appendIfMissing(imageNames, fileName)
+	}
+	for _, image := range req.UploadImages {
+		fileName := strings.TrimSpace(image.FileName)
+		if fileName == "" {
+			fileName = imageFileName(product.UUID, product.ProductID, len(imageNames)+1, image.ContentType)
+		}
+		if image.ContentBase64 != "" {
+			if err := uploadImage(product.S3Prefix+fileName, image.ContentBase64, image.ContentType); err != nil {
+				return Product{}, err
+			}
+		}
+		imageNames = appendIfMissing(imageNames, fileName)
+	}
+	if imageChanged {
+		product.Images = imageNames
+		product.ImageURLs = make([]string, 0, len(imageNames))
+		product.ImageKeys = make([]string, 0, len(imageNames))
+		for _, imageName := range imageNames {
+			imageKey := product.S3Prefix + path.Base(imageName)
+			product.ImageKeys = append(product.ImageKeys, imageKey)
+			product.ImageURLs = append(product.ImageURLs, imageURL(imageKey))
+		}
+		if req.ImageURL != "" && len(product.ImageURLs) == 0 {
+			product.ImageURLs = append(product.ImageURLs, req.ImageURL)
+		}
+		product.Image = firstString(product.ImageURLs)
+		product.ImageURL = firstString(product.ImageURLs)
+	}
+	product.ImageBucket = imageBucket
+	product.UpdatedAt = time.Now().Format(time.RFC3339)
+
+	if err := ensureS3Prefix(product.BrandKey + "/"); err != nil {
+		return Product{}, err
+	}
+	if err := ensureS3Prefix(path.Join(product.BrandKey, product.Year) + "/"); err != nil {
+		return Product{}, err
+	}
+	if err := ensureS3Prefix(product.S3Prefix); err != nil {
+		return Product{}, err
+	}
+
+	return product, putEntity(product)
+}
+
+func deleteProduct(id string) error {
+	_, err := dynamoClient.DeleteItem(&dynamodb.DeleteItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {S: aws.String(id)},
+		},
+	})
+	return err
 }
 
 func applyProductDefaultsFromQuery(req *CreateProductRequest, query map[string]string) {
@@ -648,18 +868,22 @@ func getProduct(id string) (Product, error) {
 	if product.EntityType != "product" {
 		return Product{}, fmt.Errorf("product not found")
 	}
+	if productIsActive(result.Item) {
+		product.IsActive = true
+	}
 	return product, nil
 }
 
 type ProductQuery struct {
-	Category   string
-	Type       string
-	ProductID  string
-	Brand      string
-	Year       string
-	Collection string
-	Limit      int
-	LastKey    string
+	Category        string
+	Type            string
+	ProductID       string
+	Brand           string
+	Year            string
+	Collection      string
+	IncludeInactive bool
+	Limit           int
+	LastKey         string
 }
 
 func getProducts(query ProductQuery) (ProductsListResponse, error) {
@@ -671,6 +895,10 @@ func getProducts(query ProductQuery) (ProductsListResponse, error) {
 	expressionValues := map[string]*dynamodb.AttributeValue{}
 	filterExpressions := []string{"entity_type = :entity_type"}
 	expressionValues[":entity_type"] = &dynamodb.AttributeValue{S: aws.String("product")}
+	if !query.IncludeInactive {
+		filterExpressions = append(filterExpressions, "(attribute_not_exists(is_active) OR is_active = :is_active)")
+		expressionValues[":is_active"] = &dynamodb.AttributeValue{BOOL: aws.Bool(true)}
+	}
 
 	if query.ProductID != "" {
 		input.IndexName = aws.String("product-id-index")
@@ -695,7 +923,10 @@ func getProducts(query ProductQuery) (ProductsListResponse, error) {
 	} else {
 		input.IndexName = aws.String("entity-type-index")
 		input.KeyConditionExpression = aws.String("entity_type = :entity_type")
-		filterExpressions = nil
+		filterExpressions = []string{}
+		if !query.IncludeInactive {
+			filterExpressions = append(filterExpressions, "(attribute_not_exists(is_active) OR is_active = :is_active)")
+		}
 	}
 
 	if query.Year != "" && !(query.Brand != "" && query.Collection != "") {
@@ -730,6 +961,9 @@ func getProducts(query ProductQuery) (ProductsListResponse, error) {
 	for _, item := range result.Items {
 		var product Product
 		if err := dynamodbattribute.UnmarshalMap(item, &product); err == nil && product.EntityType == "product" {
+			if productIsActive(item) {
+				product.IsActive = true
+			}
 			products = append(products, product)
 		}
 	}
@@ -739,6 +973,14 @@ func getProducts(query ProductQuery) (ProductsListResponse, error) {
 		response.LastEvaluatedKey = encodeLastEvaluatedKey(result.LastEvaluatedKey)
 	}
 	return response, nil
+}
+
+func productIsActive(item map[string]*dynamodb.AttributeValue) bool {
+	value, exists := item["is_active"]
+	if !exists || value == nil || value.NULL != nil && *value.NULL {
+		return true
+	}
+	return value.BOOL == nil || *value.BOOL
 }
 
 func listBrands() ([]Brand, error) {

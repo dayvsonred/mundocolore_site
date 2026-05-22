@@ -19,6 +19,10 @@ export class ProductRegistrationComponent implements OnInit {
   brands: ProductBrandRecord[] = [];
   collections: ProductCollectionRecord[] = [];
   selectedBrand: ProductBrandRecord | null = null;
+  imagePreview = '';
+  imageFileName = '';
+  imageBase64 = '';
+  imageContentType = '';
   loadingBrands = false;
   loadingCollections = false;
   saving = false;
@@ -124,6 +128,8 @@ export class ProductRegistrationComponent implements OnInit {
       name: description,
       description,
       descricao: description,
+      category: 'produto',
+      type: 'produto',
       brand: this.getBrandValue(this.selectedBrand),
       collection: collection.name || collection.slug,
       collection_slug: collection.slug,
@@ -134,6 +140,9 @@ export class ProductRegistrationComponent implements OnInit {
       tamanho_fim: sizeEnd,
       tamanhos_array: sizesArray,
       imagem: this.parseStringList(value.imagem),
+      image_base64: this.imageBase64 || undefined,
+      image_file_name: this.imageFileName || undefined,
+      image_content_type: this.imageContentType || undefined,
       cores: this.parseStringList(value.cores),
       stock: 0
     }).pipe(finalize(() => this.saving = false))
@@ -154,12 +163,56 @@ export class ProductRegistrationComponent implements OnInit {
             imagem: '',
             cores: ''
           });
+          this.clearSelectedImage();
           this.snackBar.open('Produto cadastrado.', 'Fechar', { duration: 3000 });
         },
         error: () => {
           this.snackBar.open('Nao foi possivel cadastrar o produto.', 'Fechar', { duration: 4000 });
         }
       });
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      this.clearSelectedImage();
+      input.value = '';
+      this.snackBar.open('Selecione uma imagem valida.', 'Fechar', { duration: 3000 });
+      return;
+    }
+
+    if (file.size > 4 * 1024 * 1024) {
+      this.clearSelectedImage();
+      input.value = '';
+      this.snackBar.open('Use uma imagem com ate 4MB.', 'Fechar', { duration: 4000 });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || '');
+      this.imagePreview = result;
+      this.imageBase64 = result;
+      this.imageFileName = file.name;
+      this.imageContentType = file.type;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  clearSelectedImage(input?: HTMLInputElement): void {
+    this.imagePreview = '';
+    this.imageBase64 = '';
+    this.imageFileName = '';
+    this.imageContentType = '';
+    if (input) {
+      input.value = '';
+    }
   }
 
   getBrandLabel(brand: ProductBrandRecord): string {
@@ -182,6 +235,7 @@ export class ProductRegistrationComponent implements OnInit {
     if (!this.routeBrand) {
       this.selectedBrand = null;
       this.collections = [];
+      this.clearSelectedImage();
       this.form.reset({
         collection: null,
         Number: null,
@@ -223,6 +277,7 @@ export class ProductRegistrationComponent implements OnInit {
     }
 
     this.selectedBrand = selected;
+    this.clearSelectedImage();
     this.loadCollections(selected);
   }
 

@@ -6,9 +6,23 @@
 - `GET /products/brands` lista marcas cadastradas.
 - `POST /products/collections` cria colecao e prefixos `marca/ano/colecao/`.
 - `GET /products/collections?brand=UP-BABY&year=2026` lista colecoes.
-- `POST /products` cadastra um produto individual, sobe imagens em base64 quando enviadas e salva os caminhos no DynamoDB.
-- `GET /products` lista produtos com paginacao e filtros `brand`, `year`, `collection`, `type`, `category`, `produto_id`, `limit`, `last_key`.
+- `POST /products` cadastra um produto individual. Aceita imagem em base64 para upload na pasta S3 da colecao ou nomes/caminhos de imagens ja existentes.
+- `GET /products` lista produtos ativos com paginacao e filtros `brand`, `year`, `collection`, `type`, `category`, `produto_id`, `limit`, `last_key`.
+- `GET /products?include_inactive=true` lista tambem produtos inativos para administracao.
 - `GET /products/{id}` busca um produto especifico.
+- `PATCH /products/{id}` atualiza dados do produto, incluindo `is_active`.
+- `DELETE /products/{id}` deleta o produto.
+
+## Busca eficiente no DynamoDB
+
+A tabela `mundocolore-products` usa `PAY_PER_REQUEST` e ja tem indices para evitar scan:
+
+- `collection-index`: principal para catalogo por colecao. Use `GET /products?brand=UP-BABY&year=2026&collection=inverno-verao-a`.
+- `brand-index`: lista produtos de uma marca. Use `GET /products?brand=UP-BABY`.
+- `product-id-index`: busca por codigo do produto. Use `GET /products?produto_id=46584`.
+- `entity-type-index`: lista marcas, colecoes ou produtos.
+
+Para manter o custo baixo no tier free, prefira consultar por `collection` ou `brand` em vez de listar tudo.
 
 ## Variaveis de Ambiente
 
@@ -63,6 +77,10 @@ terraform apply
 ```
 
 Para upload direto da imagem, envie `image_base64` e `image_file_name`, ou uma lista em `upload_images`.
+Quando a imagem e enviada em `image_base64`, a lambda salva o arquivo em `brand/year/collection_slug/` no bucket `IMAGE_BUCKET`.
+O produto salvo retorna o caminho explicito em `s3_prefix`, `image_keys`, `image_urls`, `image` e `image_url`.
+Quando a imagem ja existe no S3, envie o nome/caminho em `imagem` ou `images`.
+Para ocultar um produto do catalogo publico sem apagar, envie `{"is_active": false}` em `PATCH /products/{id}`.
 
 Quando o produto vier direto do JSON do cadastrador sem `brand`, `year` ou `collection`, envie esses valores na query string:
 
