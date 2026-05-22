@@ -1,15 +1,20 @@
 from __future__ import annotations
 
+import json
+import os
 import sys
 import traceback
 from pathlib import Path
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 from catalog_image_finder import find_latest_price_json, process_catalog_images
 from price_extractor import ExtractionError, count_pdf_pages, process_price_pdf, validate_price_pdf
 
 
 try:
-    from PySide6.QtCore import QObject, QThread, Signal, Slot
+    from PySide6.QtCore import QObject, QSettings, QThread, Signal, Slot
     from PySide6.QtWidgets import (
         QApplication,
         QComboBox,
@@ -19,6 +24,7 @@ try:
         QGroupBox,
         QHBoxLayout,
         QLabel,
+        QLineEdit,
         QListWidget,
         QListWidgetItem,
         QMainWindow,
@@ -43,7 +49,96 @@ UP_BABY_PENDING_DIR = UP_BABY_DIR / "1_PRODUTOS_PARA_CADASTRA"
 UP_BABY_SENT_DIR = UP_BABY_DIR / "1_PRODUTOS_ENVIADOS"
 UP_BABY_COLORS_DIR = UP_BABY_DIR / "CORES"
 SYSTEM_FOLDERS = {"1_PRODUTOS_PARA_CADASTRA", "1_PRODUTOS_ENVIADOS", "CORES"}
-BRANDS = ["UP-BABY", "3EJA", "QUIMIBY", "PRECOCE"]
+UP_BABY_BRAND = "UP-BABY"
+API_BASE_URL = os.environ.get(
+    "MUNDOCOLORE_API_URL",
+    "https://b8i4etrh23.execute-api.sa-east-1.amazonaws.com/prod",
+).rstrip("/")
+LOGIN_BASIC_AUTH = os.environ.get(
+    "MUNDOCOLORE_LOGIN_BASIC_AUTH",
+    "Basic QVBJX05BTUVfQUNDRVNTOkFQSV9TRUNSRVRfQUNDRVNT",
+)
+REQUEST_TIMEOUT_SECONDS = 15
+
+
+class ApiError(RuntimeError):
+    pass
+
+
+def _request_json(path: str, *, method: str, data: bytes | None = None, headers: dict[str, str] | None = None) -> dict:
+    request = Request(
+        f"{API_BASE_URL}{path}",
+        data=data,
+        headers=headers or {},
+        method=method,
+    )
+    try:
+        with urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as response:
+            raw_body = response.read().decode("utf-8")
+    except HTTPError as exc:
+        raw_body = exc.read().decode("utf-8", errors="replace")
+        detail = _read_api_error_message(raw_body) or exc.reason
+        raise ApiError(f"API retornou {exc.code}: {detail}") from exc
+    except URLError as exc:
+        raise ApiError(f"Nao foi possivel acessar a API: {exc.reason}") from exc
+
+    try:
+        payload = json.loads(raw_body)
+    except json.JSONDecodeError as exc:
+        raise ApiError("A API retornou JSON invalido.") from exc
+
+    if not isinstance(payload, dict):
+        raise ApiError("A API retornou um formato inesperado.")
+    return payload
+
+
+def _read_api_error_message(raw_body: str) -> str:
+    try:
+        payload = json.loads(raw_body)
+    except json.JSONDecodeError:
+        return raw_body.strip()
+    if isinstance(payload, dict):
+        return str(payload.get("message") or payload.get("error") or "").strip()
+    return ""
+
+
+def login_api(username: str, password: str) -> str:
+    form_data = urlencode(
+        {
+            "grant_type": "password",
+            "username": username.strip(),
+            "password": password,
+        }
+    ).encode("utf-8")
+    payload = _request_json(
+        "/login",
+        method="POST",
+        data=form_data,
+        headers={
+            "Accept": "application/json",
+            "Authorization": LOGIN_BASIC_AUTH,
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+    )
+    token = str(payload.get("token") or payload.get("access_token") or "").strip()
+    if not token:
+        raise ApiError("O login foi aceito sem retornar token.")
+    return token
+
+
+def fetch_brands_api(token: str) -> list[dict]:
+    payload = _request_json(
+        "/products/brands",
+        method="GET",
+        headers={
+            "Accept": "application/json",
+            "Authorization": f"Bearer {token}",
+        },
+    )
+    brands = payload.get("brands")
+    if not isinstance(brands, list):
+        raise ApiError("A lista de marcas veio em formato inesperado.")
+    return [brand for brand in brands if isinstance(brand, dict)]
 
 
 class PriceProcessWorker(QObject):
@@ -148,43 +243,90 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Cadastrador Mundo Colore")
         self.resize(1080, 720)
+        self.settings = QSettings("Mundo Colore", "Cadastrador")
+        self.token = self._read_setting("auth/token")
         self.thread: QThread | None = None
         self.worker: QObject | None = None
 
         self.stack = QStackedWidget()
         self.setCentralWidget(self.stack)
 
+        self.login_page = self._build_login_page()
         self.home_page = self._build_home_page()
         self.up_baby_page = self._build_up_baby_page()
+        self.stack.addWidget(self.login_page)
         self.stack.addWidget(self.home_page)
         self.stack.addWidget(self.up_baby_page)
 
+        self._load_saved_credentials()
         self._ensure_default_dirs()
         self.refresh_collections()
+        self._restore_session()
+
+    def _build_login_page(self) -> QWidget:
+        page = QWidget()
+        outer = QVBoxLayout(page)
+        outer.setContentsMargins(32, 32, 32, 32)
+        outer.addStretch(1)
+
+        form_box = QGroupBox("Login")
+        form_box.setMaximumWidth(420)
+        form = QFormLayout(form_box)
+
+        title = QLabel("Cadastrador de Produtos")
+        title.setObjectName("Title")
+        self.username_input = QLineEdit()
+        self.username_input.setPlaceholderText("usuario@email.com")
+        self.password_input = QLineEdit()
+        self.password_input.setEchoMode(QLineEdit.Password)
+        self.password_input.returnPressed.connect(self.login)
+        self.login_status = QLabel("Entre para carregar as marcas cadastradas.")
+        self.login_status.setWordWrap(True)
+        self.login_status.setObjectName("Status")
+        self.login_btn = QPushButton("Entrar")
+        self.login_btn.clicked.connect(self.login)
+
+        form.addRow(title)
+        form.addRow("Usuario", self.username_input)
+        form.addRow("Senha", self.password_input)
+        form.addRow(self.login_status)
+        form.addRow(self.login_btn)
+
+        center = QHBoxLayout()
+        center.addStretch(1)
+        center.addWidget(form_box)
+        center.addStretch(1)
+        outer.addLayout(center)
+        outer.addStretch(1)
+        return page
 
     def _build_home_page(self) -> QWidget:
         page = QWidget()
         layout = QVBoxLayout(page)
         layout.setContentsMargins(32, 32, 32, 32)
+        top = QHBoxLayout()
         title = QLabel("Cadastrador de Produtos")
         title.setObjectName("Title")
+        refresh_btn = QPushButton("Atualizar marcas")
+        refresh_btn.clicked.connect(self.refresh_brands)
+        change_login_btn = QPushButton("Trocar login")
+        change_login_btn.clicked.connect(self._show_login)
+        top.addWidget(title)
+        top.addStretch(1)
+        top.addWidget(refresh_btn)
+        top.addWidget(change_login_btn)
         subtitle = QLabel("Selecione a marca para preparar os produtos.")
         subtitle.setObjectName("Subtitle")
-        layout.addWidget(title)
+        self.brands_status = QLabel("")
+        self.brands_status.setWordWrap(True)
+        self.brands_status.setObjectName("Status")
+        layout.addLayout(top)
         layout.addWidget(subtitle)
+        layout.addWidget(self.brands_status)
 
-        grid = QGridLayout()
-        grid.setSpacing(16)
-        for idx, brand in enumerate(BRANDS):
-            button = QPushButton(brand)
-            button.setMinimumHeight(88)
-            button.setObjectName("BrandButton")
-            if brand == "UP-BABY":
-                button.clicked.connect(lambda _checked=False: self.stack.setCurrentWidget(self.up_baby_page))
-            else:
-                button.clicked.connect(lambda _checked=False, name=brand: self._show_pending_brand(name))
-            grid.addWidget(button, idx // 2, idx % 2)
-        layout.addLayout(grid)
+        self.brands_grid = QGridLayout()
+        self.brands_grid.setSpacing(16)
+        layout.addLayout(self.brands_grid)
         layout.addStretch(1)
         return page
 
@@ -291,6 +433,123 @@ class MainWindow(QMainWindow):
         UP_BABY_PENDING_DIR.mkdir(parents=True, exist_ok=True)
         UP_BABY_SENT_DIR.mkdir(parents=True, exist_ok=True)
         UP_BABY_COLORS_DIR.mkdir(parents=True, exist_ok=True)
+
+    def _read_setting(self, key: str) -> str:
+        value = self.settings.value(key, "")
+        return "" if value is None else str(value)
+
+    def _load_saved_credentials(self) -> None:
+        self.username_input.setText(self._read_setting("auth/username"))
+        self.password_input.setText(self._read_setting("auth/password"))
+
+    def _restore_session(self) -> None:
+        if self.token:
+            self.stack.setCurrentWidget(self.home_page)
+            self.refresh_brands()
+            return
+
+        username = self.username_input.text().strip()
+        password = self.password_input.text()
+        if username and password:
+            self._authenticate(username, password, quiet=True)
+            return
+
+        self.stack.setCurrentWidget(self.login_page)
+
+    def login(self) -> None:
+        self._authenticate(self.username_input.text().strip(), self.password_input.text())
+
+    def _authenticate(self, username: str, password: str, *, quiet: bool = False) -> None:
+        if not username or not password:
+            self.stack.setCurrentWidget(self.login_page)
+            self.login_status.setText("Informe usuario e senha.")
+            if not quiet:
+                QMessageBox.warning(self, "Login", "Informe usuario e senha.")
+            return
+
+        self.login_btn.setEnabled(False)
+        self.login_status.setText("Validando login...")
+        QApplication.processEvents()
+        try:
+            self.token = login_api(username, password)
+        except ApiError as exc:
+            self.token = ""
+            self.settings.remove("auth/token")
+            self.stack.setCurrentWidget(self.login_page)
+            self.login_status.setText(str(exc))
+            if not quiet:
+                QMessageBox.warning(self, "Login", str(exc))
+            return
+        finally:
+            self.login_btn.setEnabled(True)
+
+        self.settings.setValue("auth/username", username)
+        self.settings.setValue("auth/password", password)
+        self.settings.setValue("auth/token", self.token)
+        self.stack.setCurrentWidget(self.home_page)
+        self.refresh_brands()
+
+    def refresh_brands(self) -> None:
+        if not self.token:
+            self._show_login()
+            return
+
+        self.brands_status.setText("Carregando marcas...")
+        QApplication.processEvents()
+        try:
+            brands = fetch_brands_api(self.token)
+        except ApiError as exc:
+            self.brands_status.setText(f"Nao foi possivel carregar as marcas: {exc}")
+            self._set_brand_buttons([{"name": UP_BABY_BRAND}])
+            QMessageBox.warning(
+                self,
+                "Marcas",
+                f"{exc}\n\nO fluxo local da marca {UP_BABY_BRAND} continua disponivel.",
+            )
+            return
+
+        self._set_brand_buttons(brands)
+        if brands:
+            self.brands_status.setText(f"{len(brands)} marca(s) carregada(s) do sistema.")
+        else:
+            self.brands_status.setText("Nenhuma marca cadastrada foi retornada pelo sistema.")
+
+    def _set_brand_buttons(self, brands: list[dict]) -> None:
+        while self.brands_grid.count():
+            item = self.brands_grid.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+
+        labels: list[str] = []
+        for brand in brands:
+            label = self._brand_label(brand)
+            if label and label not in labels:
+                labels.append(label)
+
+        for idx, label in enumerate(labels):
+            button = QPushButton(label)
+            button.setMinimumHeight(88)
+            button.setObjectName("BrandButton")
+            if self._is_up_baby_brand(label):
+                button.clicked.connect(lambda _checked=False: self.stack.setCurrentWidget(self.up_baby_page))
+            else:
+                button.clicked.connect(lambda _checked=False, name=label: self._show_pending_brand(name))
+            self.brands_grid.addWidget(button, idx // 2, idx % 2)
+
+    def _brand_label(self, brand: dict) -> str:
+        return str(brand.get("name") or brand.get("brand") or brand.get("brand_key") or "").strip()
+
+    def _is_up_baby_brand(self, brand: str) -> bool:
+        normalized = brand.upper().replace("_", "-").replace(" ", "-")
+        return normalized == UP_BABY_BRAND
+
+    def _show_login(self) -> None:
+        self.token = ""
+        self.settings.remove("auth/token")
+        self.login_status.setText("Entre para carregar as marcas cadastradas.")
+        self.stack.setCurrentWidget(self.login_page)
+        self.username_input.setFocus()
 
     def refresh_collections(self) -> None:
         self.collections_list.clear()
