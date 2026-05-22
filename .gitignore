@@ -134,6 +134,7 @@ htmlcov/
 *.pkg
 
 # Cadastrador generated product files
+cadastrador/UP_BABY/
 cadastrador/**/*.pdf
 cadastrador/**/1_PRODUTOS_PARA_CADASTRA/*.json
 cadastrador/**/1_PRODUTOS_PARA_CADASTRA/*.xlsx

@@ -33,6 +33,9 @@ Para OCR de PDFs escaneados, tambem e necessario instalar:
 - Permite escolher qual PDF e a tabela de valores e qual e o catalogo de produtos.
 - Mostra a quantidade de paginas de cada PDF.
 - Processa a tabela de valores e salva JSON/XLSX em:
+- Gera um JSON final com nomes de imagens, move os arquivos antigos para `UP_BABY\1_PRODUTOS_HISTORICO` e deixa o JSON final na pasta de cadastro.
+- Envia esse JSON para `POST /products/import-file`, move o arquivo para `UP_BABY\1_PRODUTOS_ENVIADOS` e usa esse arquivo para enviar imagens uma a uma.
+- Move cada imagem enviada para `UP_BABY\1_PRODUTOS_ENVIADOS\IMAGEMS`.
 
 ```text
 UP_BABY\1_PRODUTOS_PARA_CADASTRA
@@ -52,7 +55,7 @@ Para apontar para outro ambiente antes de abrir o app:
 $env:MUNDOCOLORE_API_URL = "https://sua-api/prod"
 ```
 
-O login usa `POST /login` com o header Basic esperado pela lambda e a tela inicial usa o token retornado no header Bearer ao buscar `GET /products/brands`.
+O login usa `POST /login` com o header Basic esperado pela lambda. O token retornado e enviado no header Bearer ao buscar marcas e ao enviar dados ou imagens para a lambda `products`.
 
 
 ```comandos 

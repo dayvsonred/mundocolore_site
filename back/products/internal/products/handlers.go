@@ -140,9 +140,9 @@ type CreateProductRequest struct {
 	Size             []string      `json:"size"`
 	AgeGroup         string        `json:"ageGroup"`
 	SizeOriginal     string        `json:"tamanho_original"`
-	SizeStart        int           `json:"tamanho_inicio"`
-	SizeEnd          int           `json:"tamanho_fim"`
-	SizesArray       []int         `json:"tamanhos_array"`
+	SizeStart        interface{}   `json:"tamanho_inicio"`
+	SizeEnd          interface{}   `json:"tamanho_fim"`
+	SizesArray       []interface{} `json:"tamanhos_array"`
 	Colors           []string      `json:"cores"`
 	Imagem           []string      `json:"imagem"`
 	Image            string        `json:"image"`
@@ -154,6 +154,32 @@ type CreateProductRequest struct {
 	UploadImages     []UploadImage `json:"upload_images"`
 	Stock            int           `json:"stock"`
 	IsActive         *bool         `json:"is_active"`
+}
+
+type ImportProductsFileRequest struct {
+	FileName       string                 `json:"file_name"`
+	ContentBase64  string                 `json:"content_base64"`
+	FileBase64     string                 `json:"file_base64"`
+	Products       []CreateProductRequest `json:"products"`
+	Brand          string                 `json:"brand"`
+	Collection     string                 `json:"collection"`
+	CollectionSlug string                 `json:"collection_slug"`
+	Year           string                 `json:"year"`
+}
+
+type ImportProductsFileResponse struct {
+	FileName      string   `json:"file_name,omitempty"`
+	ImportedCount int      `json:"imported_count"`
+	ProductIDs    []string `json:"product_ids"`
+}
+
+type UploadProductImageRequest struct {
+	FileName         string `json:"file_name"`
+	ContentBase64    string `json:"content_base64"`
+	ContentType      string `json:"content_type"`
+	ImageBase64      string `json:"image_base64"`
+	ImageFileName    string `json:"image_file_name"`
+	ImageContentType string `json:"image_content_type"`
 }
 
 type ProductsListResponse struct {
@@ -250,6 +276,73 @@ func HandleCreateProduct(_ context.Context, request events.APIGatewayProxyReques
 	applyProductDefaultsFromQuery(&req, request.QueryStringParameters)
 
 	product, err := createProduct(req)
+	if err != nil {
+		return badRequestResponse(err.Error()), nil
+	}
+
+	body, _ := json.Marshal(product)
+	return successJSONResponse(201, string(body)), nil
+}
+
+func HandleImportProductsFile(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	importRequest, products, err := parseImportProductsFileRequest(request.Body)
+	if err != nil {
+		return badRequestResponse(err.Error()), nil
+	}
+
+	importedProducts := make([]Product, 0, len(products))
+	importedIDs := make([]string, 0, len(products))
+	for index, productRequest := range products {
+		applyImportProductDefaults(&productRequest, importRequest)
+		applyProductDefaultsFromQuery(&productRequest, request.QueryStringParameters)
+
+		product, err := buildProduct(productRequest)
+		if err != nil {
+			return badRequestResponse(fmt.Sprintf("product %d (%s): %s", index+1, productRequest.ProductID, err.Error())), nil
+		}
+		importedProducts = append(importedProducts, product)
+		importedIDs = append(importedIDs, product.ID)
+	}
+	if err := ensureProductBatchS3Prefixes(importedProducts); err != nil {
+		return serverErrorResponse(err), nil
+	}
+	if err := putEntitiesBatch(importedProducts); err != nil {
+		return serverErrorResponse(err), nil
+	}
+
+	body, _ := json.Marshal(ImportProductsFileResponse{
+		FileName:      importRequest.FileName,
+		ImportedCount: len(importedIDs),
+		ProductIDs:    importedIDs,
+	})
+	return successJSONResponse(201, string(body)), nil
+}
+
+func HandleUploadProductImage(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	id := extractProductImageIDFromPath(request.Path)
+	if id == "" {
+		return badRequestResponse("invalid product id"), nil
+	}
+
+	var req UploadProductImageRequest
+	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
+		return badRequestResponse("invalid request"), nil
+	}
+
+	contentBase64 := firstNonEmpty(req.ContentBase64, req.ImageBase64)
+	if contentBase64 == "" {
+		return badRequestResponse("content_base64 is required"), nil
+	}
+
+	fileName := firstNonEmpty(req.FileName, req.ImageFileName)
+	contentType := firstNonEmpty(req.ContentType, req.ImageContentType)
+	product, err := updateProduct(id, CreateProductRequest{
+		UploadImages: []UploadImage{{
+			FileName:      fileName,
+			ContentBase64: contentBase64,
+			ContentType:   contentType,
+		}},
+	})
 	if err != nil {
 		return badRequestResponse(err.Error()), nil
 	}
@@ -491,6 +584,19 @@ func createCollection(req CreateCollectionRequest) (Collection, error) {
 }
 
 func createProduct(req CreateProductRequest) (Product, error) {
+	product, err := buildProduct(req)
+	if err != nil {
+		return Product{}, err
+	}
+
+	if err := ensureProductS3Prefixes(product); err != nil {
+		return Product{}, err
+	}
+
+	return product, putEntity(product)
+}
+
+func buildProduct(req CreateProductRequest) (Product, error) {
 	brandKey := normalizeBrand(firstNonEmpty(req.Brand, req.NomeTabela))
 	if brandKey == "" {
 		return Product{}, fmt.Errorf("brand is required")
@@ -532,7 +638,7 @@ func createProduct(req CreateProductRequest) (Product, error) {
 
 	size := req.Size
 	if len(size) == 0 && len(req.SizesArray) > 0 {
-		size = sizesToStrings(req.SizesArray)
+		size = sizeValuesToStrings(req.SizesArray)
 	}
 	if len(size) == 0 && strings.TrimSpace(req.SizeOriginal) != "" {
 		size = []string{strings.TrimSpace(req.SizeOriginal)}
@@ -611,9 +717,9 @@ func createProduct(req CreateProductRequest) (Product, error) {
 		Size:             size,
 		AgeGroup:         req.AgeGroup,
 		SizeOriginal:     req.SizeOriginal,
-		SizeStart:        req.SizeStart,
-		SizeEnd:          req.SizeEnd,
-		SizesArray:       req.SizesArray,
+		SizeStart:        sizeValueToInt(req.SizeStart),
+		SizeEnd:          sizeValueToInt(req.SizeEnd),
+		SizesArray:       sizeValuesToInts(req.SizesArray),
 		Colors:           req.Colors,
 		Image:            firstString(imageURLs),
 		ImageURL:         firstString(imageURLs),
@@ -631,17 +737,7 @@ func createProduct(req CreateProductRequest) (Product, error) {
 		product.IsActive = *req.IsActive
 	}
 
-	if err := ensureS3Prefix(brandKey + "/"); err != nil {
-		return Product{}, err
-	}
-	if err := ensureS3Prefix(path.Join(brandKey, year) + "/"); err != nil {
-		return Product{}, err
-	}
-	if err := ensureS3Prefix(s3Prefix); err != nil {
-		return Product{}, err
-	}
-
-	return product, putEntity(product)
+	return product, nil
 }
 
 func updateProduct(id string, req CreateProductRequest) (Product, error) {
@@ -717,7 +813,7 @@ func updateProduct(id string, req CreateProductRequest) (Product, error) {
 	if len(req.Size) > 0 {
 		product.Size = req.Size
 	} else if len(req.SizesArray) > 0 {
-		product.Size = sizesToStrings(req.SizesArray)
+		product.Size = sizeValuesToStrings(req.SizesArray)
 	}
 	if req.SizeOriginal != "" {
 		product.SizeOriginal = req.SizeOriginal
@@ -725,14 +821,14 @@ func updateProduct(id string, req CreateProductRequest) (Product, error) {
 			product.Size = []string{strings.TrimSpace(req.SizeOriginal)}
 		}
 	}
-	if req.SizeStart != 0 {
-		product.SizeStart = req.SizeStart
+	if sizeStart := sizeValueToInt(req.SizeStart); sizeStart != 0 {
+		product.SizeStart = sizeStart
 	}
-	if req.SizeEnd != 0 {
-		product.SizeEnd = req.SizeEnd
+	if sizeEnd := sizeValueToInt(req.SizeEnd); sizeEnd != 0 {
+		product.SizeEnd = sizeEnd
 	}
 	if len(req.SizesArray) > 0 {
-		product.SizesArray = req.SizesArray
+		product.SizesArray = sizeValuesToInts(req.SizesArray)
 	}
 	if len(req.Colors) > 0 {
 		product.Colors = req.Colors
@@ -833,6 +929,66 @@ func applyProductDefaultsFromQuery(req *CreateProductRequest, query map[string]s
 	}
 	if req.Type == "" {
 		req.Type = query["type"]
+	}
+}
+
+func parseImportProductsFileRequest(body string) (ImportProductsFileRequest, []CreateProductRequest, error) {
+	if strings.TrimSpace(body) == "" {
+		return ImportProductsFileRequest{}, nil, fmt.Errorf("file body is required")
+	}
+
+	if strings.HasPrefix(strings.TrimSpace(body), "[") {
+		products, err := decodeProductFileJSON([]byte(body))
+		return ImportProductsFileRequest{}, products, err
+	}
+
+	var req ImportProductsFileRequest
+	if err := json.Unmarshal([]byte(body), &req); err != nil {
+		return ImportProductsFileRequest{}, nil, fmt.Errorf("invalid request")
+	}
+	if len(req.Products) > 0 {
+		return req, req.Products, nil
+	}
+
+	contentBase64 := firstNonEmpty(req.ContentBase64, req.FileBase64)
+	if contentBase64 == "" {
+		return ImportProductsFileRequest{}, nil, fmt.Errorf("content_base64 is required")
+	}
+	decodedBytes, err := decodeBase64Payload(contentBase64)
+	if err != nil {
+		return ImportProductsFileRequest{}, nil, fmt.Errorf("invalid product file base64")
+	}
+
+	products, err := decodeProductFileJSON(decodedBytes)
+	if err != nil {
+		return ImportProductsFileRequest{}, nil, err
+	}
+	return req, products, nil
+}
+
+func decodeProductFileJSON(data []byte) ([]CreateProductRequest, error) {
+	var products []CreateProductRequest
+	if err := json.Unmarshal(data, &products); err != nil {
+		return nil, fmt.Errorf("product file JSON is invalid: %s", err.Error())
+	}
+	if len(products) == 0 {
+		return nil, fmt.Errorf("product file is empty")
+	}
+	return products, nil
+}
+
+func applyImportProductDefaults(req *CreateProductRequest, defaults ImportProductsFileRequest) {
+	if req.Brand == "" {
+		req.Brand = defaults.Brand
+	}
+	if req.Year == "" {
+		req.Year = defaults.Year
+	}
+	if req.Collection == "" {
+		req.Collection = defaults.Collection
+	}
+	if req.CollectionSlug == "" {
+		req.CollectionSlug = defaults.CollectionSlug
 	}
 }
 
@@ -1058,6 +1214,64 @@ func putEntity(entity interface{}) error {
 	return err
 }
 
+func putEntitiesBatch(products []Product) error {
+	for start := 0; start < len(products); start += 25 {
+		end := start + 25
+		if end > len(products) {
+			end = len(products)
+		}
+
+		writeRequests := make([]*dynamodb.WriteRequest, 0, end-start)
+		for _, product := range products[start:end] {
+			item, err := dynamodbattribute.MarshalMap(product)
+			if err != nil {
+				return err
+			}
+			writeRequests = append(writeRequests, &dynamodb.WriteRequest{
+				PutRequest: &dynamodb.PutRequest{Item: item},
+			})
+		}
+
+		pending := map[string][]*dynamodb.WriteRequest{tableName: writeRequests}
+		for attempt := 0; len(pending[tableName]) > 0 && attempt < 5; attempt++ {
+			result, err := dynamoClient.BatchWriteItem(&dynamodb.BatchWriteItemInput{RequestItems: pending})
+			if err != nil {
+				return err
+			}
+			pending = result.UnprocessedItems
+		}
+		if len(pending[tableName]) > 0 {
+			return fmt.Errorf("dynamodb left %d product writes unprocessed", len(pending[tableName]))
+		}
+	}
+	return nil
+}
+
+func ensureProductS3Prefixes(product Product) error {
+	if err := ensureS3Prefix(product.BrandKey + "/"); err != nil {
+		return err
+	}
+	if err := ensureS3Prefix(path.Join(product.BrandKey, product.Year) + "/"); err != nil {
+		return err
+	}
+	return ensureS3Prefix(product.S3Prefix)
+}
+
+func ensureProductBatchS3Prefixes(products []Product) error {
+	prefixes := map[string]struct{}{}
+	for _, product := range products {
+		prefixes[product.BrandKey+"/"] = struct{}{}
+		prefixes[path.Join(product.BrandKey, product.Year)+"/"] = struct{}{}
+		prefixes[product.S3Prefix] = struct{}{}
+	}
+	for prefix := range prefixes {
+		if err := ensureS3Prefix(prefix); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func ensureS3Prefix(prefix string) error {
 	if strings.TrimSpace(prefix) == "" {
 		return nil
@@ -1072,12 +1286,7 @@ func ensureS3Prefix(prefix string) error {
 }
 
 func uploadImage(key string, contentBase64 string, contentType string) error {
-	data := strings.TrimSpace(contentBase64)
-	if comma := strings.Index(data, ","); comma >= 0 {
-		data = data[comma+1:]
-	}
-
-	decodedBytes, err := base64.StdEncoding.DecodeString(data)
+	decodedBytes, err := decodeBase64Payload(contentBase64)
 	if err != nil {
 		return fmt.Errorf("invalid image_base64")
 	}
@@ -1096,6 +1305,14 @@ func uploadImage(key string, contentBase64 string, contentType string) error {
 		ContentType: aws.String(contentType),
 	})
 	return err
+}
+
+func decodeBase64Payload(contentBase64 string) ([]byte, error) {
+	data := strings.TrimSpace(contentBase64)
+	if comma := strings.Index(data, ","); comma >= 0 {
+		data = data[comma+1:]
+	}
+	return base64.StdEncoding.DecodeString(data)
 }
 
 func parsePrice(value interface{}) (float64, string) {
@@ -1184,12 +1401,67 @@ func slugify(value string) string {
 	return strings.Trim(builder.String(), "-")
 }
 
-func sizesToStrings(values []int) []string {
+func sizeValuesToStrings(values []interface{}) []string {
 	result := make([]string, 0, len(values))
 	for _, value := range values {
-		result = append(result, strconv.Itoa(value))
+		if text := sizeValueToString(value); text != "" {
+			result = append(result, text)
+		}
 	}
 	return result
+}
+
+func sizeValuesToInts(values []interface{}) []int {
+	result := make([]int, 0, len(values))
+	for _, value := range values {
+		if parsed := sizeValueToInt(value); parsed != 0 {
+			result = append(result, parsed)
+		}
+	}
+	return result
+}
+
+func sizeValueToString(value interface{}) string {
+	switch typed := value.(type) {
+	case nil:
+		return ""
+	case string:
+		return strings.TrimSpace(typed)
+	case float64:
+		if typed == float64(int(typed)) {
+			return strconv.Itoa(int(typed))
+		}
+		return strconv.FormatFloat(typed, 'f', -1, 64)
+	case float32:
+		return strconv.FormatFloat(float64(typed), 'f', -1, 32)
+	case int:
+		return strconv.Itoa(typed)
+	case int64:
+		return strconv.FormatInt(typed, 10)
+	default:
+		return strings.TrimSpace(fmt.Sprintf("%v", value))
+	}
+}
+
+func sizeValueToInt(value interface{}) int {
+	switch typed := value.(type) {
+	case nil:
+		return 0
+	case int:
+		return typed
+	case int64:
+		return int(typed)
+	case float64:
+		return int(typed)
+	case float32:
+		return int(typed)
+	case string:
+		parsed, _ := strconv.Atoi(strings.TrimSpace(typed))
+		return parsed
+	default:
+		parsed, _ := strconv.Atoi(sizeValueToString(value))
+		return parsed
+	}
 }
 
 func imageFileName(uuid string, productID string, index int, contentType string) string {
@@ -1290,6 +1562,17 @@ func extractProductIDFromPath(pathValue string) string {
 	}
 	if parts[len(parts)-2] == "products" {
 		return parts[len(parts)-1]
+	}
+	return ""
+}
+
+func extractProductImageIDFromPath(pathValue string) string {
+	parts := strings.Split(strings.Trim(pathValue, "/"), "/")
+	if len(parts) < 3 {
+		return ""
+	}
+	if parts[len(parts)-3] == "products" && parts[len(parts)-1] == "images" {
+		return parts[len(parts)-2]
 	}
 	return ""
 }

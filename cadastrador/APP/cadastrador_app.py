@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import base64
 import json
+import mimetypes
 import os
+import re
+import shutil
 import sys
 import traceback
 from pathlib import Path
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 
 from catalog_image_finder import find_latest_price_json, process_catalog_images
@@ -47,8 +51,11 @@ DATA_DIR = APP_DIR.parent
 UP_BABY_DIR = DATA_DIR / "UP_BABY"
 UP_BABY_PENDING_DIR = UP_BABY_DIR / "1_PRODUTOS_PARA_CADASTRA"
 UP_BABY_SENT_DIR = UP_BABY_DIR / "1_PRODUTOS_ENVIADOS"
+UP_BABY_HISTORY_DIR = UP_BABY_DIR / "1_PRODUTOS_HISTORICO"
+UP_BABY_PENDING_IMAGES_DIR = UP_BABY_PENDING_DIR / "IMAGEMS"
+UP_BABY_SENT_IMAGES_DIR = UP_BABY_SENT_DIR / "IMAGEMS"
 UP_BABY_COLORS_DIR = UP_BABY_DIR / "CORES"
-SYSTEM_FOLDERS = {"1_PRODUTOS_PARA_CADASTRA", "1_PRODUTOS_ENVIADOS", "CORES"}
+SYSTEM_FOLDERS = {"1_PRODUTOS_PARA_CADASTRA", "1_PRODUTOS_ENVIADOS", "1_PRODUTOS_HISTORICO", "CORES"}
 UP_BABY_BRAND = "UP-BABY"
 API_BASE_URL = os.environ.get(
     "MUNDOCOLORE_API_URL",
@@ -58,7 +65,7 @@ LOGIN_BASIC_AUTH = os.environ.get(
     "MUNDOCOLORE_LOGIN_BASIC_AUTH",
     "Basic QVBJX05BTUVfQUNDRVNTOkFQSV9TRUNSRVRfQUNDRVNT",
 )
-REQUEST_TIMEOUT_SECONDS = 15
+REQUEST_TIMEOUT_SECONDS = 30
 
 
 class ApiError(RuntimeError):
@@ -139,6 +146,45 @@ def fetch_brands_api(token: str) -> list[dict]:
     if not isinstance(brands, list):
         raise ApiError("A lista de marcas veio em formato inesperado.")
     return [brand for brand in brands if isinstance(brand, dict)]
+
+
+def import_products_file_api(token: str, product_file: Path, brand: str, year: str, collection: str) -> dict:
+    payload = {
+        "file_name": product_file.name,
+        "content_base64": base64.b64encode(product_file.read_bytes()).decode("ascii"),
+        "brand": brand,
+        "year": year,
+        "collection": collection,
+    }
+    return _request_json(
+        "/products/import-file",
+        method="POST",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Accept": "application/json",
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+    )
+
+
+def upload_product_image_api(token: str, product_id: str, image_path: Path) -> dict:
+    content_type = mimetypes.guess_type(image_path.name)[0] or "application/octet-stream"
+    payload = {
+        "file_name": image_path.name,
+        "content_base64": base64.b64encode(image_path.read_bytes()).decode("ascii"),
+        "content_type": content_type,
+    }
+    return _request_json(
+        f"/products/{quote(product_id, safe='')}/images",
+        method="POST",
+        data=json.dumps(payload).encode("utf-8"),
+        headers={
+            "Accept": "application/json",
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+    )
 
 
 class PriceProcessWorker(QObject):
@@ -400,13 +446,31 @@ class MainWindow(QMainWindow):
         self.validate_price_btn.clicked.connect(self.validate_price_table)
         self.catalog_btn = QPushButton("Buscar imagen")
         self.catalog_btn.clicked.connect(self.search_catalog_images)
-        self.site_btn = QPushButton("Cadastrar no site")
-        self.site_btn.clicked.connect(self._site_not_implemented)
         actions.addWidget(self.process_price_btn)
         actions.addWidget(self.validate_price_btn)
         actions.addWidget(self.catalog_btn)
-        actions.addWidget(self.site_btn)
         right.addLayout(actions)
+
+        site_box = QGroupBox("Cadastro no site")
+        site_layout = QVBoxLayout(site_box)
+        self.pending_products_file_label = QLabel("")
+        self.pending_products_file_label.setWordWrap(True)
+        self.sent_products_file_label = QLabel("")
+        self.sent_products_file_label.setWordWrap(True)
+        site_actions = QHBoxLayout()
+        refresh_upload_files_btn = QPushButton("Verificar arquivos")
+        refresh_upload_files_btn.clicked.connect(self._refresh_upload_files)
+        self.upload_products_btn = QPushButton("Enviar dados dos produtos")
+        self.upload_products_btn.clicked.connect(self.send_product_file)
+        self.upload_images_btn = QPushButton("Enviar imagens")
+        self.upload_images_btn.clicked.connect(self.send_product_images)
+        site_actions.addWidget(refresh_upload_files_btn)
+        site_actions.addWidget(self.upload_products_btn)
+        site_actions.addWidget(self.upload_images_btn)
+        site_layout.addWidget(self.pending_products_file_label)
+        site_layout.addWidget(self.sent_products_file_label)
+        site_layout.addLayout(site_actions)
+        right.addWidget(site_box)
 
         log_box = QGroupBox("Resultado")
         log_layout = QVBoxLayout(log_box)
@@ -432,6 +496,9 @@ class MainWindow(QMainWindow):
     def _ensure_default_dirs(self) -> None:
         UP_BABY_PENDING_DIR.mkdir(parents=True, exist_ok=True)
         UP_BABY_SENT_DIR.mkdir(parents=True, exist_ok=True)
+        UP_BABY_HISTORY_DIR.mkdir(parents=True, exist_ok=True)
+        UP_BABY_PENDING_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
+        UP_BABY_SENT_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
         UP_BABY_COLORS_DIR.mkdir(parents=True, exist_ok=True)
 
     def _read_setting(self, key: str) -> str:
@@ -532,7 +599,7 @@ class MainWindow(QMainWindow):
             button.setMinimumHeight(88)
             button.setObjectName("BrandButton")
             if self._is_up_baby_brand(label):
-                button.clicked.connect(lambda _checked=False: self.stack.setCurrentWidget(self.up_baby_page))
+                button.clicked.connect(lambda _checked=False: self._open_up_baby_page())
             else:
                 button.clicked.connect(lambda _checked=False, name=label: self._show_pending_brand(name))
             self.brands_grid.addWidget(button, idx // 2, idx % 2)
@@ -550,6 +617,174 @@ class MainWindow(QMainWindow):
         self.login_status.setText("Entre para carregar as marcas cadastradas.")
         self.stack.setCurrentWidget(self.login_page)
         self.username_input.setFocus()
+
+    def _open_up_baby_page(self) -> None:
+        self._refresh_upload_files()
+        self.stack.setCurrentWidget(self.up_baby_page)
+
+    def _refresh_upload_files(self) -> None:
+        pending_file = self._latest_products_file(UP_BABY_PENDING_DIR)
+        sent_file = self._latest_products_file(UP_BABY_SENT_DIR)
+        if pending_file:
+            self.pending_products_file_label.setText(f"Arquivo pronto para enviar dados: {pending_file.name}")
+        else:
+            self.pending_products_file_label.setText("Arquivo pronto para enviar dados: nenhum JSON com imagens encontrado.")
+        if sent_file:
+            self.sent_products_file_label.setText(f"Arquivo para envio de imagens: {sent_file.name}")
+        else:
+            self.sent_products_file_label.setText("Arquivo para envio de imagens: envie primeiro os dados dos produtos.")
+
+    def send_product_file(self) -> None:
+        if not self.token:
+            self._show_login()
+            return
+
+        product_file = self._latest_products_file(UP_BABY_PENDING_DIR)
+        if not product_file:
+            QMessageBox.warning(
+                self,
+                "Arquivo de produtos",
+                "Nenhum JSON com dados e imagens foi encontrado na pasta de produtos para cadastrar.",
+            )
+            self._refresh_upload_files()
+            return
+
+        metadata = self._product_file_collection_metadata(product_file)
+        if not metadata:
+            QMessageBox.warning(
+                self,
+                "Colecao",
+                f"O nome do arquivo precisa comecar com ano e colecao, por exemplo 2025-VERAO-A: {product_file.name}",
+            )
+            return
+        year, collection = metadata
+
+        self._set_upload_buttons_enabled(False)
+        self._log(f"Enviando dados dos produtos: {product_file.name}.")
+        QApplication.processEvents()
+        try:
+            response = import_products_file_api(self.token, product_file, UP_BABY_BRAND, year, collection)
+            sent_file = self._move_file_to_dir(product_file, UP_BABY_SENT_DIR)
+        except (ApiError, OSError) as exc:
+            self._log(f"Falha ao enviar dados dos produtos: {exc}")
+            QMessageBox.critical(self, "Envio de produtos", str(exc))
+            return
+        finally:
+            self._set_upload_buttons_enabled(True)
+
+        imported_count = int(response.get("imported_count") or 0)
+        self._log(f"Produtos enviados: {imported_count}.")
+        self._log(f"Arquivo movido para enviados: {sent_file}")
+        self._refresh_upload_files()
+        QMessageBox.information(self, "Envio de produtos", f"{imported_count} produto(s) enviado(s).")
+
+    def send_product_images(self) -> None:
+        if not self.token:
+            self._show_login()
+            return
+
+        product_file = self._latest_products_file(UP_BABY_SENT_DIR)
+        if not product_file:
+            QMessageBox.warning(
+                self,
+                "Arquivo enviado",
+                "Envie os dados dos produtos antes de enviar as imagens.",
+            )
+            self._refresh_upload_files()
+            return
+
+        try:
+            products = self._read_product_file(product_file)
+        except (OSError, json.JSONDecodeError, ValueError) as exc:
+            QMessageBox.critical(self, "Arquivo enviado", f"Nao foi possivel ler {product_file.name}: {exc}")
+            return
+
+        sent_count = 0
+        skipped_count = 0
+        failed_count = 0
+        self._set_upload_buttons_enabled(False)
+        self._log(f"Enviando imagens listadas em: {product_file.name}.")
+        try:
+            for product in products:
+                product_id = str(product.get("UUID") or product.get("id") or "").strip()
+                image_names = product.get("imagem") or product.get("images") or []
+                if isinstance(image_names, str):
+                    image_names = [image_names]
+                if not product_id or not isinstance(image_names, list):
+                    failed_count += len(image_names) if isinstance(image_names, list) else 1
+                    continue
+
+                for image_name in image_names:
+                    file_name = Path(str(image_name)).name
+                    source_image = UP_BABY_PENDING_IMAGES_DIR / file_name
+                    sent_image = UP_BABY_SENT_IMAGES_DIR / file_name
+                    if sent_image.exists():
+                        skipped_count += 1
+                        continue
+                    if not source_image.exists():
+                        failed_count += 1
+                        self._log(f"Imagem nao encontrada para {product_id}: {source_image}")
+                        continue
+
+                    QApplication.processEvents()
+                    try:
+                        upload_product_image_api(self.token, product_id, source_image)
+                        moved_image = self._move_file_to_dir(source_image, UP_BABY_SENT_IMAGES_DIR)
+                    except (ApiError, OSError) as exc:
+                        failed_count += 1
+                        self._log(f"Falha ao enviar {source_image.name} do produto {product_id}: {exc}")
+                        continue
+
+                    sent_count += 1
+                    self._log(f"Imagem enviada e movida: {moved_image.name}")
+        finally:
+            self._set_upload_buttons_enabled(True)
+
+        self._refresh_upload_files()
+        summary = f"{sent_count} imagem(ns) enviada(s), {skipped_count} ja enviada(s), {failed_count} com falha."
+        if failed_count:
+            QMessageBox.warning(self, "Envio de imagens", summary)
+        else:
+            QMessageBox.information(self, "Envio de imagens", summary)
+
+    def _latest_products_file(self, directory: Path) -> Path | None:
+        files = sorted(
+            directory.glob("*_produtos_com_imagens_*.json"),
+            key=lambda path: path.stat().st_mtime,
+            reverse=True,
+        )
+        return files[0] if files else None
+
+    def _product_file_collection_metadata(self, product_file: Path) -> tuple[str, str] | None:
+        collection_name = product_file.name.split("_produtos_com_imagens_", 1)[0]
+        match = re.fullmatch(r"(\d{4})-(.+)", collection_name)
+        if not match:
+            return None
+        return match.group(1), match.group(2)
+
+    def _read_product_file(self, product_file: Path) -> list[dict]:
+        payload = json.loads(product_file.read_text(encoding="utf-8"))
+        if not isinstance(payload, list):
+            raise ValueError("o JSON deve conter uma lista de produtos")
+        return [product for product in payload if isinstance(product, dict)]
+
+    def _archive_pending_root_files(self, keep_file: Path) -> int:
+        archived_count = 0
+        for file_path in UP_BABY_PENDING_DIR.iterdir():
+            if not file_path.is_file() or file_path == keep_file:
+                continue
+            self._move_file_to_dir(file_path, UP_BABY_HISTORY_DIR)
+            archived_count += 1
+        return archived_count
+
+    def _move_file_to_dir(self, source: Path, destination_dir: Path) -> Path:
+        destination_dir.mkdir(parents=True, exist_ok=True)
+        destination = destination_dir / source.name
+        sequence = 1
+        while destination.exists():
+            destination = destination_dir / f"{source.stem}_{sequence}{source.suffix}"
+            sequence += 1
+        return Path(shutil.move(str(source), str(destination)))
 
     def refresh_collections(self) -> None:
         self.collections_list.clear()
@@ -770,6 +1005,12 @@ class MainWindow(QMainWindow):
 
     @Slot(object)
     def _catalog_image_finished(self, result: object) -> None:
+        try:
+            archived_count = self._archive_pending_root_files(result.output_json_path)
+        except OSError as exc:
+            archived_count = 0
+            self._log(f"Nao foi possivel mover arquivos antigos para historico: {exc}")
+
         self._log(f"Produtos no JSON: {result.products_count}")
         self._log(f"Imagens salvas: {result.images_count}")
         self._log(f"Produtos sem imagem: {result.products_without_images}")
@@ -777,7 +1018,9 @@ class MainWindow(QMainWindow):
         self._log(f"Cores novas cadastradas: {result.new_colors_count}")
         self._log(f"Pasta de imagens: {result.image_dir}")
         self._log(f"JSON com imagens: {result.output_json_path}")
+        self._log(f"Arquivos antigos movidos para historico: {archived_count}")
         self._log(f"JSON de cores: {result.colors_json_path}")
+        self._refresh_upload_files()
         QMessageBox.information(
             self,
             "Busca concluida",
@@ -800,12 +1043,9 @@ class MainWindow(QMainWindow):
         self.validate_price_btn.setEnabled(enabled)
         self.catalog_btn.setEnabled(enabled)
 
-    def _site_not_implemented(self) -> None:
-        QMessageBox.information(
-            self,
-            "Cadastro no site",
-            "Este botao fica reservado para a proxima etapa: envio dos produtos para o site.",
-        )
+    def _set_upload_buttons_enabled(self, enabled: bool) -> None:
+        self.upload_products_btn.setEnabled(enabled)
+        self.upload_images_btn.setEnabled(enabled)
 
     def _show_pending_brand(self, brand: str) -> None:
         QMessageBox.information(self, brand, f"O fluxo da marca {brand} ainda nao foi implementado.")

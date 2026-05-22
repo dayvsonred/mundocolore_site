@@ -39,6 +39,9 @@ Para OCR de PDFs escaneados, tambem e necessario instalar:
 - Busca imagens no PDF do catalogo usando o JSON de tabela mais recente da colecao.
 - Salva imagens em `..\UP_BABY\1_PRODUTOS_PARA_CADASTRA\IMAGEMS`.
 - Gera um novo JSON com os atributos `imagem` e `cores`.
+- Quando gera o JSON com imagens, move os JSON/XLSX antigos da pasta de cadastro para `..\UP_BABY\1_PRODUTOS_HISTORICO`.
+- Envia o JSON final pela rota `POST /products/import-file` e move o arquivo enviado para `..\UP_BABY\1_PRODUTOS_ENVIADOS`.
+- Le o JSON enviado, envia as imagens uma a uma por `POST /products/{id}/images` e move cada imagem aceita para `..\UP_BABY\1_PRODUTOS_ENVIADOS\IMAGEMS`.
 - Atualiza o cadastro de cores em `..\UP_BABY\CORES\cores_catalogo.json`.
 
 ```text
@@ -59,4 +62,4 @@ Para apontar para outro ambiente antes de abrir o app:
 $env:MUNDOCOLORE_API_URL = "https://sua-api/prod"
 ```
 
-O login usa `POST /login` com o header Basic esperado pela lambda e a tela inicial usa o token retornado no header Bearer ao buscar `GET /products/brands`.
+O login usa `POST /login` com o header Basic esperado pela lambda. O token retornado e enviado no header Bearer ao buscar marcas e ao enviar dados ou imagens para a lambda `products`.

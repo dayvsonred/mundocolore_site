@@ -23,6 +23,12 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 
 	switch request.HTTPMethod {
 	case "POST":
+		if strings.HasSuffix(request.Path, "/products/import-file") {
+			return HandleImportProductsFile(ctx, request)
+		}
+		if strings.HasSuffix(request.Path, "/images") && strings.Contains(request.Path, "/products/") {
+			return HandleUploadProductImage(ctx, request)
+		}
 		if strings.HasSuffix(request.Path, "/products/brands") {
 			return HandleCreateBrand(ctx, request)
 		}

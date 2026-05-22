@@ -6,6 +6,8 @@
 - `GET /products/brands` lista marcas cadastradas.
 - `POST /products/collections` cria colecao e prefixos `marca/ano/colecao/`.
 - `GET /products/collections?brand=UP-BABY&year=2026` lista colecoes.
+- `POST /products/import-file` cadastra os produtos de um JSON gerado pelo cadastrador.
+- `POST /products/{id}/images` envia uma imagem base64 para um produto ja cadastrado.
 - `POST /products` cadastra um produto individual. Aceita imagem em base64 para upload na pasta S3 da colecao ou nomes/caminhos de imagens ja existentes.
 - `GET /products` lista produtos ativos com paginacao e filtros `brand`, `year`, `collection`, `type`, `category`, `produto_id`, `limit`, `last_key`.
 - `GET /products?include_inactive=true` lista tambem produtos inativos para administracao.
@@ -57,6 +59,12 @@ terraform plan
 terraform apply
 ```
 
+Depois de criar ou alterar recursos/metodos do API Gateway, publique novamente o stage usado pelo site e pelo cadastrador:
+
+```powershell
+aws apigateway create-deployment --rest-api-id b8i4etrh23 --stage-name prod --profile mundocolore --region sa-east-1
+```
+
 ## Exemplo de Produto
 
 ```json
@@ -81,6 +89,32 @@ Quando a imagem e enviada em `image_base64`, a lambda salva o arquivo em `brand/
 O produto salvo retorna o caminho explicito em `s3_prefix`, `image_keys`, `image_urls`, `image` e `image_url`.
 Quando a imagem ja existe no S3, envie o nome/caminho em `imagem` ou `images`.
 Para ocultar um produto do catalogo publico sem apagar, envie `{"is_active": false}` em `PATCH /products/{id}`.
+
+## Importacao do cadastrador
+
+O arquivo final do cadastrador e enviado em base64 para preservar a lista gerada localmente:
+
+```json
+{
+  "file_name": "2025-VERAO-A_produtos_com_imagens_20260518_111914.json",
+  "content_base64": "<json em base64>",
+  "brand": "UP-BABY",
+  "year": "2025",
+  "collection": "VERAO-A"
+}
+```
+
+Cada produto do arquivo e cadastrado com o `UUID` do JSON como `id`. Para anexar uma imagem desse produto depois:
+
+```json
+{
+  "file_name": "A_uuid_46584_1-2-3.jpg",
+  "content_base64": "<imagem em base64>",
+  "content_type": "image/jpeg"
+}
+```
+
+Envie esse payload para `POST /products/{id}/images`, usando o `UUID` do produto no lugar de `{id}`.
 
 Quando o produto vier direto do JSON do cadastrador sem `brand`, `year` ou `collection`, envie esses valores na query string:
 

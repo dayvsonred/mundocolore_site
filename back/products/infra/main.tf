@@ -49,6 +49,7 @@ resource "aws_iam_role_policy" "dynamodb_policy" {
           "dynamodb:Query",
           "dynamodb:Scan",
           "dynamodb:PutItem",
+          "dynamodb:BatchWriteItem",
           "dynamodb:UpdateItem"
         ]
         Resource = [
@@ -157,6 +158,72 @@ resource "aws_api_gateway_integration" "products_options_integration" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.products_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_resource" "products_import_file_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.products_resource.id
+  path_part   = "import-file"
+}
+
+resource "aws_api_gateway_method" "products_import_file_any" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.products_import_file_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "products_import_file_any_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.products_import_file_resource.id
+  http_method             = aws_api_gateway_method.products_import_file_any.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.products_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_method" "products_import_file_options" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.products_import_file_resource.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_method_response" "products_import_file_options_response" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  resource_id = aws_api_gateway_resource.products_import_file_resource.id
+  http_method = aws_api_gateway_method.products_import_file_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration" "products_import_file_options_integration" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  resource_id = aws_api_gateway_resource.products_import_file_resource.id
+  http_method = aws_api_gateway_method.products_import_file_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+resource "aws_api_gateway_integration_response" "products_import_file_options_integration_response" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  resource_id = aws_api_gateway_resource.products_import_file_resource.id
+  http_method = aws_api_gateway_method.products_import_file_options.http_method
+  status_code = aws_api_gateway_method_response.products_import_file_options_response.status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
 }
 
 resource "aws_api_gateway_resource" "products_brands_resource" {
@@ -311,6 +378,72 @@ resource "aws_api_gateway_integration" "products_id_get_integration" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.products_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_resource" "products_id_images_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.products_id_resource.id
+  path_part   = "images"
+}
+
+resource "aws_api_gateway_method" "products_id_images_any" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.products_id_images_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "products_id_images_any_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.products_id_images_resource.id
+  http_method             = aws_api_gateway_method.products_id_images_any.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.products_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_method" "products_id_images_options" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.products_id_images_resource.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_method_response" "products_id_images_options_response" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  resource_id = aws_api_gateway_resource.products_id_images_resource.id
+  http_method = aws_api_gateway_method.products_id_images_options.http_method
+  status_code = "200"
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = true
+    "method.response.header.Access-Control-Allow-Methods" = true
+    "method.response.header.Access-Control-Allow-Origin"  = true
+  }
+}
+
+resource "aws_api_gateway_integration" "products_id_images_options_integration" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  resource_id = aws_api_gateway_resource.products_id_images_resource.id
+  http_method = aws_api_gateway_method.products_id_images_options.http_method
+  type        = "MOCK"
+
+  request_templates = {
+    "application/json" = "{\"statusCode\": 200}"
+  }
+}
+
+resource "aws_api_gateway_integration_response" "products_id_images_options_integration_response" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  resource_id = aws_api_gateway_resource.products_id_images_resource.id
+  http_method = aws_api_gateway_method.products_id_images_options.http_method
+  status_code = aws_api_gateway_method_response.products_id_images_options_response.status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'POST,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
 }
 
 resource "aws_api_gateway_resource" "products_health_resource" {
