@@ -1,9 +1,13 @@
 import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Meta, Title } from '@angular/platform-browser';
+import { Router } from '@angular/router';
+import { finalize } from 'rxjs';
 
 import { NotificationService } from 'src/app/core/services/notification.service';
 import { APP_NAME } from 'src/app/core/constants/branding';
+import { Product } from 'src/app/core/models/product.model';
+import { ProductService } from 'src/app/core/services/product.service';
 
 @Component({
   selector: 'app-home',
@@ -57,17 +61,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   ];
 
-  readonly products: ReadonlyArray<ProductCard> = [
-    { name: 'Conjunto Moletom Arco-iris', price: 'R$ 149,90', image: 'https://images.unsplash.com/photo-1618375531912-867984bdfd87?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Vestido Jardim Suave', price: 'R$ 129,90', image: 'https://images.unsplash.com/photo-1622290291468-a28f7a7dc6a8?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Shorts Dia de Sol', price: 'R$ 79,90', image: 'https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Pijama Nuvem Duo', price: 'R$ 99,90', image: 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Jaqueta Pequeno Explorador', price: 'R$ 169,90', image: 'https://images.unsplash.com/photo-1514090458221-65bb69cf63e6?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Conjunto Tricot Candy', price: 'R$ 139,90', image: 'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Kit Camisetas Brincar', price: 'R$ 89,90', image: 'https://images.unsplash.com/photo-1620799139652-715e4d5b232d?auto=format&fit=crop&w=800&q=80' },
-    { name: 'Jardineira Mini Arco-iris', price: 'R$ 119,90', image: 'https://images.unsplash.com/photo-1544441893-675973e31985?auto=format&fit=crop&w=800&q=80' }
-  ];
-
   readonly benefits: ReadonlyArray<BenefitItem> = [
     { icon: 'local_shipping', title: 'Entrega Rapida', text: 'Despacho em ate 24h para regioes selecionadas.' },
     { icon: 'verified', title: 'Qualidade Premium', text: 'Materiais seguros, macios e duraveis para uso diario.' },
@@ -98,6 +91,9 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   isNavbarSolid = false;
   activeSlideIndex = 0;
+  products: Product[] = [];
+  loadingProducts = false;
+  productLoadError = '';
   newsletterForm: FormGroup;
 
   private heroIntervalId?: number;
@@ -105,6 +101,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private readonly fb: FormBuilder,
     private readonly notificationService: NotificationService,
+    private readonly productService: ProductService,
+    private readonly router: Router,
     private readonly titleService: Title,
     private readonly meta: Meta
   ) {
@@ -123,6 +121,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadNewProducts();
     this.startHeroAutoSlide();
     this.onWindowScroll();
   }
@@ -160,6 +159,56 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.newsletterForm.reset();
   }
 
+  getProductImage(product: Product): string {
+    return product.image_url || product.image || product.image_urls?.[0] || 'assets/images/logo-mundo-colore.jpg';
+  }
+
+  getProductName(product: Product): string {
+    return product.name || product.description || product.produto_id || 'Produto Mundo Colore';
+  }
+
+  getProductPrice(product: Product): string {
+    const price = this.resolveProductPrice(product);
+
+    return price.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    });
+  }
+
+  viewProduct(product: Product, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    if (!product.id) {
+      return;
+    }
+
+    this.router.navigate(['/product', product.id]);
+  }
+
+  private loadNewProducts(): void {
+    this.loadingProducts = true;
+    this.productLoadError = '';
+
+    this.productService.getProductsByQuery({
+      is_new: true,
+      include_inactive: false,
+      limit: 100
+    }).pipe(finalize(() => this.loadingProducts = false))
+      .subscribe({
+        next: (page) => {
+          this.products = page.products.filter((product) => !!product.isNew).slice(0, 8);
+        },
+        error: () => {
+          this.products = [];
+          this.productLoadError = 'Nao foi possivel carregar as novidades.';
+        }
+      });
+  }
+
   private nextSlide(): void {
     this.activeSlideIndex = (this.activeSlideIndex + 1) % this.heroSlides.length;
   }
@@ -181,6 +230,20 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.stopHeroAutoSlide();
     this.startHeroAutoSlide();
   }
+
+  private resolveProductPrice(product: Product): number {
+    if (Number.isFinite(product.price)) {
+      return product.price;
+    }
+
+    const rawPrice = String(product.preco || '').replace(/[^\d,.-]/g, '');
+    const normalizedPrice = rawPrice.includes(',')
+      ? rawPrice.replace(/\./g, '').replace(',', '.')
+      : rawPrice;
+    const price = Number(normalizedPrice);
+
+    return Number.isFinite(price) ? price : 0;
+  }
 }
 
 interface MenuItem {
@@ -199,12 +262,6 @@ interface FeaturedCard {
   title: string;
   description: string;
   badgeColor: string;
-}
-
-interface ProductCard {
-  name: string;
-  price: string;
-  image: string;
 }
 
 interface BenefitItem {

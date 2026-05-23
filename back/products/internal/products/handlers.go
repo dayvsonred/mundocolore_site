@@ -89,6 +89,8 @@ type Product struct {
 	S3Prefix         string   `json:"s3_prefix" dynamodbav:"s3_prefix"`
 	Stock            int      `json:"stock" dynamodbav:"stock"`
 	IsActive         bool     `json:"is_active" dynamodbav:"is_active"`
+	IsNew            bool     `json:"isNew" dynamodbav:"is_new"`
+	IsPromotion      bool     `json:"isPromotion" dynamodbav:"is_promotion"`
 	CreatedAt        string   `json:"created_at" dynamodbav:"created_at"`
 	UpdatedAt        string   `json:"updated_at" dynamodbav:"updated_at"`
 }
@@ -154,6 +156,10 @@ type CreateProductRequest struct {
 	UploadImages     []UploadImage `json:"upload_images"`
 	Stock            int           `json:"stock"`
 	IsActive         *bool         `json:"is_active"`
+	IsNew            *bool         `json:"isNew"`
+	IsNewSnake       *bool         `json:"is_new"`
+	IsPromotion      *bool         `json:"isPromotion"`
+	IsPromotionSnake *bool         `json:"is_promotion"`
 }
 
 type ImportProductsFileRequest struct {
@@ -416,6 +422,8 @@ func HandleGetProducts(_ context.Context, request events.APIGatewayProxyRequest)
 		Brand:           request.QueryStringParameters["brand"],
 		Year:            request.QueryStringParameters["year"],
 		Collection:      request.QueryStringParameters["collection"],
+		IsNew:           parseOptionalBool(request.QueryStringParameters["is_new"]),
+		IsPromotion:     parseOptionalBool(request.QueryStringParameters["is_promotion"]),
 		IncludeInactive: strings.EqualFold(request.QueryStringParameters["include_inactive"], "true"),
 		Limit:           limit,
 		LastKey:         lastKey,
@@ -730,11 +738,19 @@ func buildProduct(req CreateProductRequest) (Product, error) {
 		S3Prefix:         s3Prefix,
 		Stock:            req.Stock,
 		IsActive:         true,
+		IsNew:            boolValue(req.IsNew, req.IsNewSnake, false),
+		IsPromotion:      boolValue(req.IsPromotion, req.IsPromotionSnake, false),
 		CreatedAt:        now,
 		UpdatedAt:        now,
 	}
 	if req.IsActive != nil {
 		product.IsActive = *req.IsActive
+	}
+	if req.IsNew != nil || req.IsNewSnake != nil {
+		product.IsNew = boolValue(req.IsNew, req.IsNewSnake, false)
+	}
+	if req.IsPromotion != nil || req.IsPromotionSnake != nil {
+		product.IsPromotion = boolValue(req.IsPromotion, req.IsPromotionSnake, false)
 	}
 
 	return product, nil
@@ -838,6 +854,12 @@ func updateProduct(id string, req CreateProductRequest) (Product, error) {
 	}
 	if req.IsActive != nil {
 		product.IsActive = *req.IsActive
+	}
+	if req.IsNew != nil || req.IsNewSnake != nil {
+		product.IsNew = boolValue(req.IsNew, req.IsNewSnake, false)
+	}
+	if req.IsPromotion != nil || req.IsPromotionSnake != nil {
+		product.IsPromotion = boolValue(req.IsPromotion, req.IsPromotionSnake, false)
 	}
 
 	imageChanged := len(req.Imagem) > 0 || len(req.Images) > 0 || req.Image != "" || req.ImageFileName != "" || req.ImageBase64 != "" || len(req.UploadImages) > 0 || req.ImageURL != ""
@@ -1037,6 +1059,8 @@ type ProductQuery struct {
 	Brand           string
 	Year            string
 	Collection      string
+	IsNew           *bool
+	IsPromotion     *bool
 	IncludeInactive bool
 	Limit           int
 	LastKey         string
@@ -1094,6 +1118,14 @@ func getProducts(query ProductQuery) (ProductsListResponse, error) {
 		filterExpressions = append(filterExpressions, "collection_slug = :collection_slug")
 		expressionValues[":collection_slug"] = &dynamodb.AttributeValue{S: aws.String(slugify(query.Collection))}
 	}
+	if query.IsNew != nil {
+		filterExpressions = append(filterExpressions, "is_new = :is_new")
+		expressionValues[":is_new"] = &dynamodb.AttributeValue{BOOL: query.IsNew}
+	}
+	if query.IsPromotion != nil {
+		filterExpressions = append(filterExpressions, "is_promotion = :is_promotion")
+		expressionValues[":is_promotion"] = &dynamodb.AttributeValue{BOOL: query.IsPromotion}
+	}
 
 	if len(filterExpressions) > 0 {
 		input.FilterExpression = aws.String(strings.Join(filterExpressions, " AND "))
@@ -1137,6 +1169,16 @@ func productIsActive(item map[string]*dynamodb.AttributeValue) bool {
 		return true
 	}
 	return value.BOOL == nil || *value.BOOL
+}
+
+func boolValue(primary *bool, secondary *bool, fallback bool) bool {
+	if primary != nil {
+		return *primary
+	}
+	if secondary != nil {
+		return *secondary
+	}
+	return fallback
 }
 
 func listBrands() ([]Brand, error) {
@@ -1350,6 +1392,15 @@ func parseLimit(value string, defaultLimit int) int {
 		return 100
 	}
 	return limit
+}
+
+func parseOptionalBool(value string) *bool {
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+
+	parsed := strings.EqualFold(value, "true") || value == "1"
+	return &parsed
 }
 
 func buildCollectionKey(brand string, year string, collection string) string {

@@ -79,6 +79,8 @@ export interface CreateProductPayload {
   image_content_type?: string;
   stock?: number;
   is_active?: boolean;
+  isNew?: boolean;
+  isPromotion?: boolean;
 }
 
 export interface ProductListQuery {
@@ -88,6 +90,8 @@ export interface ProductListQuery {
   brand?: string;
   year?: string;
   collection?: string;
+  is_new?: boolean;
+  is_promotion?: boolean;
   include_inactive?: boolean;
   limit?: number;
   last_key?: string;
@@ -136,6 +140,8 @@ export class ProductService {
     if (query.brand) params = params.set('brand', query.brand);
     if (query.year) params = params.set('year', query.year);
     if (query.collection) params = params.set('collection', query.collection);
+    if (query.is_new !== undefined) params = params.set('is_new', String(query.is_new));
+    if (query.is_promotion !== undefined) params = params.set('is_promotion', String(query.is_promotion));
     if (query.include_inactive) params = params.set('include_inactive', 'true');
     if (query.limit) params = params.set('limit', query.limit.toString());
     if (query.last_key) params = params.set('last_key', query.last_key);

@@ -347,16 +347,37 @@ p {
   gap: 20px;
 }
 
+.products-state {
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: rgba(90, 74, 66, 0.74);
+  font-weight: 700;
+  text-align: center;
+}
+
+.products-state.error {
+  color: var(--primary-red);
+}
+
 .product-card {
   border-radius: 24px;
   overflow: hidden;
   background: var(--bg);
   box-shadow: 0 16px 22px rgba(90, 74, 66, 0.08);
   transition: transform 0.28s ease;
+  cursor: pointer;
 }
 
 .product-card:hover {
   transform: translateY(-6px);
+}
+
+.product-card:focus-visible {
+  outline: 3px solid var(--accent-blue);
+  outline-offset: 4px;
 }
 
 .product-card img {

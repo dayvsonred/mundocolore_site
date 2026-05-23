@@ -65,13 +65,33 @@
       <p class="section-kicker">Vitrine de Produtos</p>
       <h2>Novidades feitas para dias de muita brincadeira</h2>
     </div>
-    <div class="products-grid">
-      <article class="product-card" *ngFor="let product of products">
-        <img [src]="product.image" [alt]="product.name" />
+    <div *ngIf="loadingProducts" class="products-state">
+      <mat-spinner diameter="34"></mat-spinner>
+      <span>Carregando novidades...</span>
+    </div>
+
+    <div *ngIf="!loadingProducts && productLoadError" class="products-state error">
+      {{ productLoadError }}
+    </div>
+
+    <div *ngIf="!loadingProducts && !productLoadError && !products.length" class="products-state">
+      Nenhuma novidade cadastrada no momento.
+    </div>
+
+    <div *ngIf="!loadingProducts && products.length" class="products-grid">
+      <article
+        class="product-card"
+        *ngFor="let product of products"
+        role="link"
+        tabindex="0"
+        (click)="viewProduct(product)"
+        (keydown.enter)="viewProduct(product, $event)"
+        (keydown.space)="viewProduct(product, $event)">
+        <img [src]="getProductImage(product)" [alt]="getProductName(product)" />
         <div class="product-body">
-          <h3>{{ product.name }}</h3>
-          <p class="price">{{ product.price }}</p>
-          <button type="button">Adicionar ao carrinho</button>
+          <h3>{{ getProductName(product) }}</h3>
+          <p class="price">{{ getProductPrice(product) }}</p>
+          <button type="button" (click)="viewProduct(product, $event)">Ver produto</button>
         </div>
       </article>
     </div>

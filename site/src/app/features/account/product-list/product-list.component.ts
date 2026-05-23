@@ -4,7 +4,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { finalize } from 'rxjs';
 
 import { Product } from 'src/app/core/models/product.model';
-import { ProductService } from 'src/app/core/services/product.service';
+import { ProductBrandRecord, ProductCollectionRecord, ProductService } from 'src/app/core/services/product.service';
 
 @Component({
   selector: 'app-product-list',
@@ -12,16 +12,23 @@ import { ProductService } from 'src/app/core/services/product.service';
   styleUrls: ['./product-list.component.scss']
 })
 export class ProductListComponent implements OnInit {
+  brands: ProductBrandRecord[] = [];
+  collections: ProductCollectionRecord[] = [];
   products: Product[] = [];
   selectedProduct: Product | null = null;
+  hasSearched = false;
+  loadingBrands = false;
+  loadingCollections = false;
   loading = false;
   saving = false;
   deleting = false;
 
   readonly filtersForm = this.formBuilder.group({
     search: [''],
+    productCode: [''],
     brand: [''],
     collection: [''],
+    is_new: [false],
     include_inactive: [true]
   });
 
@@ -42,7 +49,9 @@ export class ProductListComponent implements OnInit {
     tamanhos_array: [''],
     cores: [''],
     imagem: [''],
-    is_active: [true]
+    is_active: [true],
+    isNew: [false],
+    isPromotion: [false]
   });
 
   constructor(
@@ -52,26 +61,81 @@ export class ProductListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadProducts();
+    this.loadBrands();
+  }
+
+  loadBrands(): void {
+    this.loadingBrands = true;
+    this.productService.getBrands()
+      .pipe(finalize(() => this.loadingBrands = false))
+      .subscribe({
+        next: (brands) => {
+          this.brands = brands;
+        },
+        error: () => {
+          this.snackBar.open('Nao foi possivel carregar as marcas.', 'Fechar', { duration: 4000 });
+        }
+      });
+  }
+
+  onBrandSelected(): void {
+    this.clearSelection();
+    this.collections = [];
+    this.products = [];
+    this.filtersForm.patchValue({ collection: '' }, { emitEvent: false });
+
+    const brand = String(this.filtersForm.controls.brand.value || '').trim();
+    if (brand) {
+      this.loadCollections(brand);
+      this.loadProducts();
+    }
+  }
+
+  loadCollections(brand: string): void {
+    this.loadingCollections = true;
+    this.productService.getCollections(brand)
+      .pipe(finalize(() => this.loadingCollections = false))
+      .subscribe({
+        next: (collections) => {
+          this.collections = collections;
+        },
+        error: () => {
+          this.collections = [];
+          this.snackBar.open('Nao foi possivel carregar as colecoes da marca.', 'Fechar', { duration: 4000 });
+        }
+      });
   }
 
   loadProducts(): void {
     const filters = this.filtersForm.getRawValue();
     const search = String(filters.search || '').trim();
+    const productCode = String(filters.productCode || '').trim();
+    const brand = String(filters.brand || '').trim();
 
+    if (!brand && !productCode) {
+      this.products = [];
+      this.hasSearched = false;
+      this.snackBar.open('Selecione uma marca ou informe um codigo de produto.', 'Fechar', { duration: 3500 });
+      return;
+    }
+
+    this.hasSearched = true;
     this.loading = true;
     this.productService.getProductsByQuery({
-      produto_id: search || undefined,
-      brand: String(filters.brand || '').trim() || undefined,
+      produto_id: productCode || undefined,
+      brand: brand || undefined,
       collection: String(filters.collection || '').trim() || undefined,
+      is_new: filters.is_new ? true : undefined,
       include_inactive: !!filters.include_inactive,
       limit: 100
     }).pipe(finalize(() => this.loading = false))
       .subscribe({
         next: (page) => {
-          const products = page.products;
+          const products = brand
+            ? page.products.filter((product) => this.productBelongsToBrand(product, brand))
+            : page.products;
           const normalizedSearch = search.toLowerCase();
-          this.products = normalizedSearch && !filters.search?.match(/^\d+$/)
+          this.products = normalizedSearch
             ? products.filter((product) => this.productMatches(product, normalizedSearch))
             : products;
         },
@@ -100,7 +164,9 @@ export class ProductListComponent implements OnInit {
       tamanhos_array: (product.tamanhos_array || []).join(', '),
       cores: (product.cores || []).join(', '),
       imagem: (product.images || product.image_keys || []).join('\n'),
-      is_active: product.is_active !== false
+      is_active: product.is_active !== false,
+      isNew: !!product.isNew,
+      isPromotion: !!product.isPromotion
     });
   }
 
@@ -138,7 +204,9 @@ export class ProductListComponent implements OnInit {
       tamanhos_array: this.parseNumberList(value.tamanhos_array),
       cores: this.parseStringList(value.cores),
       imagem: this.parseStringList(value.imagem),
-      is_active: value.is_active !== false
+      is_active: value.is_active !== false,
+      isNew: !!value.isNew,
+      isPromotion: !!value.isPromotion
     }).pipe(finalize(() => this.saving = false))
       .subscribe({
         next: (product) => {
@@ -197,6 +265,23 @@ export class ProductListComponent implements OnInit {
       });
   }
 
+  getBrandLabel(brand: ProductBrandRecord): string {
+    return brand.name || brand.brand || brand.brand_key || '-';
+  }
+
+  getBrandValue(brand: ProductBrandRecord): string {
+    return brand.brand_key || brand.brand || brand.name;
+  }
+
+  getCollectionLabel(collection: ProductCollectionRecord): string {
+    const name = collection.name || collection.slug || collection.collection_key || '-';
+    return collection.year ? `${name} / ${collection.year}` : name;
+  }
+
+  getCollectionValue(collection: ProductCollectionRecord): string {
+    return collection.slug || collection.name || collection.collection_key || '';
+  }
+
   private productMatches(product: Product, search: string): boolean {
     return [
       product.name,
@@ -205,6 +290,14 @@ export class ProductListComponent implements OnInit {
       product.brand,
       product.collection
     ].some((value) => String(value || '').toLowerCase().includes(search));
+  }
+
+  private productBelongsToBrand(product: Product, brand: string): boolean {
+    return this.normalizeBrand(product.brand_key || product.brand || '') === this.normalizeBrand(brand);
+  }
+
+  private normalizeBrand(value: string): string {
+    return value.trim().replace(/_/g, '-').replace(/\s+/g, '-').toUpperCase();
   }
 
   private parseStringList(value: unknown): string[] {

@@ -8,21 +8,40 @@
 
   <form class="filters-form" [formGroup]="filtersForm" (ngSubmit)="loadProducts()">
     <mat-form-field appearance="outline">
-      <mat-label>Buscar produto</mat-label>
-      <input matInput formControlName="search" placeholder="Codigo, nome ou descricao">
+      <mat-label>Marca</mat-label>
+      <mat-select formControlName="brand" [disabled]="loadingBrands" (selectionChange)="onBrandSelected()">
+        <mat-option value="">Selecione</mat-option>
+        <mat-option *ngFor="let brand of brands" [value]="getBrandValue(brand)">
+          {{ getBrandLabel(brand) }}
+        </mat-option>
+      </mat-select>
+      <mat-hint *ngIf="loadingBrands">Carregando marcas...</mat-hint>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
-      <mat-label>Marca</mat-label>
-      <input matInput formControlName="brand" placeholder="UP-BABY">
+      <mat-label>Codigo do produto</mat-label>
+      <input matInput formControlName="productCode" placeholder="46584">
     </mat-form-field>
 
     <mat-form-field appearance="outline">
       <mat-label>Colecao</mat-label>
-      <input matInput formControlName="collection" placeholder="2025-verao-a">
+      <mat-select formControlName="collection" [disabled]="loadingCollections || !filtersForm.controls.brand.value">
+        <mat-option value="">Todas</mat-option>
+        <mat-option *ngFor="let collection of collections" [value]="getCollectionValue(collection)">
+          {{ getCollectionLabel(collection) }}
+        </mat-option>
+      </mat-select>
+      <mat-hint *ngIf="loadingCollections">Carregando colecoes...</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Buscar na lista</mat-label>
+      <input matInput formControlName="search" placeholder="Nome ou descricao">
     </mat-form-field>
 
     <mat-checkbox formControlName="include_inactive">Mostrar inativos</mat-checkbox>
+
+    <mat-checkbox formControlName="is_new">Somente novidades</mat-checkbox>
 
     <button type="submit" mat-raised-button color="primary" [disabled]="loading">
       <mat-icon>search</mat-icon>
@@ -38,7 +57,7 @@
       </div>
 
       <div *ngIf="!loading && !products.length" class="empty-state">
-        Nenhum produto encontrado.
+        {{ hasSearched ? 'Nenhum produto encontrado.' : 'Selecione uma marca para carregar os produtos ou busque por codigo.' }}
       </div>
 
       <div *ngIf="products.length" class="record-list">
@@ -52,6 +71,10 @@
           <div>
             <h3>{{ product.name || product.description }}</h3>
             <p>{{ product.produto_id || product.id }} / {{ product.brand }} / {{ product.collection }}</p>
+            <div class="record-flags">
+              <span *ngIf="product.isPromotion" class="flag promotion">Promocao</span>
+              <span *ngIf="product.isNew" class="flag new">Novidade</span>
+            </div>
           </div>
           <span>{{ product.is_active === false ? 'Inativo' : 'Ativo' }}</span>
         </article>
@@ -154,6 +177,11 @@
           <mat-checkbox formControlName="is_active" class="wide-field">
             Produto ativo e visivel para usuarios comuns
           </mat-checkbox>
+
+          <div class="classification-options wide-field">
+            <mat-checkbox formControlName="isPromotion">Produto em promocao</mat-checkbox>
+            <mat-checkbox formControlName="isNew">Produto como novidade</mat-checkbox>
+          </div>
         </div>
 
         <div class="form-actions">
