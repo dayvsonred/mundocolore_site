@@ -68,7 +68,8 @@ export class ProductListComponent implements OnInit {
       limit: 100
     }).pipe(finalize(() => this.loading = false))
       .subscribe({
-        next: (products) => {
+        next: (page) => {
+          const products = page.products;
           const normalizedSearch = search.toLowerCase();
           this.products = normalizedSearch && !filters.search?.match(/^\d+$/)
             ? products.filter((product) => this.productMatches(product, normalizedSearch))

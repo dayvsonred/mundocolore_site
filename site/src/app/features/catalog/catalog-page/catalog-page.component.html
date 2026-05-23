@@ -209,18 +209,39 @@
 
     <main class="catalog-results">
       <div class="results-heading">
-        <p>{{ filteredProducts.length }} produto(s)</p>
+        <p>{{ filteredProducts.length }} produto(s) exibido(s)</p>
         <span *ngIf="hasActiveFilters">{{ activeFilterCount }} filtro(s) ativo(s)</span>
+        <span *ngIf="!hasActiveFilters && products.length">{{ products.length }} carregado(s)</span>
       </div>
 
-      <section *ngIf="filteredProducts.length" class="products-grid">
+      <section *ngIf="isLoadingProducts" class="loading-state" aria-live="polite">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        Carregando produtos...
+      </section>
+
+      <section *ngIf="productLoadError && !isLoadingProducts" class="load-error" aria-live="polite">
+        <p>{{ productLoadError }}</p>
+        <button type="button" (click)="loadProducts(!products.length)">Tentar novamente</button>
+      </section>
+
+      <section *ngIf="!isLoadingProducts && filteredProducts.length" class="products-grid">
         <div *ngFor="let product of filteredProducts" class="product-card-wrapper">
           <app-product-card [product]="product"></app-product-card>
           <button type="button" class="btn-add" (click)="addToCart(product)">Adicionar ao carrinho</button>
         </div>
       </section>
 
-      <section *ngIf="!filteredProducts.length" class="empty-results">
+      <div *ngIf="!isLoadingProducts && filteredProducts.length" class="pagination-actions">
+        <button
+          type="button"
+          class="btn-load-more"
+          [disabled]="!hasMoreProducts || isLoadingMoreProducts"
+          (click)="loadProducts(false)">
+          {{ isLoadingMoreProducts ? 'Carregando...' : (hasMoreProducts ? 'Carregar mais produtos' : 'Todos os produtos foram carregados') }}
+        </button>
+      </div>
+
+      <section *ngIf="!isLoadingProducts && !filteredProducts.length && !productLoadError" class="empty-results">
         <h2>Nenhum produto encontrado</h2>
         <p>Ajuste os filtros para ver mais opcoes.</p>
         <button type="button" (click)="clearFilters()">Limpar filtros</button>

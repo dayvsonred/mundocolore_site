@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { finalize } from 'rxjs';
 import { Product } from '../../../core/models/product.model';
 import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
@@ -20,6 +21,7 @@ export class CatalogPageComponent implements OnInit {
   products: Product[] = [];
   filteredProducts: Product[] = [];
 
+  readonly pageSize = 24;
   readonly preferredSizeOptions = ['P', 'M', 'G', 'GG', 'XGG', 'G1', 'G2', 'G3'];
   readonly promotionFilters: Array<{ value: PromotionFilter; label: string }> = [
     { value: 'promotion', label: 'Em promocao' },
@@ -40,6 +42,10 @@ export class CatalogPageComponent implements OnInit {
   brandSearch = '';
   minimumPrice: number | null = null;
   maximumPrice: number | null = null;
+  nextPageKey = '';
+  isLoadingProducts = false;
+  isLoadingMoreProducts = false;
+  productLoadError = '';
   isFilterDrawerOpen = false;
   sectionOpen: Record<FilterSection, boolean> = {
     category: true,
@@ -69,11 +75,7 @@ export class CatalogPageComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.productService.getProducts().subscribe(products => {
-      this.products = products;
-      this.filteredProducts = products;
-      this.buildOptions(products);
-    });
+    this.loadProducts(true);
   }
 
   get visibleBrandOptions(): string[] {
@@ -98,6 +100,50 @@ export class CatalogPageComponent implements OnInit {
 
   get hasActiveFilters(): boolean {
     return this.activeFilterCount > 0;
+  }
+
+  get hasMoreProducts(): boolean {
+    return !!this.nextPageKey;
+  }
+
+  get isLoadingAnyProducts(): boolean {
+    return this.isLoadingProducts || this.isLoadingMoreProducts;
+  }
+
+  loadProducts(reset = false): void {
+    if (this.isLoadingAnyProducts) {
+      return;
+    }
+
+    if (!reset && !this.nextPageKey) {
+      return;
+    }
+
+    this.productLoadError = '';
+    this.isLoadingProducts = reset;
+    this.isLoadingMoreProducts = !reset;
+
+    this.productService.getProductsByQuery({
+      limit: this.pageSize,
+      last_key: reset ? undefined : this.nextPageKey
+    }).pipe(
+      finalize(() => {
+        this.isLoadingProducts = false;
+        this.isLoadingMoreProducts = false;
+      })
+    ).subscribe({
+      next: (page) => {
+        this.products = reset ? page.products : [...this.products, ...page.products];
+        this.nextPageKey = page.last_evaluated_key || page.last_key || '';
+        this.buildOptions(this.products);
+        this.applyFilters(false);
+      },
+      error: () => {
+        this.productLoadError = reset
+          ? 'Nao foi possivel carregar os produtos.'
+          : 'Nao foi possivel carregar mais produtos.';
+      }
+    });
   }
 
   applyFilters(closeDrawer = true): void {
@@ -202,7 +248,7 @@ export class CatalogPageComponent implements OnInit {
     const item = {
       product,
       quantity: 1,
-      size: product.size.length ? product.size[0] : ''
+      size: this.getProductSizes(product)[0] || ''
     };
     this.cartService.addToCart(item);
   }

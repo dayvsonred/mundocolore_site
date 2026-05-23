@@ -93,6 +93,12 @@ export interface ProductListQuery {
   last_key?: string;
 }
 
+export interface ProductListPage {
+  products: Product[];
+  last_evaluated_key?: string;
+  last_key?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -102,10 +108,12 @@ export class ProductService {
   constructor(private http: HttpClient) {}
 
   getProducts(category?: string, limit?: number, lastKey?: string): Observable<Product[]> {
-    return this.getProductsByQuery({ category, limit, last_key: lastKey });
+    return this.getProductsByQuery({ category, limit, last_key: lastKey }).pipe(
+      map((response) => response.products)
+    );
   }
 
-  getProductsByQuery(query: ProductListQuery = {}): Observable<Product[]> {
+  getProductsByQuery(query: ProductListQuery = {}): Observable<ProductListPage> {
     let params = new HttpParams();
     if (query.category) params = params.set('category', query.category);
     if (query.type) params = params.set('type', query.type);
@@ -118,11 +126,23 @@ export class ProductService {
     if (query.last_key) params = params.set('last_key', query.last_key);
 
     return this.http
-      .get<Product[] | { products: Product[] }>(`${this.apiUrl}/products`, { params })
+      .get<Product[] | ProductListPage>(`${this.apiUrl}/products`, { params })
       .pipe(
-        map((response) => (Array.isArray(response) ? response : response?.products ?? [])),
+        map((response) => this.normalizeProductListPage(response)),
         catchError((error) => throwError(() => error))
       );
+  }
+
+  private normalizeProductListPage(response: Product[] | ProductListPage): ProductListPage {
+    if (Array.isArray(response)) {
+      return { products: response };
+    }
+
+    return {
+      products: response?.products ?? [],
+      last_evaluated_key: response?.last_evaluated_key || response?.last_key,
+      last_key: response?.last_key || response?.last_evaluated_key
+    };
   }
 
   getProductById(id: string): Observable<Product | undefined> {
