@@ -138,9 +138,12 @@ cadastrador/UP_BABY/
 cadastrador/**/*.pdf
 cadastrador/**/1_PRODUTOS_PARA_CADASTRA/*.json
 cadastrador/**/1_PRODUTOS_PARA_CADASTRA/*.xlsx
+cadastrador/**/1_PRODUTOS_PARA_CADASTRA/**
 cadastrador/**/1_PRODUTOS_ENVIADOS/*.json
 cadastrador/**/1_PRODUTOS_ENVIADOS/*.xlsx
-cadastrador/**/1_PRODUTOS_PARA_CADASTRA/IMAGEMS/
+cadastrador/**/1_PRODUTOS_ENVIADOS/*.xlsx
+cadastrador/**/1_PRODUTOS_ENVIADOS/**
+cadastrador/UP_BABY/**
 cadastrador/**/CORES/*.json
 cadastrador/**/dist/
 cadastrador/**/build/
