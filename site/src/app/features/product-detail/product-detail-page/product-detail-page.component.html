@@ -1,6 +1,6 @@
 <div class="product-detail" *ngIf="product">
   <div class="product-images">
-    <img [src]="product.image" [alt]="product.name">
+    <img [src]="productImage" [alt]="product.name">
   </div>
   <div class="product-info">
     <div class="detail-actions">
@@ -9,16 +9,46 @@
     <h1>{{ product.name }}</h1>
     <p class="price">R$ {{ product.price | number:'1.2-2' }}</p>
     <p>{{ product.description }}</p>
-    <div class="size-selection">
-      <label>Tamanho:</label>
-      <select [(ngModel)]="selectedSize">
-        <option *ngFor="let size of product.size" [value]="size">{{ size }}</option>
-      </select>
+    <div class="option-selection">
+      <label>Tamanho</label>
+      <div *ngIf="productSizes.length; else noSizes" class="option-buttons size-options">
+        <button
+          type="button"
+          *ngFor="let size of productSizes"
+          [class.selected]="selectedSize === size"
+          (click)="selectSize(size)">
+          {{ size }}
+        </button>
+      </div>
+      <ng-template #noSizes>
+        <p class="option-empty">Nenhum tamanho cadastrado para este produto.</p>
+      </ng-template>
     </div>
+
+    <div class="option-selection">
+      <label>Cor</label>
+      <div *ngIf="productColors.length; else noColors" class="option-buttons color-options">
+        <button
+          type="button"
+          *ngFor="let color of productColors"
+          [class.selected]="selectedColor === color"
+          (click)="selectColor(color)">
+          <span class="color-swatch" [style.background]="getColorSwatch(color)" aria-hidden="true"></span>
+          {{ color }}
+        </button>
+      </div>
+      <ng-template #noColors>
+        <p class="option-empty">Nenhuma cor cadastrada para este produto.</p>
+      </ng-template>
+    </div>
+
     <div class="quantity">
-      <label>Quantidade:</label>
+      <label>Quantidade</label>
       <input type="number" [(ngModel)]="quantity" min="1">
     </div>
-    <button class="btn-add-cart" (click)="addToCart()">Adicionar ao Carrinho</button>
+
+    <p *ngIf="validationMessage" class="validation-message">{{ validationMessage }}</p>
+
+    <button class="btn-add-cart" [disabled]="!canAddToCart" (click)="addToCart()">Adicionar ao Carrinho</button>
   </div>
 </div>

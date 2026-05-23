@@ -23,12 +23,12 @@ export class CartPageComponent implements OnInit {
 
   updateQuantity(item: CartItem, quantity: number): void {
     if (quantity > 0) {
-      this.cartService.updateQuantity(item.product.id, item.size, quantity);
+      this.cartService.updateQuantity(item.product.id, item.size, item.color, quantity);
     }
   }
 
   removeItem(item: CartItem): void {
-    this.cartService.removeFromCart(item.product.id, item.size);
+    this.cartService.removeFromCart(item.product.id, item.size, item.color);
   }
 
   checkout(): void {

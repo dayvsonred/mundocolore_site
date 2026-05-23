@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { Product } from '../../../core/models/product.model';
 import { CatalogPageSnapshot, ProductService } from '../../../core/services/product.service';
-import { CartService } from '../../../core/services/cart.service';
 
 type FilterSection = 'category' | 'size' | 'brand' | 'color' | 'price' | 'promotions';
 type PromotionFilter = 'promotion' | 'new';
@@ -72,8 +71,7 @@ export class CatalogPageComponent implements OnInit {
   ];
 
   constructor(
-    private productService: ProductService,
-    private cartService: CartService
+    private productService: ProductService
   ) { }
 
   ngOnInit(): void {
@@ -263,15 +261,6 @@ export class CatalogPageComponent implements OnInit {
     }
 
     return normalized;
-  }
-
-  addToCart(product: Product): void {
-    const item = {
-      product,
-      quantity: 1,
-      size: this.getProductSizes(product)[0] || ''
-    };
-    this.cartService.addToCart(item);
   }
 
   private async ensureMinimumFilteredProducts(): Promise<void> {

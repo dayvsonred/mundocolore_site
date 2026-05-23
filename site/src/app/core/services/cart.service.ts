@@ -13,7 +13,11 @@ export class CartService {
 
   addToCart(item: CartItem): void {
     const currentItems = this.cartItems.value;
-    const existingItem = currentItems.find(i => i.product.id === item.product.id && i.size === item.size);
+    const existingItem = currentItems.find(i =>
+      i.product.id === item.product.id
+      && i.size === item.size
+      && i.color === item.color
+    );
     if (existingItem) {
       existingItem.quantity += item.quantity;
     } else {
@@ -22,14 +26,20 @@ export class CartService {
     this.cartItems.next([...currentItems]);
   }
 
-  removeFromCart(productId: string, size: string): void {
-    const currentItems = this.cartItems.value.filter(item => !(item.product.id === productId && item.size === size));
+  removeFromCart(productId: string, size: string, color: string): void {
+    const currentItems = this.cartItems.value.filter(item =>
+      !(item.product.id === productId && item.size === size && item.color === color)
+    );
     this.cartItems.next(currentItems);
   }
 
-  updateQuantity(productId: string, size: string, quantity: number): void {
+  updateQuantity(productId: string, size: string, color: string, quantity: number): void {
     const currentItems = this.cartItems.value;
-    const item = currentItems.find(i => i.product.id === productId && i.size === size);
+    const item = currentItems.find(i =>
+      i.product.id === productId
+      && i.size === size
+      && i.color === color
+    );
     if (item) {
       item.quantity = quantity;
       this.cartItems.next([...currentItems]);

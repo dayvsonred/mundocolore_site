@@ -233,7 +233,6 @@
       <section *ngIf="!isLoadingProducts && filteredProducts.length" class="products-grid">
         <div *ngFor="let product of filteredProducts" class="product-card-wrapper">
           <app-product-card [product]="product"></app-product-card>
-          <button type="button" class="btn-add" (click)="addToCart(product)">Adicionar ao carrinho</button>
         </div>
       </section>
 
