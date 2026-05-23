@@ -17,9 +17,9 @@ export class NavbarComponent implements OnInit {
   cartItemCount = 0;
 
   readonly menuItems = [
-    { id: 'collections', label: 'Colecoes' },
-    { id: 'promotions', label: 'Promocoes' },
-    { id: 'contact', label: 'Contato' }
+    { id: 'collections', label: 'Coleções', route: '/colecoes' },
+    { id: 'promotions', label: 'Promoções', route: '/promocoes' },
+    { id: 'contact', label: 'Contato', route: '/contato' }
   ];
 
   constructor(
@@ -64,6 +64,11 @@ export class NavbarComponent implements OnInit {
 
   navigateToMyAccount(): void {
     const route = this.authService.isAuthenticated() ? '/minha-conta' : '/auth/login';
+    this.router.navigate([route]);
+    this.closeMobileMenu();
+  }
+
+  navigateToMenuItem(route: string): void {
     this.router.navigate([route]);
     this.closeMobileMenu();
   }

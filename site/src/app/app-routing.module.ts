@@ -20,6 +20,18 @@ const appRoutes: Routes = [
     loadChildren: () => import('./features/catalog/catalog.module').then(m => m.CatalogModule),
   },
   {
+    path: 'colecoes',
+    loadChildren: () => import('./features/store-pages/store-pages.module').then(m => m.StorePagesModule),
+  },
+  {
+    path: 'promocoes',
+    loadChildren: () => import('./features/store-pages/store-pages.module').then(m => m.StorePagesModule),
+  },
+  {
+    path: 'contato',
+    loadChildren: () => import('./features/store-pages/store-pages.module').then(m => m.StorePagesModule),
+  },
+  {
     path: 'product/:id',
     loadChildren: () => import('./features/product-detail/product-detail.module').then(m => m.ProductDetailModule),
   },

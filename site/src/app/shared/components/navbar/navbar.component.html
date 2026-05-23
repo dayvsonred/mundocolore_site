@@ -13,7 +13,7 @@
     </button>
 
     <nav class="nav-links" [class.open]="mobileMenuOpen">
-      <button type="button" *ngFor="let item of menuItems" (click)="closeMobileMenu()">
+      <button type="button" *ngFor="let item of menuItems" (click)="navigateToMenuItem(item.route)">
         {{ item.label }}
       </button>
       <button type="button" (click)="navigateToMyAccount()">Minha conta</button>

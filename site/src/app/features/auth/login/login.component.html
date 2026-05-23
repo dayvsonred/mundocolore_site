@@ -20,10 +20,10 @@
                 </mat-form-field>
 
                 <mat-form-field class="full-width">
-                    <input id="passwordInput" matInput placeholder="Password" formControlName="password" type="password"
+                    <input id="passwordInput" matInput placeholder="Senha" formControlName="password" type="password"
                         autocomplete="current-password">
-                    <mat-error id="requiredPasswordError" *ngIf="loginForm.controls['email'].hasError('required')">
-                        Password é
+                    <mat-error id="requiredPasswordError" *ngIf="loginForm.controls['password'].hasError('required')">
+                        Senha é
                         <strong>obrigatório</strong>
                     </mat-error>
                 </mat-form-field>

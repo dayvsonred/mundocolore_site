@@ -32,10 +32,9 @@ export class AuthenticationService {
 
   login(email: string, password: string): Observable<any> {
     return this.sign({ email, password }).pipe(
-      switchMap(() => this.getProfile()),
+      switchMap(() => this.getProfile().pipe(catchError(() => of(null)))),
       switchMap(() => this.refreshAdminStatus()),
-      map(() => this.getCurrentUser()),
-      catchError(() => of(this.getCurrentUser()))
+      map(() => this.getCurrentUser())
     );
   }
 
@@ -56,13 +55,20 @@ export class AuthenticationService {
           this.persistAuthenticatedUser(response, payload.email);
           return true;
         }),
-        catchError((error) =>
-          throwError(
+        catchError((error) => {
+          const backendMessage =
+            error?.error?.message ||
+            error?.error?.error ||
+            (typeof error?.error === 'string' ? error.error : '');
+
+          return throwError(
             () =>
-              error?.error?.message ||
-              'No momento nao foi possivel validar estes dados. Tente novamente mais tarde.'
-          )
-        )
+              backendMessage ||
+              (error?.status === 401
+                ? 'E-mail ou senha invalidos.'
+                : 'No momento nao foi possivel validar estes dados. Tente novamente mais tarde.')
+          );
+        })
       );
   }
 

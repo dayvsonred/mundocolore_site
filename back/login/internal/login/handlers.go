@@ -121,9 +121,7 @@ func HandleLogin(_ context.Context, request events.APIGatewayProxyRequest) (even
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
 		Body:       string(body),
-		Headers: map[string]string{
-			"Content-Type": "application/json",
-		},
+		Headers:    defaultHeaders(),
 	}, nil
 }
 
@@ -137,9 +135,7 @@ func HandleHealthOnline(_ context.Context, _ events.APIGatewayProxyRequest) (eve
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
 		Body:       string(body),
-		Headers: map[string]string{
-			"Content-Type": "application/json",
-		},
+		Headers:    defaultHeaders(),
 	}, nil
 }
 
@@ -175,9 +171,7 @@ func HandleHealthData(_ context.Context, _ events.APIGatewayProxyRequest) (event
 		return events.APIGatewayProxyResponse{
 			StatusCode: 200,
 			Body:       string(body),
-			Headers: map[string]string{
-				"Content-Type": "application/json",
-			},
+			Headers:    defaultHeaders(),
 		}, nil
 	}
 
@@ -213,9 +207,7 @@ func HandleHealthData(_ context.Context, _ events.APIGatewayProxyRequest) (event
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
 		Body:       string(body),
-		Headers: map[string]string{
-			"Content-Type": "application/json",
-		},
+		Headers:    defaultHeaders(),
 	}, nil
 }
 
@@ -352,13 +344,20 @@ func getHeaderValue(headers map[string]string, target string) string {
 	return ""
 }
 
+func defaultHeaders() map[string]string {
+	return map[string]string{
+		"Content-Type":                 "application/json",
+		"Access-Control-Allow-Origin":  "*",
+		"Access-Control-Allow-Headers": "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
+		"Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+	}
+}
+
 func unauthorizedResponse(message string) events.APIGatewayProxyResponse {
 	return events.APIGatewayProxyResponse{
 		StatusCode: 401,
 		Body:       fmt.Sprintf(`{"error": "%s"}`, message),
-		Headers: map[string]string{
-			"Content-Type": "application/json",
-		},
+		Headers:    defaultHeaders(),
 	}
 }
 
@@ -366,9 +365,7 @@ func badRequestResponse(message string) events.APIGatewayProxyResponse {
 	return events.APIGatewayProxyResponse{
 		StatusCode: 400,
 		Body:       fmt.Sprintf(`{"error": "%s"}`, message),
-		Headers: map[string]string{
-			"Content-Type": "application/json",
-		},
+		Headers:    defaultHeaders(),
 	}
 }
 
@@ -376,9 +373,7 @@ func serverErrorResponse(err error) events.APIGatewayProxyResponse {
 	return events.APIGatewayProxyResponse{
 		StatusCode: 500,
 		Body:       fmt.Sprintf(`{"error": "%s"}`, err.Error()),
-		Headers: map[string]string{
-			"Content-Type": "application/json",
-		},
+		Headers:    defaultHeaders(),
 	}
 }
 
@@ -386,8 +381,6 @@ func notFoundResponse() events.APIGatewayProxyResponse {
 	return events.APIGatewayProxyResponse{
 		StatusCode: 404,
 		Body:       `{"error": "not found"}`,
-		Headers: map[string]string{
-			"Content-Type": "application/json",
-		},
+		Headers:    defaultHeaders(),
 	}
 }

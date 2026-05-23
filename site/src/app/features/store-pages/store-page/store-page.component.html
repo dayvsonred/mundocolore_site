@@ -1,0 +1,30 @@
+<main class="store-page">
+  <section class="store-hero">
+    <div class="store-hero-copy">
+      <p class="store-kicker">{{ page.kicker }}</p>
+      <h1>{{ page.title }}</h1>
+      <p>{{ page.subtitle }}</p>
+      <button type="button" (click)="navigateToAction()">{{ page.actionLabel }}</button>
+    </div>
+
+    <div class="store-hero-media">
+      <img [src]="logoPath" alt="Mundo Colore" />
+    </div>
+  </section>
+
+  <section class="store-section">
+    <div class="section-head">
+      <p class="store-kicker">Mundo Colore</p>
+      <h2>{{ page.highlightTitle }}</h2>
+      <p>{{ page.highlightText }}</p>
+    </div>
+
+    <div class="store-grid">
+      <article *ngFor="let card of page.cards" class="store-card">
+        <span aria-hidden="true"></span>
+        <h3>{{ card.title }}</h3>
+        <p>{{ card.text }}</p>
+      </article>
+    </div>
+  </section>
+</main>
