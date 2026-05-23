@@ -201,7 +201,7 @@
         <button type="button" class="btn-clear" [disabled]="!hasActiveFilters" (click)="clearFilters()">
           Limpar filtros
         </button>
-        <button type="button" class="btn-apply" (click)="applyFilters()">
+        <button type="button" class="btn-apply" (click)="applyFilters(true, true)">
           Aplicar filtros
         </button>
       </div>
@@ -212,11 +212,17 @@
         <p>{{ filteredProducts.length }} produto(s) exibido(s)</p>
         <span *ngIf="hasActiveFilters">{{ activeFilterCount }} filtro(s) ativo(s)</span>
         <span *ngIf="!hasActiveFilters && products.length">{{ products.length }} carregado(s)</span>
+        <span *ngIf="isSearchingFilteredProducts">buscando mais resultados...</span>
       </div>
 
       <section *ngIf="isLoadingProducts" class="loading-state" aria-live="polite">
         <span class="loading-spinner" aria-hidden="true"></span>
         Carregando produtos...
+      </section>
+
+      <section *ngIf="isSearchingFilteredProducts && !filteredProducts.length" class="loading-state" aria-live="polite">
+        <span class="loading-spinner" aria-hidden="true"></span>
+        Buscando produtos para esse filtro...
       </section>
 
       <section *ngIf="productLoadError && !isLoadingProducts" class="load-error" aria-live="polite">
@@ -237,11 +243,11 @@
           class="btn-load-more"
           [disabled]="!hasMoreProducts || isLoadingMoreProducts"
           (click)="loadProducts(false)">
-          {{ isLoadingMoreProducts ? 'Carregando...' : (hasMoreProducts ? 'Carregar mais produtos' : 'Todos os produtos foram carregados') }}
+          {{ isSearchingFilteredProducts ? 'Buscando produtos do filtro...' : (isLoadingMoreProducts ? 'Carregando...' : (hasMoreProducts ? 'Carregar mais produtos' : 'Todos os produtos foram carregados')) }}
         </button>
       </div>
 
-      <section *ngIf="!isLoadingProducts && !filteredProducts.length && !productLoadError" class="empty-results">
+      <section *ngIf="!isLoadingAnyProducts && !filteredProducts.length && !productLoadError" class="empty-results">
         <h2>Nenhum produto encontrado</h2>
         <p>Ajuste os filtros para ver mais opcoes.</p>
         <button type="button" (click)="clearFilters()">Limpar filtros</button>

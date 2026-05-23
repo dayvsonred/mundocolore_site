@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { finalize } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { Product } from '../../../core/models/product.model';
 import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
@@ -22,6 +22,7 @@ export class CatalogPageComponent implements OnInit {
   filteredProducts: Product[] = [];
 
   readonly pageSize = 24;
+  readonly minimumFilteredPageSize = 4;
   readonly preferredSizeOptions = ['P', 'M', 'G', 'GG', 'XGG', 'G1', 'G2', 'G3'];
   readonly promotionFilters: Array<{ value: PromotionFilter; label: string }> = [
     { value: 'promotion', label: 'Em promocao' },
@@ -45,6 +46,7 @@ export class CatalogPageComponent implements OnInit {
   nextPageKey = '';
   isLoadingProducts = false;
   isLoadingMoreProducts = false;
+  isSearchingFilteredProducts = false;
   productLoadError = '';
   isFilterDrawerOpen = false;
   sectionOpen: Record<FilterSection, boolean> = {
@@ -110,7 +112,7 @@ export class CatalogPageComponent implements OnInit {
     return this.isLoadingProducts || this.isLoadingMoreProducts;
   }
 
-  loadProducts(reset = false): void {
+  async loadProducts(reset = false): Promise<void> {
     if (this.isLoadingAnyProducts) {
       return;
     }
@@ -122,31 +124,35 @@ export class CatalogPageComponent implements OnInit {
     this.productLoadError = '';
     this.isLoadingProducts = reset;
     this.isLoadingMoreProducts = !reset;
+    this.isSearchingFilteredProducts = !reset && this.hasActiveFilters;
 
-    this.productService.getProductsByQuery({
-      limit: this.pageSize,
-      last_key: reset ? undefined : this.nextPageKey
-    }).pipe(
-      finalize(() => {
-        this.isLoadingProducts = false;
-        this.isLoadingMoreProducts = false;
-      })
-    ).subscribe({
-      next: (page) => {
-        this.products = reset ? page.products : [...this.products, ...page.products];
-        this.nextPageKey = page.last_evaluated_key || page.last_key || '';
-        this.buildOptions(this.products);
-        this.applyFilters(false);
-      },
-      error: () => {
-        this.productLoadError = reset
-          ? 'Nao foi possivel carregar os produtos.'
-          : 'Nao foi possivel carregar mais produtos.';
+    try {
+      if (reset) {
+        await this.loadProductPage(undefined, true);
+        return;
       }
-    });
+
+      const targetFilteredCount = this.hasActiveFilters
+        ? this.filteredProducts.length + this.minimumFilteredPageSize
+        : 0;
+
+      await this.loadProductPage(this.nextPageKey, false);
+
+      if (this.hasActiveFilters) {
+        await this.loadUntilFilteredCount(targetFilteredCount);
+      }
+    } catch {
+      this.productLoadError = reset
+        ? 'Nao foi possivel carregar os produtos.'
+        : 'Nao foi possivel carregar mais produtos.';
+    } finally {
+      this.isLoadingProducts = false;
+      this.isLoadingMoreProducts = false;
+      this.isSearchingFilteredProducts = false;
+    }
   }
 
-  applyFilters(closeDrawer = true): void {
+  applyFilters(closeDrawer = true, ensureMinimum = false): void {
     this.filteredProducts = this.products.filter(product => {
       const category = this.resolveProductCategory(product);
       const sizes = this.getProductSizes(product);
@@ -175,6 +181,10 @@ export class CatalogPageComponent implements OnInit {
 
     if (closeDrawer) {
       this.closeFilterDrawer();
+    }
+
+    if (ensureMinimum && this.hasActiveFilters && this.filteredProducts.length < this.minimumFilteredPageSize) {
+      this.ensureMinimumFilteredProducts();
     }
   }
 
@@ -251,6 +261,48 @@ export class CatalogPageComponent implements OnInit {
       size: this.getProductSizes(product)[0] || ''
     };
     this.cartService.addToCart(item);
+  }
+
+  private async ensureMinimumFilteredProducts(): Promise<void> {
+    if (this.isLoadingAnyProducts || !this.nextPageKey) {
+      return;
+    }
+
+    this.productLoadError = '';
+    this.isLoadingMoreProducts = true;
+    this.isSearchingFilteredProducts = true;
+
+    try {
+      await this.loadUntilFilteredCount(this.minimumFilteredPageSize);
+    } catch {
+      this.productLoadError = 'Nao foi possivel buscar mais produtos para esse filtro.';
+    } finally {
+      this.isLoadingMoreProducts = false;
+      this.isSearchingFilteredProducts = false;
+    }
+  }
+
+  private async loadUntilFilteredCount(targetFilteredCount: number): Promise<void> {
+    while (this.nextPageKey && this.filteredProducts.length < targetFilteredCount) {
+      const currentPageKey = this.nextPageKey;
+      await this.loadProductPage(currentPageKey, false);
+
+      if (this.nextPageKey === currentPageKey) {
+        break;
+      }
+    }
+  }
+
+  private async loadProductPage(lastKey: string | undefined, reset: boolean): Promise<void> {
+    const page = await firstValueFrom(this.productService.getProductsByQuery({
+      limit: this.pageSize,
+      last_key: lastKey
+    }));
+
+    this.products = reset ? page.products : [...this.products, ...page.products];
+    this.nextPageKey = page.last_evaluated_key || page.last_key || '';
+    this.buildOptions(this.products);
+    this.applyFilters(false);
   }
 
   private buildOptions(products: Product[]): void {
