@@ -99,11 +99,26 @@ export interface ProductListPage {
   last_key?: string;
 }
 
+export interface CatalogPageSnapshot {
+  products: Product[];
+  filteredProducts: Product[];
+  nextPageKey: string;
+  selectedCategories: string[];
+  selectedBrands: string[];
+  selectedSizes: string[];
+  selectedColors: string[];
+  selectedPromotions: string[];
+  brandSearch: string;
+  minimumPrice: number | null;
+  maximumPrice: number | null;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ProductService {
   private apiUrl = environment.apiUrl;
+  private catalogPageState: CatalogPageSnapshot | null = null;
 
   constructor(private http: HttpClient) {}
 
@@ -149,6 +164,40 @@ export class ProductService {
     return this.http.get<Product>(`${this.apiUrl}/products/${encodeURIComponent(id)}`).pipe(
       catchError((error) => throwError(() => error))
     );
+  }
+
+  getCatalogPageState(): CatalogPageSnapshot | null {
+    return this.catalogPageState
+      ? {
+          products: [...this.catalogPageState.products],
+          filteredProducts: [...this.catalogPageState.filteredProducts],
+          nextPageKey: this.catalogPageState.nextPageKey,
+          selectedCategories: [...this.catalogPageState.selectedCategories],
+          selectedBrands: [...this.catalogPageState.selectedBrands],
+          selectedSizes: [...this.catalogPageState.selectedSizes],
+          selectedColors: [...this.catalogPageState.selectedColors],
+          selectedPromotions: [...this.catalogPageState.selectedPromotions],
+          brandSearch: this.catalogPageState.brandSearch,
+          minimumPrice: this.catalogPageState.minimumPrice,
+          maximumPrice: this.catalogPageState.maximumPrice
+        }
+      : null;
+  }
+
+  saveCatalogPageState(state: CatalogPageSnapshot): void {
+    this.catalogPageState = {
+      products: [...state.products],
+      filteredProducts: [...state.filteredProducts],
+      nextPageKey: state.nextPageKey,
+      selectedCategories: [...state.selectedCategories],
+      selectedBrands: [...state.selectedBrands],
+      selectedSizes: [...state.selectedSizes],
+      selectedColors: [...state.selectedColors],
+      selectedPromotions: [...state.selectedPromotions],
+      brandSearch: state.brandSearch,
+      minimumPrice: state.minimumPrice,
+      maximumPrice: state.maximumPrice
+    };
   }
 
   createProduct(product: CreateProductPayload): Observable<Product> {

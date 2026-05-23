@@ -42,4 +42,8 @@ export class ProductDetailPageComponent implements OnInit {
       this.router.navigate(['/cart']);
     }
   }
+
+  goBackToCatalog(): void {
+    this.router.navigate(['/catalog']);
+  }
 }

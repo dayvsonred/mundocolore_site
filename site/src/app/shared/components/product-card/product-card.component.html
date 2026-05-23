@@ -1,4 +1,10 @@
-<div class="product-card">
+<div
+  class="product-card"
+  role="link"
+  tabindex="0"
+  (click)="onViewProduct()"
+  (keydown.enter)="onViewProduct($event)"
+  (keydown.space)="onViewProduct($event)">
   <img [src]="product.image" [alt]="product.name" class="product-image">
   <div class="product-info">
     <h3 [title]="product.name">{{ productName }}</h3>
@@ -7,6 +13,6 @@
       <span *ngIf="product.isNew" class="badge new">Novo</span>
       <span *ngIf="product.isPromotion" class="badge promo">Promoção</span>
     </div>
-    <button class="btn-view" (click)="onViewProduct()">Ver Produto</button>
+    <button class="btn-view" type="button" (click)="onViewProduct($event)">Ver Produto</button>
   </div>
 </div>

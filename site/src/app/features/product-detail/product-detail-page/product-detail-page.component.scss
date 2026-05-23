@@ -16,6 +16,20 @@
   .product-info {
     flex: 1;
 
+    .detail-actions {
+      margin-bottom: 16px;
+    }
+
+    .btn-back {
+      background: transparent;
+      border: 1px solid #d9d3cc;
+      border-radius: 999px;
+      color: #211d1a;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 10px 16px;
+    }
+
     h1 {
       color: #333;
       margin-bottom: 20px;

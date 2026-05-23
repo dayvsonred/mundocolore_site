@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { Product } from '../../../core/models/product.model';
-import { ProductService } from '../../../core/services/product.service';
+import { CatalogPageSnapshot, ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 
 type FilterSection = 'category' | 'size' | 'brand' | 'color' | 'price' | 'promotions';
@@ -121,6 +121,15 @@ export class CatalogPageComponent implements OnInit {
       return;
     }
 
+    if (reset) {
+      const savedCatalogState = this.productService.getCatalogPageState();
+
+      if (savedCatalogState) {
+        this.restoreCatalogState(savedCatalogState);
+        return;
+      }
+    }
+
     this.productLoadError = '';
     this.isLoadingProducts = reset;
     this.isLoadingMoreProducts = !reset;
@@ -182,6 +191,8 @@ export class CatalogPageComponent implements OnInit {
     if (closeDrawer) {
       this.closeFilterDrawer();
     }
+
+    this.saveCatalogState();
 
     if (ensureMinimum && this.hasActiveFilters && this.filteredProducts.length < this.minimumFilteredPageSize) {
       this.ensureMinimumFilteredProducts();
@@ -303,6 +314,43 @@ export class CatalogPageComponent implements OnInit {
     this.nextPageKey = page.last_evaluated_key || page.last_key || '';
     this.buildOptions(this.products);
     this.applyFilters(false);
+  }
+
+  private restoreCatalogState(savedCatalogState: CatalogPageSnapshot): void {
+    this.products = [...savedCatalogState.products];
+    this.filteredProducts = [...savedCatalogState.filteredProducts];
+    this.nextPageKey = savedCatalogState.nextPageKey;
+
+    this.selectedCategories = [...savedCatalogState.selectedCategories];
+    this.selectedBrands = [...savedCatalogState.selectedBrands];
+    this.selectedSizes = [...savedCatalogState.selectedSizes];
+    this.selectedColors = [...savedCatalogState.selectedColors];
+    this.selectedPromotions = [...savedCatalogState.selectedPromotions] as PromotionFilter[];
+    this.brandSearch = savedCatalogState.brandSearch;
+    this.minimumPrice = savedCatalogState.minimumPrice;
+    this.maximumPrice = savedCatalogState.maximumPrice;
+
+    this.buildOptions(this.products);
+    this.productLoadError = '';
+    this.isLoadingProducts = false;
+    this.isLoadingMoreProducts = false;
+    this.isSearchingFilteredProducts = false;
+  }
+
+  private saveCatalogState(): void {
+    this.productService.saveCatalogPageState({
+      products: [...this.products],
+      filteredProducts: [...this.filteredProducts],
+      nextPageKey: this.nextPageKey,
+      selectedCategories: [...this.selectedCategories],
+      selectedBrands: [...this.selectedBrands],
+      selectedSizes: [...this.selectedSizes],
+      selectedColors: [...this.selectedColors],
+      selectedPromotions: [...this.selectedPromotions],
+      brandSearch: this.brandSearch,
+      minimumPrice: this.minimumPrice,
+      maximumPrice: this.maximumPrice
+    });
   }
 
   private buildOptions(products: Product[]): void {

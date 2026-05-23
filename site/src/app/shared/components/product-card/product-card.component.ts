@@ -17,7 +17,12 @@ export class ProductCardComponent {
     return name.length > 45 ? `${name.slice(0, 45).trimEnd()}...` : name;
   }
 
-  onViewProduct(): void {
+  onViewProduct(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
     this.router.navigate(['/product', this.product.id]);
   }
 }
