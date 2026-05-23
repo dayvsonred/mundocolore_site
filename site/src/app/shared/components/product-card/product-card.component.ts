@@ -12,6 +12,11 @@ export class ProductCardComponent {
 
   constructor(private router: Router) {}
 
+  get productName(): string {
+    const name = String(this.product?.name || '').trim();
+    return name.length > 45 ? `${name.slice(0, 45).trimEnd()}...` : name;
+  }
+
   onViewProduct(): void {
     this.router.navigate(['/product', this.product.id]);
   }
