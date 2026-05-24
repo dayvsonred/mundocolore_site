@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Product, CartItem } from '../../../core/models/product.model';
 import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-product-detail-page',
@@ -20,7 +21,8 @@ export class ProductDetailPageComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private productService: ProductService,
-    private cartService: CartService
+    private cartService: CartService,
+    private notificationService: NotificationService
   ) { }
 
   ngOnInit(): void {
@@ -50,7 +52,8 @@ export class ProductDetailPageComponent implements OnInit {
       color: this.selectedColor
     };
     this.cartService.addToCart(cartItem);
-    this.router.navigate(['/cart']);
+    this.notificationService.openSnackBar('Produto adicionado ao carrinho.');
+    this.router.navigate(['/catalog']);
   }
 
   goBackToCatalog(): void {
