@@ -112,6 +112,7 @@ export interface CatalogPageSnapshot {
   selectedSizes: string[];
   selectedColors: string[];
   selectedPromotions: string[];
+  productCodeSearch: string;
   brandSearch: string;
   minimumPrice: number | null;
   maximumPrice: number | null;
@@ -183,6 +184,7 @@ export class ProductService {
           selectedSizes: [...this.catalogPageState.selectedSizes],
           selectedColors: [...this.catalogPageState.selectedColors],
           selectedPromotions: [...this.catalogPageState.selectedPromotions],
+          productCodeSearch: this.catalogPageState.productCodeSearch,
           brandSearch: this.catalogPageState.brandSearch,
           minimumPrice: this.catalogPageState.minimumPrice,
           maximumPrice: this.catalogPageState.maximumPrice
@@ -200,6 +202,7 @@ export class ProductService {
       selectedSizes: [...state.selectedSizes],
       selectedColors: [...state.selectedColors],
       selectedPromotions: [...state.selectedPromotions],
+      productCodeSearch: state.productCodeSearch,
       brandSearch: state.brandSearch,
       minimumPrice: state.minimumPrice,
       maximumPrice: state.maximumPrice

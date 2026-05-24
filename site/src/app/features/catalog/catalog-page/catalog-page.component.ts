@@ -3,7 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { Product } from '../../../core/models/product.model';
 import { CatalogPageSnapshot, ProductService } from '../../../core/services/product.service';
 
-type FilterSection = 'category' | 'size' | 'brand' | 'color' | 'price' | 'promotions';
+type FilterSection = 'code' | 'category' | 'size' | 'brand' | 'color' | 'price' | 'promotions';
 type PromotionFilter = 'promotion' | 'new';
 
 interface BasicCategoryRule {
@@ -39,6 +39,7 @@ export class CatalogPageComponent implements OnInit {
   selectedColors: string[] = [];
   selectedPromotions: PromotionFilter[] = [];
 
+  productCodeSearch = '';
   brandSearch = '';
   minimumPrice: number | null = null;
   maximumPrice: number | null = null;
@@ -49,6 +50,7 @@ export class CatalogPageComponent implements OnInit {
   productLoadError = '';
   isFilterDrawerOpen = false;
   sectionOpen: Record<FilterSection, boolean> = {
+    code: true,
     category: true,
     size: true,
     brand: true,
@@ -94,6 +96,7 @@ export class CatalogPageComponent implements OnInit {
       + this.selectedSizes.length
       + this.selectedColors.length
       + this.selectedPromotions.length
+      + (this.productCodeSearch.trim() ? 1 : 0)
       + (this.minimumPrice !== null ? 1 : 0)
       + (this.maximumPrice !== null ? 1 : 0);
   }
@@ -165,7 +168,9 @@ export class CatalogPageComponent implements OnInit {
       const sizes = this.getProductSizes(product);
       const colors = this.getProductColors(product);
       const price = this.getProductPrice(product);
+      const productCode = this.normalize(this.productCodeSearch);
 
+      const matchesCode = !productCode || this.normalize(product.produto_id || product.id).includes(productCode);
       const matchesCategory = this.matchesSelectedOption(this.selectedCategories, category);
       const matchesBrand = this.matchesSelectedOption(this.selectedBrands, product.brand);
       const matchesSize = !this.selectedSizes.length
@@ -177,7 +182,8 @@ export class CatalogPageComponent implements OnInit {
       const matchesPromotion = !this.selectedPromotions.length
         || this.selectedPromotions.some(filter => this.matchesPromotion(product, filter));
 
-      return matchesCategory
+      return matchesCode
+        && matchesCategory
         && matchesBrand
         && matchesSize
         && matchesColor
@@ -203,6 +209,7 @@ export class CatalogPageComponent implements OnInit {
     this.selectedSizes = [];
     this.selectedColors = [];
     this.selectedPromotions = [];
+    this.productCodeSearch = '';
     this.brandSearch = '';
     this.minimumPrice = null;
     this.maximumPrice = null;
@@ -315,6 +322,7 @@ export class CatalogPageComponent implements OnInit {
     this.selectedSizes = [...savedCatalogState.selectedSizes];
     this.selectedColors = [...savedCatalogState.selectedColors];
     this.selectedPromotions = [...savedCatalogState.selectedPromotions] as PromotionFilter[];
+    this.productCodeSearch = savedCatalogState.productCodeSearch || '';
     this.brandSearch = savedCatalogState.brandSearch;
     this.minimumPrice = savedCatalogState.minimumPrice;
     this.maximumPrice = savedCatalogState.maximumPrice;
@@ -336,6 +344,7 @@ export class CatalogPageComponent implements OnInit {
       selectedSizes: [...this.selectedSizes],
       selectedColors: [...this.selectedColors],
       selectedPromotions: [...this.selectedPromotions],
+      productCodeSearch: this.productCodeSearch,
       brandSearch: this.brandSearch,
       minimumPrice: this.minimumPrice,
       maximumPrice: this.maximumPrice
