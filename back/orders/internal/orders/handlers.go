@@ -19,33 +19,88 @@ import (
 )
 
 type Order struct {
-	ID        string      `json:"id" dynamodbav:"id"`
-	UserID    string      `json:"user_id" dynamodbav:"user_id"`
-	Items     []OrderItem `json:"items" dynamodbav:"items"`
-	Total     float64     `json:"total" dynamodbav:"total"`
-	Status    string      `json:"status" dynamodbav:"status"`
-	CreatedAt string      `json:"created_at" dynamodbav:"created_at"`
+	ID               string                 `json:"id" dynamodbav:"id"`
+	UserID           string                 `json:"user_id" dynamodbav:"user_id"`
+	Items            []OrderItem            `json:"items" dynamodbav:"items"`
+	Subtotal         float64                `json:"subtotal" dynamodbav:"subtotal"`
+	ShippingAmount   float64                `json:"shipping_amount" dynamodbav:"shipping_amount"`
+	DiscountAmount   float64                `json:"discount_amount" dynamodbav:"discount_amount"`
+	Total            float64                `json:"total" dynamodbav:"total"`
+	Currency         string                 `json:"currency" dynamodbav:"currency"`
+	Status           string                 `json:"status" dynamodbav:"status"`
+	Billing          OrderPerson            `json:"billing" dynamodbav:"billing"`
+	Customer         OrderPerson            `json:"customer" dynamodbav:"customer"`
+	DeliveryAddress  OrderAddress           `json:"delivery_address" dynamodbav:"delivery_address"`
+	Payment          OrderPayment           `json:"payment" dynamodbav:"payment"`
+	CheckoutMetadata map[string]interface{} `json:"checkout_metadata,omitempty" dynamodbav:"checkout_metadata,omitempty"`
+	PurchaseIP       string                 `json:"purchase_ip" dynamodbav:"purchase_ip"`
+	UserAgent        string                 `json:"user_agent" dynamodbav:"user_agent"`
+	CreatedAt        string                 `json:"created_at" dynamodbav:"created_at"`
+	UpdatedAt        string                 `json:"updated_at" dynamodbav:"updated_at"`
 }
 
 type OrderItem struct {
-	ProductID string  `json:"product_id" dynamodbav:"product_id"`
-	Quantity  int     `json:"quantity" dynamodbav:"quantity"`
-	Price     float64 `json:"price" dynamodbav:"price"`
+	ProductID       string                 `json:"product_id" dynamodbav:"product_id"`
+	ProductCode     string                 `json:"product_code,omitempty" dynamodbav:"product_code,omitempty"`
+	ProductName     string                 `json:"product_name,omitempty" dynamodbav:"product_name,omitempty"`
+	ProductImage    string                 `json:"product_image,omitempty" dynamodbav:"product_image,omitempty"`
+	Brand           string                 `json:"brand,omitempty" dynamodbav:"brand,omitempty"`
+	Collection      string                 `json:"collection,omitempty" dynamodbav:"collection,omitempty"`
+	Category        string                 `json:"category,omitempty" dynamodbav:"category,omitempty"`
+	Type            string                 `json:"type,omitempty" dynamodbav:"type,omitempty"`
+	Size            string                 `json:"size,omitempty" dynamodbav:"size,omitempty"`
+	Color           string                 `json:"color,omitempty" dynamodbav:"color,omitempty"`
+	Quantity        int                    `json:"quantity" dynamodbav:"quantity"`
+	Price           float64                `json:"price" dynamodbav:"price"`
+	UnitPrice       float64                `json:"unit_price" dynamodbav:"unit_price"`
+	Subtotal        float64                `json:"subtotal" dynamodbav:"subtotal"`
+	ProductSnapshot map[string]interface{} `json:"product_snapshot,omitempty" dynamodbav:"product_snapshot,omitempty"`
+}
+
+type OrderPerson struct {
+	ID    string `json:"id,omitempty" dynamodbav:"id,omitempty"`
+	Name  string `json:"name" dynamodbav:"name"`
+	Email string `json:"email" dynamodbav:"email"`
+	CPF   string `json:"cpf,omitempty" dynamodbav:"cpf,omitempty"`
+	Phone string `json:"phone,omitempty" dynamodbav:"phone,omitempty"`
+}
+
+type OrderAddress struct {
+	ID           string `json:"id,omitempty" dynamodbav:"id,omitempty"`
+	Observation  string `json:"observation,omitempty" dynamodbav:"observation,omitempty"`
+	Complement   string `json:"complement,omitempty" dynamodbav:"complement,omitempty"`
+	Number       string `json:"number" dynamodbav:"number"`
+	Street       string `json:"street" dynamodbav:"street"`
+	Neighborhood string `json:"neighborhood" dynamodbav:"neighborhood"`
+	City         string `json:"city" dynamodbav:"city"`
+	State        string `json:"state" dynamodbav:"state"`
+	Country      string `json:"country" dynamodbav:"country"`
+	ZipCode      string `json:"zip_code" dynamodbav:"zip_code"`
+	IsDefault    bool   `json:"is_default" dynamodbav:"is_default"`
+}
+
+type OrderPayment struct {
+	Method string  `json:"method" dynamodbav:"method"`
+	Label  string  `json:"label" dynamodbav:"label"`
+	Amount float64 `json:"amount" dynamodbav:"amount"`
+	Status string  `json:"status" dynamodbav:"status"`
 }
 
 type CreateOrderRequest struct {
-	Items []OrderItem `json:"items"`
-	Total float64     `json:"total"`
+	Items            []OrderItem            `json:"items"`
+	Subtotal         float64                `json:"subtotal"`
+	ShippingAmount   float64                `json:"shipping_amount"`
+	DiscountAmount   float64                `json:"discount_amount"`
+	Total            float64                `json:"total"`
+	Currency         string                 `json:"currency"`
+	Billing          OrderPerson            `json:"billing"`
+	Customer         OrderPerson            `json:"customer"`
+	DeliveryAddress  OrderAddress           `json:"delivery_address"`
+	Payment          OrderPayment           `json:"payment"`
+	CheckoutMetadata map[string]interface{} `json:"checkout_metadata"`
 }
 
-type OrderResponse struct {
-	ID        string      `json:"id"`
-	UserID    string      `json:"user_id"`
-	Items     []OrderItem `json:"items"`
-	Total     float64     `json:"total"`
-	Status    string      `json:"status"`
-	CreatedAt string      `json:"created_at"`
-}
+type OrderResponse Order
 
 var (
 	dynamoClient *dynamodb.DynamoDB
@@ -57,6 +112,7 @@ const (
 	lambdaName       = "orders"
 	healthKeyValue   = "health-check-orders"
 	healthTimeLayout = "2006-01-02 15:04:05"
+	userCreatedIndex = "user-created-index"
 )
 
 func init() {
@@ -64,6 +120,9 @@ func init() {
 		Region: aws.String("sa-east-1"),
 	}))
 	dynamoClient = dynamodb.New(sess)
+	if value := os.Getenv("TABLE_NAME"); value != "" {
+		tableName = value
+	}
 	if secret := os.Getenv("JWT_SECRET"); secret != "" {
 		jwtSecret = []byte(secret)
 	}
@@ -75,16 +134,13 @@ func HandleCreateOrder(_ context.Context, request events.APIGatewayProxyRequest,
 		return badRequestResponse("invalid request"), nil
 	}
 
-	order, err := createOrder(userID, req)
+	order, err := createOrder(userID, req, request)
 	if err != nil {
-		return serverErrorResponse(err), nil
+		return badRequestResponse(err.Error()), nil
 	}
 
 	body, _ := json.Marshal(order)
-	return events.APIGatewayProxyResponse{
-		StatusCode: 201,
-		Body:       string(body),
-	}, nil
+	return successJSONResponse(201, string(body)), nil
 }
 
 func HandleGetOrders(_ context.Context, _ events.APIGatewayProxyRequest, userID string) (events.APIGatewayProxyResponse, error) {
@@ -94,10 +150,7 @@ func HandleGetOrders(_ context.Context, _ events.APIGatewayProxyRequest, userID 
 	}
 
 	body, _ := json.Marshal(orders)
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       string(body),
-	}, nil
+	return successJSONResponse(200, string(body)), nil
 }
 
 func HandleHealthOnline(_ context.Context, _ events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -107,10 +160,7 @@ func HandleHealthOnline(_ context.Context, _ events.APIGatewayProxyRequest) (eve
 		"timestamp": time.Now().Format(healthTimeLayout),
 	})
 
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       string(body),
-	}, nil
+	return successJSONResponse(200, string(body)), nil
 }
 
 func HandleHealthData(_ context.Context, _ events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -142,20 +192,24 @@ func HandleHealthData(_ context.Context, _ events.APIGatewayProxyRequest) (event
 			"data":      foundData,
 		})
 
-		return events.APIGatewayProxyResponse{
-			StatusCode: 200,
-			Body:       string(body),
-		}, nil
+		return successJSONResponse(200, string(body)), nil
 	}
 
 	item := map[string]*dynamodb.AttributeValue{
-		"id":         {S: aws.String("health-orders")},
-		"user_id":    {S: aws.String("health-orders")},
-		"items":      {L: []*dynamodb.AttributeValue{}},
-		"total":      {N: aws.String("0")},
-		"status":     {S: aws.String("health")},
-		"created_at": {S: aws.String(now.Format(time.RFC3339))},
-		"health_key": {S: aws.String(healthKeyValue)},
+		"id":              {S: aws.String("health-orders")},
+		"user_id":         {S: aws.String("health-orders")},
+		"items":           {L: []*dynamodb.AttributeValue{}},
+		"subtotal":        {N: aws.String("0")},
+		"shipping_amount": {N: aws.String("0")},
+		"discount_amount": {N: aws.String("0")},
+		"total":           {N: aws.String("0")},
+		"currency":        {S: aws.String("BRL")},
+		"status":          {S: aws.String("health")},
+		"created_at":      {S: aws.String(now.Format(time.RFC3339))},
+		"updated_at":      {S: aws.String(now.Format(time.RFC3339))},
+		"purchase_ip":     {S: aws.String("health")},
+		"user_agent":      {S: aws.String("health")},
+		"health_key":      {S: aws.String(healthKeyValue)},
 	}
 
 	if _, err := dynamoClient.PutItem(&dynamodb.PutItemInput{
@@ -178,10 +232,7 @@ func HandleHealthData(_ context.Context, _ events.APIGatewayProxyRequest) (event
 		"data":      createdData,
 	})
 
-	return events.APIGatewayProxyResponse{
-		StatusCode: 200,
-		Body:       string(body),
-	}, nil
+	return successJSONResponse(200, string(body)), nil
 }
 
 func validateJWT(tokenString string) (string, error) {
@@ -195,21 +246,91 @@ func validateJWT(tokenString string) (string, error) {
 		return "", err
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if userID, ok := claims["user_id"].(string); ok {
+		if userID, ok := claims["user_id"].(string); ok && userID != "" {
 			return userID, nil
+		}
+		if subject, ok := claims["sub"].(string); ok && subject != "" {
+			return subject, nil
 		}
 	}
 	return "", fmt.Errorf("invalid token")
 }
 
-func createOrder(userID string, req CreateOrderRequest) (OrderResponse, error) {
+func createOrder(userID string, req CreateOrderRequest, request events.APIGatewayProxyRequest) (OrderResponse, error) {
+	if len(req.Items) == 0 {
+		return OrderResponse{}, fmt.Errorf("items are required")
+	}
+
+	items, subtotal, err := normalizeItems(req.Items)
+	if err != nil {
+		return OrderResponse{}, err
+	}
+
+	if err := validateDeliveryAddress(req.DeliveryAddress); err != nil {
+		return OrderResponse{}, err
+	}
+	if strings.TrimSpace(req.Payment.Method) == "" {
+		return OrderResponse{}, fmt.Errorf("payment method is required")
+	}
+
+	shippingAmount := roundMoney(req.ShippingAmount)
+	discountAmount := roundMoney(req.DiscountAmount)
+	total := roundMoney(subtotal + shippingAmount - discountAmount)
+	if req.Total > 0 && roundMoney(req.Total) != total {
+		return OrderResponse{}, fmt.Errorf("order total does not match items")
+	}
+	if total <= 0 {
+		return OrderResponse{}, fmt.Errorf("total must be greater than zero")
+	}
+
+	now := time.Now().UTC().Format(time.RFC3339)
+	currency := strings.TrimSpace(req.Currency)
+	if currency == "" {
+		currency = "BRL"
+	}
+
+	customer := sanitizePerson(req.Customer)
+	if customer.ID == "" {
+		customer.ID = userID
+	}
+	billing := sanitizePerson(req.Billing)
+	if billing.ID == "" {
+		billing.ID = customer.ID
+	}
+	if billing.Name == "" {
+		billing.Name = customer.Name
+	}
+	if billing.Email == "" {
+		billing.Email = customer.Email
+	}
+
+	payment := req.Payment
+	payment.Label = strings.TrimSpace(payment.Label)
+	payment.Method = strings.TrimSpace(payment.Method)
+	payment.Amount = total
+	if strings.TrimSpace(payment.Status) == "" {
+		payment.Status = "pending"
+	}
+
 	order := Order{
-		ID:        generateID(),
-		UserID:    userID,
-		Items:     req.Items,
-		Total:     req.Total,
-		Status:    "pending",
-		CreatedAt: time.Now().Format(time.RFC3339),
+		ID:               generateID(),
+		UserID:           userID,
+		Items:            items,
+		Subtotal:         subtotal,
+		ShippingAmount:   shippingAmount,
+		DiscountAmount:   discountAmount,
+		Total:            total,
+		Currency:         currency,
+		Status:           "pending_payment",
+		Billing:          billing,
+		Customer:         customer,
+		DeliveryAddress:  sanitizeAddress(req.DeliveryAddress),
+		Payment:          payment,
+		CheckoutMetadata: req.CheckoutMetadata,
+		PurchaseIP:       sourceIP(request),
+		UserAgent:        userAgent(request),
+		CreatedAt:        now,
+		UpdatedAt:        now,
 	}
 
 	item, err := dynamodbattribute.MarshalMap(order)
@@ -225,19 +346,13 @@ func createOrder(userID string, req CreateOrderRequest) (OrderResponse, error) {
 		return OrderResponse{}, err
 	}
 
-	return OrderResponse{
-		ID:        order.ID,
-		UserID:    order.UserID,
-		Items:     order.Items,
-		Total:     order.Total,
-		Status:    order.Status,
-		CreatedAt: order.CreatedAt,
-	}, nil
+	return OrderResponse(order), nil
 }
 
 func getOrders(userID string) ([]OrderResponse, error) {
 	result, err := dynamoClient.Query(&dynamodb.QueryInput{
 		TableName:              aws.String(tableName),
+		IndexName:              aws.String(userCreatedIndex),
 		KeyConditionExpression: aws.String("user_id = :user_id"),
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":user_id": {S: aws.String(userID)},
@@ -248,44 +363,154 @@ func getOrders(userID string) ([]OrderResponse, error) {
 		return nil, err
 	}
 
-	var orders []OrderResponse
+	orders := make([]OrderResponse, 0, len(result.Items))
 	for _, item := range result.Items {
 		var order Order
 		if err := dynamodbattribute.UnmarshalMap(item, &order); err != nil {
 			continue
 		}
-		orders = append(orders, OrderResponse{
-			ID:        order.ID,
-			UserID:    order.UserID,
-			Items:     order.Items,
-			Total:     order.Total,
-			Status:    order.Status,
-			CreatedAt: order.CreatedAt,
-		})
+		orders = append(orders, OrderResponse(order))
 	}
 	return orders, nil
 }
 
+func normalizeItems(items []OrderItem) ([]OrderItem, float64, error) {
+	normalized := make([]OrderItem, 0, len(items))
+	subtotal := 0.0
+
+	for _, item := range items {
+		item.ProductID = strings.TrimSpace(item.ProductID)
+		if item.ProductID == "" {
+			return nil, 0, fmt.Errorf("product_id is required")
+		}
+		if item.Quantity <= 0 {
+			return nil, 0, fmt.Errorf("quantity must be greater than zero")
+		}
+
+		unitPrice := item.UnitPrice
+		if unitPrice <= 0 {
+			unitPrice = item.Price
+		}
+		if unitPrice <= 0 {
+			return nil, 0, fmt.Errorf("item price must be greater than zero")
+		}
+
+		item.Price = roundMoney(unitPrice)
+		item.UnitPrice = item.Price
+		item.Subtotal = roundMoney(item.UnitPrice * float64(item.Quantity))
+		subtotal += item.Subtotal
+		normalized = append(normalized, sanitizeItem(item))
+	}
+
+	return normalized, roundMoney(subtotal), nil
+}
+
+func sanitizeItem(item OrderItem) OrderItem {
+	item.ProductCode = strings.TrimSpace(item.ProductCode)
+	item.ProductName = strings.TrimSpace(item.ProductName)
+	item.ProductImage = strings.TrimSpace(item.ProductImage)
+	item.Brand = strings.TrimSpace(item.Brand)
+	item.Collection = strings.TrimSpace(item.Collection)
+	item.Category = strings.TrimSpace(item.Category)
+	item.Type = strings.TrimSpace(item.Type)
+	item.Size = strings.TrimSpace(item.Size)
+	item.Color = strings.TrimSpace(item.Color)
+	return item
+}
+
+func sanitizePerson(person OrderPerson) OrderPerson {
+	return OrderPerson{
+		ID:    strings.TrimSpace(person.ID),
+		Name:  strings.TrimSpace(person.Name),
+		Email: strings.TrimSpace(person.Email),
+		CPF:   onlyDigits(person.CPF),
+		Phone: strings.TrimSpace(person.Phone),
+	}
+}
+
+func sanitizeAddress(address OrderAddress) OrderAddress {
+	address.ID = strings.TrimSpace(address.ID)
+	address.Observation = strings.TrimSpace(address.Observation)
+	address.Complement = strings.TrimSpace(address.Complement)
+	address.Number = strings.TrimSpace(address.Number)
+	address.Street = strings.TrimSpace(address.Street)
+	address.Neighborhood = strings.TrimSpace(address.Neighborhood)
+	address.City = strings.TrimSpace(address.City)
+	address.State = strings.TrimSpace(address.State)
+	address.Country = strings.TrimSpace(address.Country)
+	address.ZipCode = strings.TrimSpace(address.ZipCode)
+	if address.Country == "" {
+		address.Country = "Brasil"
+	}
+	return address
+}
+
+func validateDeliveryAddress(address OrderAddress) error {
+	address = sanitizeAddress(address)
+	if address.Street == "" {
+		return fmt.Errorf("delivery address street is required")
+	}
+	if address.Number == "" {
+		return fmt.Errorf("delivery address number is required")
+	}
+	if address.Neighborhood == "" {
+		return fmt.Errorf("delivery address neighborhood is required")
+	}
+	if address.City == "" {
+		return fmt.Errorf("delivery address city is required")
+	}
+	if address.State == "" {
+		return fmt.Errorf("delivery address state is required")
+	}
+	if address.ZipCode == "" {
+		return fmt.Errorf("delivery address zip_code is required")
+	}
+	return nil
+}
+
+func sourceIP(request events.APIGatewayProxyRequest) string {
+	if ip := strings.TrimSpace(request.RequestContext.Identity.SourceIP); ip != "" {
+		return ip
+	}
+	for key, value := range request.Headers {
+		if strings.EqualFold(key, "X-Forwarded-For") {
+			parts := strings.Split(value, ",")
+			return strings.TrimSpace(parts[0])
+		}
+	}
+	return ""
+}
+
+func userAgent(request events.APIGatewayProxyRequest) string {
+	if agent := strings.TrimSpace(request.RequestContext.Identity.UserAgent); agent != "" {
+		return agent
+	}
+	for key, value := range request.Headers {
+		if strings.EqualFold(key, "User-Agent") {
+			return strings.TrimSpace(value)
+		}
+	}
+	return ""
+}
+
+func onlyDigits(value string) string {
+	var builder strings.Builder
+	for _, r := range value {
+		if r >= '0' && r <= '9' {
+			builder.WriteRune(r)
+		}
+	}
+	return builder.String()
+}
+
+func roundMoney(value float64) float64 {
+	return float64(int(value*100+0.5)) / 100
+}
+
 func generateID() string {
 	bytes := make([]byte, 16)
-	rand.Read(bytes)
+	_, _ = rand.Read(bytes)
 	return hex.EncodeToString(bytes)
-}
-
-func unauthorizedResponse(message string) events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse{StatusCode: 401, Body: fmt.Sprintf(`{"error": "%s"}`, message)}
-}
-
-func badRequestResponse(message string) events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse{StatusCode: 400, Body: fmt.Sprintf(`{"error": "%s"}`, message)}
-}
-
-func serverErrorResponse(err error) events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse{StatusCode: 500, Body: fmt.Sprintf(`{"error": "%s"}`, err.Error())}
-}
-
-func notFoundResponse() events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse{StatusCode: 404, Body: `{"error": "not found"}`}
 }
 
 func getAuthorizationHeader(headers map[string]string) string {
@@ -295,4 +520,67 @@ func getAuthorizationHeader(headers map[string]string) string {
 		}
 	}
 	return ""
+}
+
+func extractBearerToken(headers map[string]string) string {
+	value := strings.TrimSpace(getAuthorizationHeader(headers))
+	if value == "" {
+		return ""
+	}
+
+	parts := strings.SplitN(value, " ", 2)
+	if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+		return strings.TrimSpace(parts[1])
+	}
+
+	return value
+}
+
+func successJSONResponse(statusCode int, body string) events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
+		StatusCode: statusCode,
+		Body:       body,
+		Headers:    defaultHeaders(),
+	}
+}
+
+func unauthorizedResponse(message string) events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
+		StatusCode: 401,
+		Body:       fmt.Sprintf(`{"error": "%s"}`, message),
+		Headers:    defaultHeaders(),
+	}
+}
+
+func badRequestResponse(message string) events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
+		StatusCode: 400,
+		Body:       fmt.Sprintf(`{"error": "%s"}`, message),
+		Headers:    defaultHeaders(),
+	}
+}
+
+func serverErrorResponse(err error) events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
+		StatusCode: 500,
+		Body:       fmt.Sprintf(`{"error": "%s"}`, err.Error()),
+		Headers:    defaultHeaders(),
+	}
+}
+
+func notFoundResponse() events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
+		StatusCode: 404,
+		Body:       `{"error": "not found"}`,
+		Headers:    defaultHeaders(),
+	}
+}
+
+func defaultHeaders() map[string]string {
+	return map[string]string{
+		"Content-Type":                 "application/json",
+		"Access-Control-Allow-Origin":  "*",
+		"Access-Control-Allow-Headers": "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token",
+		"Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+	}
 }

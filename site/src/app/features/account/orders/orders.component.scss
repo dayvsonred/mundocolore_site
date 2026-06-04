@@ -46,13 +46,16 @@
   }
 
   .orders-list {
-    .no-orders {
-      text-align: center;
-      padding: 64px 32px;
-      color: #666;
+      .no-orders {
+        text-align: center;
+        padding: 64px 32px;
+        color: #666;
+        display: grid;
+        justify-items: center;
+        gap: 8px;
 
-      mat-icon {
-        font-size: 48px;
+        mat-icon {
+          font-size: 48px;
         width: 48px;
         height: 48px;
         margin-bottom: 16px;
@@ -103,14 +106,19 @@
               color: #2e7d32;
             }
 
-            &.status-pendente {
+            &.status-pendentes {
               background: #fff3e0;
               color: #f57c00;
             }
 
-            &.status-cancelado {
+            &.status-cancelados {
               background: #ffebee;
               color: #d32f2f;
+            }
+
+            &.status-entregues {
+              background: #e8f5e8;
+              color: #2e7d32;
             }
           }
         }
@@ -133,10 +141,138 @@
         }
       }
 
+      .order-details {
+        border-top: 1px solid #eeeeee;
+        margin: 4px 0 18px;
+        padding-top: 18px;
+
+        .details-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          margin-bottom: 12px;
+
+          h4 {
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+          }
+
+          span {
+            color: #666;
+            font-size: 13px;
+          }
+        }
+
+        .items-table {
+          border: 1px solid #eeeeee;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+
+        .items-row {
+          display: grid;
+          grid-template-columns: minmax(160px, 1.5fr) minmax(110px, 1fr) minmax(90px, 0.8fr) minmax(86px, 0.8fr) 52px minmax(90px, 0.8fr) minmax(96px, 0.9fr);
+          gap: 12px;
+          align-items: center;
+          padding: 12px 14px;
+          color: #444;
+          font-size: 13px;
+
+          & + .items-row {
+            border-top: 1px solid #eeeeee;
+          }
+
+          &.items-head {
+            background: #f7f7f7;
+            color: #666;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+          }
+
+          .product-name {
+            color: #222;
+            font-weight: 600;
+          }
+        }
+      }
+
       .order-actions {
         display: flex;
         gap: 12px;
         justify-content: flex-end;
+      }
+    }
+  }
+}
+
+@media (max-width: 900px) {
+  .orders-page {
+    max-width: 100%;
+
+    .orders-list {
+      .order-card {
+        .order-details {
+          .items-table {
+            border: 0;
+            border-radius: 0;
+          }
+
+          .items-row {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            border: 1px solid #eeeeee;
+            border-radius: 8px;
+            margin-bottom: 10px;
+
+            &.items-head {
+              display: none;
+            }
+
+            & + .items-row {
+              border-top: 1px solid #eeeeee;
+            }
+
+            span::before {
+              color: #777;
+              display: block;
+              font-size: 11px;
+              font-weight: 600;
+              margin-bottom: 2px;
+              text-transform: uppercase;
+            }
+
+            span:nth-child(1)::before {
+              content: 'Produto';
+            }
+
+            span:nth-child(2)::before {
+              content: 'Codigo';
+            }
+
+            span:nth-child(3)::before {
+              content: 'Cor';
+            }
+
+            span:nth-child(4)::before {
+              content: 'Tamanho';
+            }
+
+            span:nth-child(5)::before {
+              content: 'Qtd.';
+            }
+
+            span:nth-child(6)::before {
+              content: 'Preco';
+            }
+
+            span:nth-child(7)::before {
+              content: 'Subtotal';
+            }
+          }
+        }
       }
     }
   }

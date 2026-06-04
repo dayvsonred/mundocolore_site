@@ -1,11 +1,25 @@
 import { Component, OnInit } from '@angular/core';
 
-interface Order {
+import { Order, OrderService } from '../../../core/services/order.service';
+
+interface OrderView {
   id: string;
   date: string;
   total: number;
   status: string;
-  products: any[];
+  statusKey: string;
+  products: OrderProductView[];
+  raw: Order;
+}
+
+interface OrderProductView {
+  code: string;
+  name: string;
+  color: string;
+  size: string;
+  quantity: number;
+  price: number;
+  subtotal: number;
 }
 
 @Component({
@@ -14,9 +28,12 @@ interface Order {
   styleUrls: ['./orders.component.scss']
 })
 export class OrdersComponent implements OnInit {
-  orders: Order[] = [];
-  filteredOrders: Order[] = [];
-  activeFilter: string = 'todos';
+  orders: OrderView[] = [];
+  filteredOrders: OrderView[] = [];
+  activeFilter = 'todos';
+  loading = false;
+  errorMessage = '';
+  expandedOrderId: string | null = null;
 
   filters = [
     { key: 'todos', label: 'Todos' },
@@ -25,62 +42,91 @@ export class OrdersComponent implements OnInit {
     { key: 'cancelados', label: 'Cancelados' }
   ];
 
-  ngOnInit() {
-    this.loadMockOrders();
-    this.applyFilter('todos');
+  constructor(private orderService: OrderService) {}
+
+  ngOnInit(): void {
+    this.loadOrders();
   }
 
-  loadMockOrders() {
-    this.orders = [
-      {
-        id: 'PED-001',
-        date: '2024-01-15',
-        total: 299.90,
-        status: 'Entregue',
-        products: [
-          { name: 'Produto 1', quantity: 2 },
-          { name: 'Produto 2', quantity: 1 }
-        ]
+  loadOrders(): void {
+    this.loading = true;
+    this.errorMessage = '';
+
+    this.orderService.getOrders().subscribe({
+      next: (orders) => {
+        this.orders = (orders || []).map((order) => this.toOrderView(order));
+        this.applyFilter(this.activeFilter);
+        this.loading = false;
       },
-      {
-        id: 'PED-002',
-        date: '2024-01-20',
-        total: 149.50,
-        status: 'Pendente',
-        products: [
-          { name: 'Produto 3', quantity: 1 }
-        ]
-      },
-      {
-        id: 'PED-003',
-        date: '2024-01-10',
-        total: 89.90,
-        status: 'Cancelado',
-        products: [
-          { name: 'Produto 4', quantity: 1 }
-        ]
+      error: () => {
+        this.errorMessage = 'Nao foi possivel carregar seus pedidos.';
+        this.loading = false;
       }
-    ];
+    });
   }
 
-  applyFilter(filter: string) {
+  applyFilter(filter: string): void {
     this.activeFilter = filter;
     if (filter === 'todos') {
       this.filteredOrders = this.orders;
-    } else {
-      this.filteredOrders = this.orders.filter(order =>
-        order.status.toLowerCase() === filter.slice(0, -1) // remove 's' from plural
-      );
+      return;
     }
+
+    this.filteredOrders = this.orders.filter((order) => order.statusKey === filter);
   }
 
-  viewOrderDetails(order: Order) {
-    // TODO: Navigate to order details
-    console.log('View order details:', order);
+  viewOrderDetails(order: OrderView): void {
+    this.expandedOrderId = this.expandedOrderId === order.id ? null : order.id;
   }
 
-  reorder(order: Order) {
-    // TODO: Add products to cart
-    console.log('Reorder products from:', order);
+  isOrderExpanded(order: OrderView): boolean {
+    return this.expandedOrderId === order.id;
+  }
+
+  reorder(order: OrderView): void {
+    console.log('Reorder products from:', order.raw);
+  }
+
+  private toOrderView(order: Order): OrderView {
+    const statusKey = this.mapStatusKey(order.status);
+    return {
+      id: order.id,
+      date: order.created_at,
+      total: order.total,
+      status: this.mapStatusLabel(order.status),
+      statusKey,
+      products: (order.items || []).map((item) => ({
+        code: item.product_code || item.product_snapshot?.produto_id || item.product_snapshot?.product_code || item.product_id,
+        name: item.product_name || item.product_id,
+        color: item.color || 'Nao informado',
+        size: item.size || 'Nao informado',
+        quantity: item.quantity,
+        price: item.unit_price || item.price || 0,
+        subtotal: item.subtotal || (item.unit_price || item.price || 0) * item.quantity
+      })),
+      raw: order
+    };
+  }
+
+  private mapStatusKey(status: string): string {
+    const normalized = (status || '').toLowerCase();
+    if (normalized.includes('cancel')) {
+      return 'cancelados';
+    }
+    if (normalized.includes('deliver') || normalized.includes('entreg')) {
+      return 'entregues';
+    }
+    return 'pendentes';
+  }
+
+  private mapStatusLabel(status: string): string {
+    const statusKey = this.mapStatusKey(status);
+    if (statusKey === 'cancelados') {
+      return 'Cancelado';
+    }
+    if (statusKey === 'entregues') {
+      return 'Entregue';
+    }
+    return 'Pendente';
   }
 }

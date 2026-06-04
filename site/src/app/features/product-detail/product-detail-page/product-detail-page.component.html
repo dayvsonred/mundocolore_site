@@ -1,6 +1,7 @@
 <div class="product-detail" *ngIf="product">
   <div class="product-images">
     <img [src]="productImage" [alt]="product.name">
+    <p class="product-code">Código do produto: {{ product.produto_id || product.id }}</p>
   </div>
   <div class="product-info">
     <div class="detail-actions">

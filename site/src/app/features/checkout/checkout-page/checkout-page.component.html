@@ -1,30 +1,197 @@
 <div class="checkout-container">
-  <h1>Checkout</h1>
-  <form (ngSubmit)="onSubmit()">
-    <div class="form-section">
-      <h2>Dados Pessoais</h2>
-      <input type="text" placeholder="Nome Completo" required>
-      <input type="email" placeholder="E-mail" required>
-      <input type="tel" placeholder="Telefone" required>
+  <header class="checkout-header">
+    <button type="button" class="back-link" routerLink="/cart">
+      <mat-icon>arrow_back</mat-icon>
+      Carrinho
+    </button>
+    <div>
+      <h1>Checkout</h1>
+      <p>Confirme os dados para finalizar sua compra.</p>
     </div>
-    <div class="form-section">
-      <h2>Endereço</h2>
-      <input type="text" placeholder="CEP" required>
-      <input type="text" placeholder="Endereço" required>
-      <input type="text" placeholder="Número" required>
-      <input type="text" placeholder="Complemento">
-      <input type="text" placeholder="Bairro" required>
-      <input type="text" placeholder="Cidade" required>
-      <input type="text" placeholder="Estado" required>
+  </header>
+
+  <nav class="steps" aria-label="Etapas do checkout">
+    <span [class.active]="currentStep === 'address'" [class.done]="selectedAddress">Endereco</span>
+    <span [class.active]="currentStep === 'payment'" [class.done]="selectedPayment">Pagamento</span>
+    <span [class.active]="currentStep === 'review'">Revisao</span>
+    <span [class.active]="currentStep === 'order-payment'">Pedido</span>
+  </nav>
+
+  <p class="error-message" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <section *ngIf="loading" class="loading-state">
+    <mat-spinner diameter="34"></mat-spinner>
+  </section>
+
+  <section *ngIf="!loading && currentStep === 'address'" class="checkout-section">
+    <div class="section-title">
+      <h2>Confirmar endereco de entrega</h2>
+      <p>Selecione um endereco salvo ou cadastre um novo endereco para continuar.</p>
     </div>
-    <div class="form-section">
-      <h2>Pagamento</h2>
-      <select>
-        <option>PIX</option>
-        <option>Cartão de Crédito</option>
-        <option>Boleto</option>
-      </select>
+
+    <div class="saved-addresses" *ngIf="addresses.length">
+      <button
+        type="button"
+        class="selection-card"
+        *ngFor="let address of addresses"
+        [class.selected]="selectedAddress?.id === address.id"
+        (click)="selectAddress(address)">
+        <mat-icon>location_on</mat-icon>
+        <span>
+          <strong>{{ address.street }}, {{ address.number }}</strong>
+          {{ address.neighborhood }} - {{ address.city }}/{{ address.state }}
+        </span>
+      </button>
     </div>
-    <button type="submit" class="btn-submit">Finalizar Pedido</button>
-  </form>
+
+    <form class="form-grid" #addressNgForm="ngForm">
+      <label>
+        Identificacao
+        <input name="observation" [(ngModel)]="addressForm.observation" required>
+      </label>
+      <label>
+        CEP
+        <input name="zip_code" [(ngModel)]="addressForm.zip_code" required>
+      </label>
+      <label class="span-2">
+        Endereco
+        <input name="street" [(ngModel)]="addressForm.street" required>
+      </label>
+      <label>
+        Numero
+        <input name="number" [(ngModel)]="addressForm.number" required>
+      </label>
+      <label>
+        Complemento
+        <input name="complement" [(ngModel)]="addressForm.complement" required>
+      </label>
+      <label>
+        Bairro
+        <input name="neighborhood" [(ngModel)]="addressForm.neighborhood" required>
+      </label>
+      <label>
+        Cidade
+        <input name="city" [(ngModel)]="addressForm.city" required>
+      </label>
+      <label>
+        Estado
+        <input name="state" [(ngModel)]="addressForm.state" required>
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" name="is_default" [(ngModel)]="addressForm.is_default">
+        Definir como endereco principal
+      </label>
+    </form>
+
+    <button type="button" class="primary-action" (click)="continueFromAddress()">
+      Continuar Compra
+    </button>
+  </section>
+
+  <section *ngIf="!loading && currentStep === 'payment'" class="checkout-section">
+    <div class="section-title">
+      <h2>Confirmar forma de pagamento</h2>
+      <p>Escolha como deseja pagar este pedido.</p>
+    </div>
+
+    <div class="payment-options">
+      <button
+        type="button"
+        class="selection-card"
+        *ngFor="let payment of paymentOptions"
+        [class.selected]="selectedPayment?.method === payment.method"
+        (click)="selectPayment(payment)">
+        <mat-icon>{{ payment.icon }}</mat-icon>
+        <span>
+          <strong>{{ payment.label }}</strong>
+          {{ payment.description }}
+        </span>
+      </button>
+    </div>
+
+    <div class="action-row">
+      <button type="button" class="secondary-action" (click)="goToAddressStep()">Alterar endereco</button>
+      <button type="button" class="primary-action" (click)="continueFromPayment()">Continuar Compra</button>
+    </div>
+  </section>
+
+  <section *ngIf="!loading && currentStep === 'review'" class="review-layout">
+    <div class="review-main">
+      <section class="review-block">
+        <h2>Faturamento</h2>
+        <div class="review-card">
+          <mat-icon>description</mat-icon>
+          <div>
+            <strong>{{ buyerName }}</strong>
+            <span>{{ buyerCpf }}</span>
+            <button type="button" class="text-link" routerLink="/minha-conta/meus-dados">Modificar dados de faturamento</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="review-block">
+        <h2>Detalhe da entrega</h2>
+        <div class="review-card">
+          <mat-icon>location_on</mat-icon>
+          <div>
+            <strong>{{ addressLine }}</strong>
+            <span>O envio sera realizado para este endereco.</span>
+            <button type="button" class="text-link" (click)="goToAddressStep()">Alterar a forma de entrega</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="review-block product-delivery">
+        <img [src]="firstProductImage" [alt]="productSummaryName">
+        <div>
+          <h2>{{ deliveryEstimateText }}</h2>
+          <strong>{{ productSummaryName }}</strong>
+          <span>Quantidade: {{ totalQuantity }}</span>
+        </div>
+      </section>
+
+      <section class="review-block">
+        <h2>Detalhe do pagamento</h2>
+        <div class="review-card">
+          <mat-icon>{{ selectedPayment?.icon || 'payments' }}</mat-icon>
+          <div>
+            <strong>{{ selectedPayment?.label }}</strong>
+            <span>Valor a pagar: R$ {{ total | number:'1.2-2' }}</span>
+            <span>Os dados para pagamento serao exibidos apos a confirmacao.</span>
+            <button type="button" class="text-link" (click)="goToPaymentStep()">Alterar forma de pagamento</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="order-summary">
+      <h2>Resumo da compra</h2>
+      <div class="summary-line">
+        <span>Produtos</span>
+        <strong>R$ {{ subtotal | number:'1.2-2' }}</strong>
+      </div>
+      <div class="summary-line">
+        <span>Entrega</span>
+        <strong>R$ {{ shippingAmount | number:'1.2-2' }}</strong>
+      </div>
+      <div class="summary-line">
+        <span>Desconto</span>
+        <strong>R$ {{ discountAmount | number:'1.2-2' }}</strong>
+      </div>
+      <div class="summary-total">
+        <span>Total</span>
+        <strong>R$ {{ total | number:'1.2-2' }}</strong>
+      </div>
+      <button type="button" class="primary-action" (click)="confirmOrder()">Confirmar compra</button>
+    </aside>
+  </section>
+
+  <section *ngIf="!loading && currentStep === 'order-payment'" class="payment-placeholder">
+    <mat-icon>check_circle</mat-icon>
+    <h2>Pedido confirmado</h2>
+    <p>Numero do pedido</p>
+    <strong>{{ createdOrder?.id }}</strong>
+    <p>Os dados de pagamento serao estruturados nesta tela em outro momento.</p>
+    <button type="button" class="primary-action" routerLink="/minha-conta/meus-pedidos">Ver meus pedidos</button>
+  </section>
 </div>

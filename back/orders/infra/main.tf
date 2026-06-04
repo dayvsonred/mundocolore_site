@@ -51,7 +51,8 @@ resource "aws_iam_role_policy" "dynamodb_policy" {
           "dynamodb:Scan"
         ]
         Resource = [
-          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-orders"
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-orders",
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-orders/index/user-created-index"
         ]
       }
     ]
@@ -123,6 +124,22 @@ resource "aws_api_gateway_integration" "orders_get_integration" {
   rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
   resource_id             = aws_api_gateway_resource.orders_resource.id
   http_method             = aws_api_gateway_method.orders_get.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.orders_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_method" "orders_options" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.orders_resource.id
+  http_method   = "OPTIONS"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "orders_options_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.orders_resource.id
+  http_method             = aws_api_gateway_method.orders_options.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.orders_lambda.invoke_arn

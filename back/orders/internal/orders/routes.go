@@ -8,6 +8,10 @@ import (
 )
 
 func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	if request.HTTPMethod == "OPTIONS" {
+		return successJSONResponse(200, `{}`), nil
+	}
+
 	if request.HTTPMethod == "GET" {
 		if strings.HasSuffix(request.Path, "/health/online") {
 			return HandleHealthOnline(ctx, request)
@@ -17,12 +21,11 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		}
 	}
 
-	token := getAuthorizationHeader(request.Headers)
+	token := extractBearerToken(request.Headers)
 	if token == "" {
 		return unauthorizedResponse("no token"), nil
 	}
 
-	token = strings.TrimPrefix(token, "Bearer ")
 	userID, err := validateJWT(token)
 	if err != nil {
 		return unauthorizedResponse("invalid token"), nil

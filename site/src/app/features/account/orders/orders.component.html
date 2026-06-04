@@ -4,7 +4,6 @@
     <p>Acompanhe todos os seus pedidos realizados</p>
   </div>
 
-  <!-- Filters -->
   <div class="filters-section">
     <div class="filter-buttons">
       <button
@@ -17,22 +16,31 @@
     </div>
   </div>
 
-  <!-- Orders List -->
   <div class="orders-list">
-    <div *ngIf="filteredOrders.length === 0" class="no-orders">
+    <div *ngIf="loading" class="no-orders">
+      <mat-spinner diameter="34"></mat-spinner>
+      <h3>Carregando pedidos</h3>
+    </div>
+
+    <div *ngIf="!loading && errorMessage" class="no-orders">
+      <mat-icon>error_outline</mat-icon>
+      <h3>{{ errorMessage }}</h3>
+    </div>
+
+    <div *ngIf="!loading && !errorMessage && filteredOrders.length === 0" class="no-orders">
       <mat-icon>shopping_bag</mat-icon>
       <h3>Nenhum pedido encontrado</h3>
-      <p>Você ainda não possui pedidos nesta categoria.</p>
+      <p>Voce ainda nao possui pedidos nesta categoria.</p>
     </div>
 
     <div *ngFor="let order of filteredOrders" class="order-card">
       <div class="order-header">
         <div class="order-info">
           <h3>Pedido {{ order.id }}</h3>
-          <p class="order-date">{{ order.date | date:'dd/MM/yyyy' }}</p>
+          <p class="order-date">{{ order.date | date:'dd/MM/yyyy HH:mm' }}</p>
         </div>
         <div class="order-status">
-          <span class="status-badge" [class]="'status-' + order.status.toLowerCase()">
+          <span class="status-badge" [class]="'status-' + order.statusKey">
             {{ order.status }}
           </span>
         </div>
@@ -47,9 +55,41 @@
         </div>
       </div>
 
+      <section class="order-details" *ngIf="isOrderExpanded(order)">
+        <div class="details-header">
+          <h4>Detalhes do pedido</h4>
+          <span>{{ order.products.length }} item(ns)</span>
+        </div>
+
+        <div class="items-table">
+          <div class="items-row items-head">
+            <span>Produto</span>
+            <span>Codigo</span>
+            <span>Cor</span>
+            <span>Tamanho</span>
+            <span>Qtd.</span>
+            <span>Preco</span>
+            <span>Subtotal</span>
+          </div>
+
+          <div class="items-row" *ngFor="let product of order.products">
+            <span class="product-name">{{ product.name }}</span>
+            <span>{{ product.code }}</span>
+            <span>{{ product.color }}</span>
+            <span>{{ product.size }}</span>
+            <span>{{ product.quantity }}</span>
+            <span>R$ {{ product.price | number:'1.2-2' }}</span>
+            <span>R$ {{ product.subtotal | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </section>
+
       <div class="order-actions">
-        <button mat-stroked-button (click)="viewOrderDetails(order)">
-          Ver detalhes
+        <button
+          mat-stroked-button
+          (click)="viewOrderDetails(order)"
+          [attr.aria-expanded]="isOrderExpanded(order)">
+          {{ isOrderExpanded(order) ? 'Ocultar detalhes' : 'Ver detalhes' }}
         </button>
         <button mat-raised-button color="primary" (click)="reorder(order)">
           Comprar novamente
