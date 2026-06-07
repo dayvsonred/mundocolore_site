@@ -96,3 +96,46 @@ func TestApplyCollectionToProductsUpdatesAssociatedFields(t *testing.T) {
 		t.Fatalf("expected collection end date to be applied to product")
 	}
 }
+
+func TestNormalizeCollectionCouponsSupportsUpToFive(t *testing.T) {
+	coupons, err := normalizeCollectionCoupons([]CollectionCoupon{
+		{Code: " cupom1 ", SpreadReductionPercent: 5},
+		{Code: "cupom2", SpreadReductionPercent: 10},
+		{Code: "cupom3", SpreadReductionPercent: 15},
+		{Code: "cupom4", SpreadReductionPercent: 20},
+		{Code: "cupom5", SpreadReductionPercent: 25},
+	}, "", nil)
+	if err != nil {
+		t.Fatalf("normalize coupons: %v", err)
+	}
+	if len(coupons) != 5 || coupons[0].Code != "CUPOM1" {
+		t.Fatalf("expected five normalized coupons, got %#v", coupons)
+	}
+}
+
+func TestNormalizeCollectionCouponsRejectsMoreThanFiveAndDuplicates(t *testing.T) {
+	sixCoupons := make([]CollectionCoupon, 6)
+	for index := range sixCoupons {
+		sixCoupons[index] = CollectionCoupon{Code: fmt.Sprintf("CUPOM%d", index), SpreadReductionPercent: 5}
+	}
+	if _, err := normalizeCollectionCoupons(sixCoupons, "", nil); err == nil {
+		t.Fatalf("expected more than five coupons to fail")
+	}
+	if _, err := normalizeCollectionCoupons([]CollectionCoupon{
+		{Code: "DUPLICADO", SpreadReductionPercent: 5},
+		{Code: " duplicado ", SpreadReductionPercent: 10},
+	}, "", nil); err == nil {
+		t.Fatalf("expected duplicated coupon code to fail")
+	}
+}
+
+func TestNormalizeCollectionCouponsMigratesLegacyCoupon(t *testing.T) {
+	reduction := 12.5
+	coupons, err := normalizeCollectionCoupons(nil, " antigo ", &reduction)
+	if err != nil {
+		t.Fatalf("normalize legacy coupon: %v", err)
+	}
+	if len(coupons) != 1 || coupons[0].Code != "ANTIGO" || coupons[0].SpreadReductionPercent != reduction {
+		t.Fatalf("expected legacy coupon to be migrated, got %#v", coupons)
+	}
+}

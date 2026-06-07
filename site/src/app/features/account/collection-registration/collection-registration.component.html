@@ -60,16 +60,33 @@
         <input matInput type="number" min="0" step="0.01" formControlName="spread_default_percent">
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Codigo do cupom</mat-label>
-        <input matInput formControlName="coupon_code" maxlength="40" placeholder="MARINA10">
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Reducao do spread pelo cupom (%)</mat-label>
-        <input matInput type="number" min="0" step="0.01" formControlName="coupon_spread_reduction_percent">
-      </mat-form-field>
     </div>
+
+    <section class="coupon-section" formArrayName="coupons">
+      <header class="coupon-header">
+        <div>
+          <h3>Cupons de desconto</h3>
+          <p>Cadastre ate 5 cupons para esta colecao.</p>
+        </div>
+        <button type="button" mat-stroked-button color="primary" (click)="addCoupon(formCoupons)" [disabled]="formCoupons.length >= 5">
+          <mat-icon>add</mat-icon> Adicionar cupom
+        </button>
+      </header>
+      <div class="coupon-row" *ngFor="let coupon of formCoupons.controls; let index = index" [formGroupName]="index">
+        <mat-form-field appearance="outline">
+          <mat-label>Codigo do cupom {{ index + 1 }}</mat-label>
+          <input matInput formControlName="code" maxlength="40" placeholder="MARINA10">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Reducao do spread (%)</mat-label>
+          <input matInput type="number" min="0" step="0.01" formControlName="spread_reduction_percent">
+          <mat-error *ngIf="coupon.hasError('incompleteCoupon')">Informe codigo e reducao maior que zero</mat-error>
+        </mat-form-field>
+        <button type="button" mat-icon-button color="warn" aria-label="Remover cupom" (click)="removeCoupon(formCoupons, index)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </section>
 
     <div class="form-actions">
       <button type="submit" mat-raised-button color="primary" [disabled]="saving || loadingBrands">
@@ -109,7 +126,7 @@
             (click)="selectCollection(collection)">
             <div>
               <h3>{{ collection.name }}</h3>
-              <p>{{ collection.year }} / Spread: {{ collection.spread_default_percent || 0 }}% / Cupom: {{ collection.coupon_code || '-' }}</p>
+              <p>{{ collection.year }} / Spread: {{ collection.spread_default_percent || 0 }}% / Cupons: {{ couponSummary(collection) }}</p>
             </div>
             <span>{{ collection.s3_prefix || collection.collection_key || '-' }}</span>
           </button>
@@ -143,15 +160,32 @@
           <mat-label>Spread padrao (%)</mat-label>
           <input matInput type="number" min="0" step="0.01" formControlName="spread_default_percent">
         </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Codigo do cupom</mat-label>
-          <input matInput formControlName="coupon_code" maxlength="40">
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Reducao do spread pelo cupom (%)</mat-label>
-          <input matInput type="number" min="0" step="0.01" formControlName="coupon_spread_reduction_percent">
-        </mat-form-field>
       </div>
+      <section class="coupon-section" formArrayName="coupons">
+        <header class="coupon-header">
+          <div>
+            <h3>Cupons de desconto</h3>
+            <p>Cadastre ate 5 cupons para esta colecao.</p>
+          </div>
+          <button type="button" mat-stroked-button color="primary" (click)="addCoupon(editCoupons)" [disabled]="editCoupons.length >= 5">
+            <mat-icon>add</mat-icon> Adicionar cupom
+          </button>
+        </header>
+        <div class="coupon-row" *ngFor="let coupon of editCoupons.controls; let index = index" [formGroupName]="index">
+          <mat-form-field appearance="outline">
+            <mat-label>Codigo do cupom {{ index + 1 }}</mat-label>
+            <input matInput formControlName="code" maxlength="40">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Reducao do spread (%)</mat-label>
+            <input matInput type="number" min="0" step="0.01" formControlName="spread_reduction_percent">
+            <mat-error *ngIf="coupon.hasError('incompleteCoupon')">Informe codigo e reducao maior que zero</mat-error>
+          </mat-form-field>
+          <button type="button" mat-icon-button color="warn" aria-label="Remover cupom" (click)="removeCoupon(editCoupons, index)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </section>
       <div class="form-actions">
         <button type="submit" mat-raised-button color="primary" [disabled]="updating">
           <mat-icon>save</mat-icon> {{ updating ? 'Salvando...' : 'Salvar e atualizar produtos' }}

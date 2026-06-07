@@ -26,11 +26,17 @@ export interface ProductCollectionRecord {
   spread_default_percent: number;
   coupon_code?: string;
   coupon_spread_reduction_percent: number;
+  coupons?: ProductCollectionCoupon[];
   display_start_at?: string;
   display_end_at?: string;
   s3_prefix?: string;
   created_at?: string;
   updated_at?: string;
+}
+
+export interface ProductCollectionCoupon {
+  code: string;
+  spread_reduction_percent: number;
 }
 
 export interface CreateProductBrandPayload {
@@ -51,6 +57,7 @@ export interface CreateProductCollectionPayload {
   spread_default_percent: number;
   coupon_code?: string;
   coupon_spread_reduction_percent?: number;
+  coupons?: ProductCollectionCoupon[];
 }
 
 export interface UpdateProductCollectionPayload {
@@ -60,6 +67,7 @@ export interface UpdateProductCollectionPayload {
   spread_default_percent: number;
   coupon_code: string;
   coupon_spread_reduction_percent: number;
+  coupons: ProductCollectionCoupon[];
 }
 
 export interface UpdateProductCollectionResponse {

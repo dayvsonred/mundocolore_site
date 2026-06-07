@@ -39,6 +39,43 @@
     justify-content: flex-end;
   }
 
+  .coupon-section {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+  }
+
+  .coupon-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h3 {
+      color: #333;
+      font-size: 17px;
+    }
+
+    p {
+      margin-top: 4px;
+      color: #666;
+      font-size: 13px;
+    }
+  }
+
+  .coupon-row {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) minmax(220px, 1fr) auto;
+    align-items: start;
+    gap: 12px;
+  }
+
   .records-section {
     margin-top: 24px;
   }
@@ -129,9 +166,23 @@
     }
 
     .section-header,
+    .coupon-header,
     .record-item {
       align-items: flex-start;
       flex-direction: column;
+    }
+
+    .coupon-row {
+      grid-template-columns: 1fr auto;
+
+      mat-form-field {
+        grid-column: 1;
+      }
+
+      button {
+        grid-column: 2;
+        grid-row: 1;
+      }
     }
   }
 }

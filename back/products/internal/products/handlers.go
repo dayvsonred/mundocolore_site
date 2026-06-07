@@ -36,22 +36,28 @@ type Brand struct {
 }
 
 type Collection struct {
-	ID                           string  `json:"id" dynamodbav:"id"`
-	EntityType                   string  `json:"entity_type" dynamodbav:"entity_type"`
-	Name                         string  `json:"name" dynamodbav:"name"`
-	Slug                         string  `json:"slug" dynamodbav:"slug"`
-	Brand                        string  `json:"brand" dynamodbav:"brand"`
-	BrandKey                     string  `json:"brand_key" dynamodbav:"brand_key"`
-	Year                         string  `json:"year" dynamodbav:"year"`
-	CollectionKey                string  `json:"collection_key" dynamodbav:"collection_key"`
-	SpreadDefaultPercent         float64 `json:"spread_default_percent" dynamodbav:"spread_default_percent"`
-	CouponCode                   string  `json:"coupon_code,omitempty" dynamodbav:"coupon_code,omitempty"`
-	CouponSpreadReductionPercent float64 `json:"coupon_spread_reduction_percent" dynamodbav:"coupon_spread_reduction_percent"`
-	DisplayStartAt               string  `json:"display_start_at" dynamodbav:"display_start_at"`
-	DisplayEndAt                 string  `json:"display_end_at" dynamodbav:"display_end_at"`
-	S3Prefix                     string  `json:"s3_prefix" dynamodbav:"s3_prefix"`
-	CreatedAt                    string  `json:"created_at" dynamodbav:"created_at"`
-	UpdatedAt                    string  `json:"updated_at" dynamodbav:"updated_at"`
+	ID                           string             `json:"id" dynamodbav:"id"`
+	EntityType                   string             `json:"entity_type" dynamodbav:"entity_type"`
+	Name                         string             `json:"name" dynamodbav:"name"`
+	Slug                         string             `json:"slug" dynamodbav:"slug"`
+	Brand                        string             `json:"brand" dynamodbav:"brand"`
+	BrandKey                     string             `json:"brand_key" dynamodbav:"brand_key"`
+	Year                         string             `json:"year" dynamodbav:"year"`
+	CollectionKey                string             `json:"collection_key" dynamodbav:"collection_key"`
+	SpreadDefaultPercent         float64            `json:"spread_default_percent" dynamodbav:"spread_default_percent"`
+	CouponCode                   string             `json:"coupon_code,omitempty" dynamodbav:"coupon_code,omitempty"`
+	CouponSpreadReductionPercent float64            `json:"coupon_spread_reduction_percent" dynamodbav:"coupon_spread_reduction_percent"`
+	Coupons                      []CollectionCoupon `json:"coupons,omitempty" dynamodbav:"coupons,omitempty"`
+	DisplayStartAt               string             `json:"display_start_at" dynamodbav:"display_start_at"`
+	DisplayEndAt                 string             `json:"display_end_at" dynamodbav:"display_end_at"`
+	S3Prefix                     string             `json:"s3_prefix" dynamodbav:"s3_prefix"`
+	CreatedAt                    string             `json:"created_at" dynamodbav:"created_at"`
+	UpdatedAt                    string             `json:"updated_at" dynamodbav:"updated_at"`
+}
+
+type CollectionCoupon struct {
+	Code                   string  `json:"code" dynamodbav:"code"`
+	SpreadReductionPercent float64 `json:"spread_reduction_percent" dynamodbav:"spread_reduction_percent"`
 }
 
 type Product struct {
@@ -108,27 +114,29 @@ type CreateBrandRequest struct {
 }
 
 type CreateCollectionRequest struct {
-	Name                         string   `json:"name"`
-	Collection                   string   `json:"collection"`
-	Slug                         string   `json:"slug"`
-	Brand                        string   `json:"brand"`
-	Year                         string   `json:"year"`
-	SpreadDefaultPercent         *float64 `json:"spread_default_percent"`
-	CouponCode                   string   `json:"coupon_code"`
-	CouponSpreadReductionPercent *float64 `json:"coupon_spread_reduction_percent"`
-	DisplayStartAt               string   `json:"display_start_at"`
-	DisplayEndAt                 string   `json:"display_end_at"`
-	ReleaseDate                  string   `json:"release_date"`
-	FinalizationDate             string   `json:"finalization_date"`
+	Name                         string             `json:"name"`
+	Collection                   string             `json:"collection"`
+	Slug                         string             `json:"slug"`
+	Brand                        string             `json:"brand"`
+	Year                         string             `json:"year"`
+	SpreadDefaultPercent         *float64           `json:"spread_default_percent"`
+	CouponCode                   string             `json:"coupon_code"`
+	CouponSpreadReductionPercent *float64           `json:"coupon_spread_reduction_percent"`
+	Coupons                      []CollectionCoupon `json:"coupons"`
+	DisplayStartAt               string             `json:"display_start_at"`
+	DisplayEndAt                 string             `json:"display_end_at"`
+	ReleaseDate                  string             `json:"release_date"`
+	FinalizationDate             string             `json:"finalization_date"`
 }
 
 type UpdateCollectionRequest struct {
-	Name                         *string  `json:"name"`
-	SpreadDefaultPercent         *float64 `json:"spread_default_percent"`
-	CouponCode                   *string  `json:"coupon_code"`
-	CouponSpreadReductionPercent *float64 `json:"coupon_spread_reduction_percent"`
-	DisplayStartAt               *string  `json:"display_start_at"`
-	DisplayEndAt                 *string  `json:"display_end_at"`
+	Name                         *string             `json:"name"`
+	SpreadDefaultPercent         *float64            `json:"spread_default_percent"`
+	CouponCode                   *string             `json:"coupon_code"`
+	CouponSpreadReductionPercent *float64            `json:"coupon_spread_reduction_percent"`
+	Coupons                      *[]CollectionCoupon `json:"coupons"`
+	DisplayStartAt               *string             `json:"display_start_at"`
+	DisplayEndAt                 *string             `json:"display_end_at"`
 }
 
 type UploadImage struct {
@@ -368,6 +376,7 @@ func HandleGetCollections(_ context.Context, request events.APIGatewayProxyReque
 			collections[index].SpreadDefaultPercent = 0
 			collections[index].CouponCode = ""
 			collections[index].CouponSpreadReductionPercent = 0
+			collections[index].Coupons = nil
 		}
 	}
 
@@ -709,6 +718,10 @@ func createCollection(req CreateCollectionRequest) (Collection, error) {
 	collectionKey := buildCollectionKey(brandKey, year, slug)
 	now := time.Now().Format(time.RFC3339)
 
+	coupons, err := normalizeCollectionCoupons(req.Coupons, req.CouponCode, req.CouponSpreadReductionPercent)
+	if err != nil {
+		return Collection{}, err
+	}
 	collection := Collection{
 		ID:                           "COLLECTION#" + collectionKey,
 		EntityType:                   "collection",
@@ -721,11 +734,16 @@ func createCollection(req CreateCollectionRequest) (Collection, error) {
 		SpreadDefaultPercent:         percentageValue(req.SpreadDefaultPercent),
 		CouponCode:                   normalizeCouponCode(req.CouponCode),
 		CouponSpreadReductionPercent: percentageValue(req.CouponSpreadReductionPercent),
+		Coupons:                      coupons,
 		DisplayStartAt:               displayStart,
 		DisplayEndAt:                 displayEnd,
 		S3Prefix:                     buildS3Prefix(brandKey, year, slug),
 		CreatedAt:                    now,
 		UpdatedAt:                    now,
+	}
+	if len(coupons) > 0 {
+		collection.CouponCode = coupons[0].Code
+		collection.CouponSpreadReductionPercent = coupons[0].SpreadReductionPercent
 	}
 
 	if err := ensureS3Prefix(brandKey + "/"); err != nil {
@@ -789,6 +807,20 @@ func updateCollection(id string, req UpdateCollectionRequest) (Collection, int, 
 	}
 	if req.CouponSpreadReductionPercent != nil {
 		collection.CouponSpreadReductionPercent = percentageValue(req.CouponSpreadReductionPercent)
+	}
+	if req.Coupons != nil {
+		coupons, err := normalizeCollectionCoupons(*req.Coupons, "", nil)
+		if err != nil {
+			return Collection{}, 0, err
+		}
+		collection.Coupons = coupons
+		if len(coupons) > 0 {
+			collection.CouponCode = coupons[0].Code
+			collection.CouponSpreadReductionPercent = coupons[0].SpreadReductionPercent
+		} else {
+			collection.CouponCode = ""
+			collection.CouponSpreadReductionPercent = 0
+		}
 	}
 	if req.DisplayStartAt != nil {
 		collection.DisplayStartAt = strings.TrimSpace(*req.DisplayStartAt)
@@ -1754,6 +1786,40 @@ func roundMoney(value float64) float64 {
 
 func normalizeCouponCode(value string) string {
 	return strings.ToUpper(strings.TrimSpace(value))
+}
+
+func normalizeCollectionCoupons(coupons []CollectionCoupon, legacyCode string, legacyReduction *float64) ([]CollectionCoupon, error) {
+	if len(coupons) == 0 && strings.TrimSpace(legacyCode) != "" {
+		coupons = []CollectionCoupon{{
+			Code:                   legacyCode,
+			SpreadReductionPercent: percentageValue(legacyReduction),
+		}}
+	}
+	if len(coupons) > 5 {
+		return nil, fmt.Errorf("a collection can have at most 5 coupons")
+	}
+
+	normalized := make([]CollectionCoupon, 0, len(coupons))
+	seen := map[string]struct{}{}
+	for _, coupon := range coupons {
+		code := normalizeCouponCode(coupon.Code)
+		reduction := roundMoney(coupon.SpreadReductionPercent)
+		if code == "" && reduction == 0 {
+			continue
+		}
+		if code == "" || reduction <= 0 {
+			return nil, fmt.Errorf("coupon code and reduction greater than zero are required")
+		}
+		if _, exists := seen[code]; exists {
+			return nil, fmt.Errorf("coupon code %s is duplicated", code)
+		}
+		seen[code] = struct{}{}
+		normalized = append(normalized, CollectionCoupon{
+			Code:                   code,
+			SpreadReductionPercent: reduction,
+		})
+	}
+	return normalized, nil
 }
 
 func buildCollectionKey(brand string, year string, collection string) string {

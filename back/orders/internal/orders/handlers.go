@@ -119,10 +119,16 @@ type ProductPricing struct {
 }
 
 type CollectionPricing struct {
-	ID                           string  `dynamodbav:"id"`
-	EntityType                   string  `dynamodbav:"entity_type"`
-	CouponCode                   string  `dynamodbav:"coupon_code"`
-	CouponSpreadReductionPercent float64 `dynamodbav:"coupon_spread_reduction_percent"`
+	ID                           string             `dynamodbav:"id"`
+	EntityType                   string             `dynamodbav:"entity_type"`
+	CouponCode                   string             `dynamodbav:"coupon_code"`
+	CouponSpreadReductionPercent float64            `dynamodbav:"coupon_spread_reduction_percent"`
+	Coupons                      []CollectionCoupon `dynamodbav:"coupons,omitempty"`
+}
+
+type CollectionCoupon struct {
+	Code                   string  `dynamodbav:"code"`
+	SpreadReductionPercent float64 `dynamodbav:"spread_reduction_percent"`
 }
 
 type CouponRequest struct {
@@ -464,8 +470,9 @@ func priceItems(items []OrderItem, couponCode string) ([]OrderItem, float64, flo
 			if err != nil {
 				return nil, 0, 0, err
 			}
-			if normalizeCouponCode(collection.CouponCode) == couponCode && collection.CouponSpreadReductionPercent > 0 {
-				reducedSpread := product.SpreadPercent - collection.CouponSpreadReductionPercent
+			couponReductionPercent := findCouponReduction(collection, couponCode)
+			if couponReductionPercent > 0 {
+				reducedSpread := product.SpreadPercent - couponReductionPercent
 				if reducedSpread < 0 {
 					reducedSpread = 0
 				}
@@ -475,7 +482,7 @@ func priceItems(items []OrderItem, couponCode string) ([]OrderItem, float64, flo
 				}
 				item.UnitPrice = calculateSpreadPrice(costPrice, reducedSpread)
 				item.Price = item.UnitPrice
-				item.CouponReductionPercent = collection.CouponSpreadReductionPercent
+				item.CouponReductionPercent = couponReductionPercent
 				couponApplied = true
 			}
 		}
@@ -645,6 +652,19 @@ func calculateSpreadPrice(costPrice float64, spreadPercent float64) float64 {
 
 func normalizeCouponCode(value string) string {
 	return strings.ToUpper(strings.TrimSpace(value))
+}
+
+func findCouponReduction(collection CollectionPricing, couponCode string) float64 {
+	couponCode = normalizeCouponCode(couponCode)
+	for _, coupon := range collection.Coupons {
+		if normalizeCouponCode(coupon.Code) == couponCode && coupon.SpreadReductionPercent > 0 {
+			return coupon.SpreadReductionPercent
+		}
+	}
+	if normalizeCouponCode(collection.CouponCode) == couponCode && collection.CouponSpreadReductionPercent > 0 {
+		return collection.CouponSpreadReductionPercent
+	}
+	return 0
 }
 
 func generateID() string {
