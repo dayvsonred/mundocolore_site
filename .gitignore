@@ -46,6 +46,10 @@ mode_info_img/
 mode_info_img/*
 
 back/contact/*
+!back/contact/infra/
+back/contact/infra/*
+!back/contact/infra/version_local
+!back/contact/infra/version_update
 
 
 
@@ -86,6 +90,7 @@ go.work.sum
 **/.terraform/
 **/*.tfstate
 **/*.tfstate.*
+**/.deploy.tfplan
 
 # Node
 **/node_modules/

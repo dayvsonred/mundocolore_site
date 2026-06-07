@@ -22,6 +22,9 @@ Este backend consiste em Lambdas AWS escritas em Go, cada uma responsável por u
 
 ## Deploy
 
+Para o fluxo versionado de build e deploy automatico das Lambdas Go, consulte
+[`DEPLOY_LAMBDAS.md`](DEPLOY_LAMBDAS.md).
+
 ### 1. Configurar Credenciais AWS
 
 ```powershell
@@ -104,7 +107,11 @@ Este setup foi otimizado para o Free Tier da AWS:
 3. Implementar validações adicionais
 4. Adicionar CORS se necessário
 
+```powershell
+cd "C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\back"
 
+python .\deploy_lambdas.py --dry-run
+```
 
 ###  Redeploy
 
