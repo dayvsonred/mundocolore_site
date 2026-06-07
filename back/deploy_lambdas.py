@@ -262,9 +262,11 @@ def main() -> int:
             f"\nJWT_SECRET: carregado de {JWT_FILE_PATH.name}"
         )
 
+        successful: list[str] = []
         for module in pending:
             try:
                 deploy_module(module, env=env, dry_run=args.dry_run)
+                successful.append(module.name)
             except (OSError, subprocess.CalledProcessError) as error:
                 failures.append(module.name)
                 detail = (
@@ -280,12 +282,20 @@ def main() -> int:
                 if not args.continue_on_error:
                     break
 
+        if successful:
+            action = "Simuladas com sucesso" if args.dry_run else "Publicadas com sucesso"
+            print(f"\n{action}:")
+            for name in successful:
+                print(f"  - {name}")
+
         if failures:
-            print(f"\nFalha no deploy: {', '.join(failures)}", file=sys.stderr)
+            print("\nFalha no deploy:", file=sys.stderr)
+            for name in failures:
+                print(f"  - {name}", file=sys.stderr)
             return 1
 
-        action = "Simulacao concluida" if args.dry_run else "Deploy concluido"
-        print(f"\n{action}: {', '.join(module.name for module in pending)}")
+        message = "SIMULACAO CONCLUIDA COM SUCESSO" if args.dry_run else "DEPLOY CONCLUIDO COM SUCESSO"
+        print(f"\n{message}. Total de Lambdas: {len(successful)}")
         return 0
     except (FileNotFoundError, RuntimeError, ValueError) as error:
         print(f"Erro: {error}", file=sys.stderr)
