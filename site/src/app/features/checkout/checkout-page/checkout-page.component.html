@@ -178,6 +178,19 @@
         <span>Desconto</span>
         <strong>R$ {{ discountAmount | number:'1.2-2' }}</strong>
       </div>
+      <div class="coupon-box">
+        <label for="coupon-code">Cupom</label>
+        <div>
+          <input id="coupon-code" name="couponCode" [(ngModel)]="couponCode" [disabled]="applyingCoupon">
+          <button type="button" class="secondary-action" (click)="applyCoupon()" [disabled]="applyingCoupon">
+            {{ applyingCoupon ? 'Aplicando...' : 'Aplicar' }}
+          </button>
+        </div>
+        <span *ngIf="appliedCouponCode">
+          Cupom {{ appliedCouponCode }} aplicado.
+          <button type="button" class="text-link" (click)="clearCoupon()">Remover</button>
+        </span>
+      </div>
       <div class="summary-total">
         <span>Total</span>
         <strong>R$ {{ total | number:'1.2-2' }}</strong>

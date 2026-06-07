@@ -33,6 +33,10 @@ export class CheckoutPageComponent implements OnInit {
   total = 0;
   loading = false;
   errorMessage = '';
+  couponCode = '';
+  appliedCouponCode = '';
+  applyingCoupon = false;
+  private couponUnitPrices: Record<string, number> = {};
 
   addressForm: AddressPayload = {
     observation: 'Endereco principal',
@@ -90,6 +94,7 @@ export class CheckoutPageComponent implements OnInit {
 
     this.cartService.cartItems$.subscribe((items) => {
       this.cartItems = items;
+      this.clearCoupon(false);
       this.calculateTotals();
       if (!items.length && this.currentStep !== 'order-payment') {
         this.router.navigate(['/cart']);
@@ -198,6 +203,48 @@ export class CheckoutPageComponent implements OnInit {
     });
   }
 
+  applyCoupon(): void {
+    const code = this.couponCode.trim();
+    if (!code) {
+      this.errorMessage = 'Informe o codigo do cupom.';
+      return;
+    }
+    this.applyingCoupon = true;
+    this.errorMessage = '';
+    this.orderService.validateCoupon(code, this.cartItems.map((item) => ({
+      product_id: item.product.id,
+      quantity: item.quantity,
+      price: Number(item.product.price || 0)
+    }))).subscribe({
+      next: (response) => {
+        this.appliedCouponCode = response.coupon_code;
+        this.couponCode = response.coupon_code;
+        this.couponUnitPrices = response.items.reduce((prices, item) => {
+          prices[item.product_id] = Number(item.unit_price || item.price || 0);
+          return prices;
+        }, {} as Record<string, number>);
+        this.subtotal = response.subtotal;
+        this.discountAmount = response.discount_amount;
+        this.total = this.subtotal + this.shippingAmount - this.discountAmount;
+        this.updateSelectedPaymentAmount();
+        this.applyingCoupon = false;
+      },
+      error: () => {
+        this.clearCoupon(false);
+        this.applyingCoupon = false;
+        this.errorMessage = 'Cupom invalido para os produtos selecionados.';
+      }
+    });
+  }
+
+  clearCoupon(clearInput = true): void {
+    this.appliedCouponCode = '';
+    this.couponUnitPrices = {};
+    this.discountAmount = 0;
+    if (clearInput) this.couponCode = '';
+    if (this.cartItems.length) this.calculateTotals();
+  }
+
   get addressLine(): string {
     if (!this.selectedAddress) {
       return '';
@@ -241,13 +288,11 @@ export class CheckoutPageComponent implements OnInit {
   private calculateTotals(): void {
     this.subtotal = this.cartItems.reduce((sum, item) => sum + Number(item.product.price || 0) * item.quantity, 0);
     this.total = this.subtotal + this.shippingAmount - this.discountAmount;
+    this.updateSelectedPaymentAmount();
+  }
 
-    if (this.selectedPayment) {
-      this.selectedPayment = {
-        ...this.selectedPayment,
-        amount: this.total
-      };
-    }
+  private updateSelectedPaymentAmount(): void {
+    if (this.selectedPayment) this.selectedPayment = { ...this.selectedPayment, amount: this.total };
   }
 
   private isAddressFormValid(): boolean {
@@ -274,7 +319,7 @@ export class CheckoutPageComponent implements OnInit {
 
     return {
       items: this.cartItems.map((item) => {
-        const unitPrice = Number(item.product.price || 0);
+        const unitPrice = this.couponUnitPrices[item.product.id] ?? Number(item.product.price || 0);
         const productCode = item.product.produto_id || item.product.id;
         return {
           product_id: item.product.id,
@@ -313,6 +358,7 @@ export class CheckoutPageComponent implements OnInit {
       subtotal: this.subtotal,
       shipping_amount: this.shippingAmount,
       discount_amount: this.discountAmount,
+      coupon_code: this.appliedCouponCode || undefined,
       total: this.total,
       currency: 'BRL',
       billing: customer,

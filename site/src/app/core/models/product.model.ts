@@ -2,6 +2,10 @@ export interface Product {
   id: string;
   name: string;
   price: number;
+  cost_price?: number;
+  preco_custo?: string;
+  spread_percent?: number;
+  spread_is_default?: boolean;
   image: string;
   image_url?: string;
   images?: string[];

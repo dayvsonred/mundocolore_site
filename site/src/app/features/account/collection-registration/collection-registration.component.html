@@ -54,6 +54,21 @@
         <mat-label>Fim da exibicao</mat-label>
         <input matInput type="date" formControlName="display_end_at">
       </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Spread padrao (%)</mat-label>
+        <input matInput type="number" min="0" step="0.01" formControlName="spread_default_percent">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Codigo do cupom</mat-label>
+        <input matInput formControlName="coupon_code" maxlength="40" placeholder="MARINA10">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Reducao do spread pelo cupom (%)</mat-label>
+        <input matInput type="number" min="0" step="0.01" formControlName="coupon_spread_reduction_percent">
+      </mat-form-field>
     </div>
 
     <div class="form-actions">
@@ -82,14 +97,66 @@
       Nenhuma colecao cadastrada.
     </div>
 
-    <div *ngIf="collections.length" class="record-list">
-      <article *ngFor="let collection of collections" class="record-item">
-        <div>
-          <h3>{{ collection.name }}</h3>
-          <p>{{ getBrandLabel(collection.brand_key || collection.brand) }} / {{ collection.year }}</p>
+    <div *ngIf="collections.length" class="brand-groups">
+      <section *ngFor="let group of collectionGroups" class="brand-group">
+        <h3 class="brand-title">{{ group.label }}</h3>
+        <div class="record-list">
+          <button
+            type="button"
+            *ngFor="let collection of group.collections"
+            class="record-item"
+            [class.selected]="selectedCollection?.id === collection.id"
+            (click)="selectCollection(collection)">
+            <div>
+              <h3>{{ collection.name }}</h3>
+              <p>{{ collection.year }} / Spread: {{ collection.spread_default_percent || 0 }}% / Cupom: {{ collection.coupon_code || '-' }}</p>
+            </div>
+            <span>{{ collection.s3_prefix || collection.collection_key || '-' }}</span>
+          </button>
         </div>
-        <span>{{ collection.s3_prefix || collection.collection_key || '-' }}</span>
-      </article>
+      </section>
     </div>
+  </section>
+
+  <section class="records-section" *ngIf="selectedCollection">
+    <header class="section-header">
+      <h2>Editar {{ selectedCollection.name }}</h2>
+      <button type="button" mat-icon-button (click)="cancelEdit()"><mat-icon>close</mat-icon></button>
+    </header>
+
+    <form [formGroup]="editForm" (ngSubmit)="updateSelectedCollection()">
+      <div class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Nome da colecao</mat-label>
+          <input matInput formControlName="name" maxlength="80">
+          <mat-error *ngIf="editForm.controls.name.hasError('required')">Informe a colecao</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Inicio da exibicao</mat-label>
+          <input matInput type="date" formControlName="display_start_at">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Fim da exibicao</mat-label>
+          <input matInput type="date" formControlName="display_end_at">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Spread padrao (%)</mat-label>
+          <input matInput type="number" min="0" step="0.01" formControlName="spread_default_percent">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Codigo do cupom</mat-label>
+          <input matInput formControlName="coupon_code" maxlength="40">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Reducao do spread pelo cupom (%)</mat-label>
+          <input matInput type="number" min="0" step="0.01" formControlName="coupon_spread_reduction_percent">
+        </mat-form-field>
+      </div>
+      <div class="form-actions">
+        <button type="submit" mat-raised-button color="primary" [disabled]="updating">
+          <mat-icon>save</mat-icon> {{ updating ? 'Salvando...' : 'Salvar e atualizar produtos' }}
+        </button>
+      </div>
+    </form>
   </section>
 </section>

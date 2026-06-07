@@ -21,8 +21,17 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		}
 	}
 
+	if requiresAdmin(request) {
+		if err := authorizeAdmin(request); err != nil {
+			return unauthorizedResponse(err.Error()), nil
+		}
+	}
+
 	switch request.HTTPMethod {
 	case "POST":
+		if strings.HasSuffix(request.Path, "/recalculate-spread") && strings.Contains(request.Path, "/products/collections/") {
+			return HandleRecalculateCollectionSpread(ctx, request)
+		}
 		if strings.HasSuffix(request.Path, "/products/import-file") {
 			return HandleImportProductsFile(ctx, request)
 		}
@@ -52,6 +61,9 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 			return HandleGetProduct(ctx, request)
 		}
 	case "PUT", "PATCH":
+		if strings.Contains(request.Path, "/products/collections/") {
+			return HandleUpdateCollection(ctx, request)
+		}
 		if strings.Contains(request.Path, "/products/") {
 			return HandleUpdateProduct(ctx, request)
 		}
@@ -62,4 +74,12 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	}
 
 	return notFoundResponse(), nil
+}
+
+func requiresAdmin(request events.APIGatewayProxyRequest) bool {
+	if request.HTTPMethod == "POST" || request.HTTPMethod == "PUT" || request.HTTPMethod == "PATCH" || request.HTTPMethod == "DELETE" {
+		return true
+	}
+	return strings.EqualFold(request.QueryStringParameters["include_cost"], "true") ||
+		strings.EqualFold(request.QueryStringParameters["include_pricing_config"], "true")
 }

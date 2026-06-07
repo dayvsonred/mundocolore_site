@@ -25,6 +25,7 @@ type Order struct {
 	Subtotal         float64                `json:"subtotal" dynamodbav:"subtotal"`
 	ShippingAmount   float64                `json:"shipping_amount" dynamodbav:"shipping_amount"`
 	DiscountAmount   float64                `json:"discount_amount" dynamodbav:"discount_amount"`
+	CouponCode       string                 `json:"coupon_code,omitempty" dynamodbav:"coupon_code,omitempty"`
 	Total            float64                `json:"total" dynamodbav:"total"`
 	Currency         string                 `json:"currency" dynamodbav:"currency"`
 	Status           string                 `json:"status" dynamodbav:"status"`
@@ -40,21 +41,24 @@ type Order struct {
 }
 
 type OrderItem struct {
-	ProductID       string                 `json:"product_id" dynamodbav:"product_id"`
-	ProductCode     string                 `json:"product_code,omitempty" dynamodbav:"product_code,omitempty"`
-	ProductName     string                 `json:"product_name,omitempty" dynamodbav:"product_name,omitempty"`
-	ProductImage    string                 `json:"product_image,omitempty" dynamodbav:"product_image,omitempty"`
-	Brand           string                 `json:"brand,omitempty" dynamodbav:"brand,omitempty"`
-	Collection      string                 `json:"collection,omitempty" dynamodbav:"collection,omitempty"`
-	Category        string                 `json:"category,omitempty" dynamodbav:"category,omitempty"`
-	Type            string                 `json:"type,omitempty" dynamodbav:"type,omitempty"`
-	Size            string                 `json:"size,omitempty" dynamodbav:"size,omitempty"`
-	Color           string                 `json:"color,omitempty" dynamodbav:"color,omitempty"`
-	Quantity        int                    `json:"quantity" dynamodbav:"quantity"`
-	Price           float64                `json:"price" dynamodbav:"price"`
-	UnitPrice       float64                `json:"unit_price" dynamodbav:"unit_price"`
-	Subtotal        float64                `json:"subtotal" dynamodbav:"subtotal"`
-	ProductSnapshot map[string]interface{} `json:"product_snapshot,omitempty" dynamodbav:"product_snapshot,omitempty"`
+	ProductID              string                 `json:"product_id" dynamodbav:"product_id"`
+	ProductCode            string                 `json:"product_code,omitempty" dynamodbav:"product_code,omitempty"`
+	ProductName            string                 `json:"product_name,omitempty" dynamodbav:"product_name,omitempty"`
+	ProductImage           string                 `json:"product_image,omitempty" dynamodbav:"product_image,omitempty"`
+	Brand                  string                 `json:"brand,omitempty" dynamodbav:"brand,omitempty"`
+	Collection             string                 `json:"collection,omitempty" dynamodbav:"collection,omitempty"`
+	Category               string                 `json:"category,omitempty" dynamodbav:"category,omitempty"`
+	Type                   string                 `json:"type,omitempty" dynamodbav:"type,omitempty"`
+	Size                   string                 `json:"size,omitempty" dynamodbav:"size,omitempty"`
+	Color                  string                 `json:"color,omitempty" dynamodbav:"color,omitempty"`
+	Quantity               int                    `json:"quantity" dynamodbav:"quantity"`
+	Price                  float64                `json:"price" dynamodbav:"price"`
+	UnitPrice              float64                `json:"unit_price" dynamodbav:"unit_price"`
+	BaseUnitPrice          float64                `json:"base_unit_price" dynamodbav:"base_unit_price"`
+	CouponReductionPercent float64                `json:"coupon_reduction_percent,omitempty" dynamodbav:"coupon_reduction_percent,omitempty"`
+	DiscountAmount         float64                `json:"discount_amount,omitempty" dynamodbav:"discount_amount,omitempty"`
+	Subtotal               float64                `json:"subtotal" dynamodbav:"subtotal"`
+	ProductSnapshot        map[string]interface{} `json:"product_snapshot,omitempty" dynamodbav:"product_snapshot,omitempty"`
 }
 
 type OrderPerson struct {
@@ -91,6 +95,7 @@ type CreateOrderRequest struct {
 	Subtotal         float64                `json:"subtotal"`
 	ShippingAmount   float64                `json:"shipping_amount"`
 	DiscountAmount   float64                `json:"discount_amount"`
+	CouponCode       string                 `json:"coupon_code"`
 	Total            float64                `json:"total"`
 	Currency         string                 `json:"currency"`
 	Billing          OrderPerson            `json:"billing"`
@@ -102,10 +107,42 @@ type CreateOrderRequest struct {
 
 type OrderResponse Order
 
+type ProductPricing struct {
+	ID            string  `dynamodbav:"id"`
+	EntityType    string  `dynamodbav:"entity_type"`
+	ProductID     string  `dynamodbav:"product_id"`
+	Name          string  `dynamodbav:"name"`
+	Price         float64 `dynamodbav:"price"`
+	CostPrice     float64 `dynamodbav:"cost_price"`
+	SpreadPercent float64 `dynamodbav:"spread_percent"`
+	CollectionKey string  `dynamodbav:"collection_key"`
+}
+
+type CollectionPricing struct {
+	ID                           string  `dynamodbav:"id"`
+	EntityType                   string  `dynamodbav:"entity_type"`
+	CouponCode                   string  `dynamodbav:"coupon_code"`
+	CouponSpreadReductionPercent float64 `dynamodbav:"coupon_spread_reduction_percent"`
+}
+
+type CouponRequest struct {
+	CouponCode string      `json:"coupon_code"`
+	Items      []OrderItem `json:"items"`
+}
+
+type CouponResponse struct {
+	CouponCode     string      `json:"coupon_code"`
+	Items          []OrderItem `json:"items"`
+	Subtotal       float64     `json:"subtotal"`
+	DiscountAmount float64     `json:"discount_amount"`
+	Total          float64     `json:"total"`
+}
+
 var (
-	dynamoClient *dynamodb.DynamoDB
-	tableName    = "mundocolore-orders"
-	jwtSecret    = []byte("your-secret-key")
+	dynamoClient      *dynamodb.DynamoDB
+	tableName         = "mundocolore-orders"
+	productsTableName = "mundocolore-products"
+	jwtSecret         = []byte("your-secret-key")
 )
 
 const (
@@ -122,6 +159,9 @@ func init() {
 	dynamoClient = dynamodb.New(sess)
 	if value := os.Getenv("TABLE_NAME"); value != "" {
 		tableName = value
+	}
+	if value := os.Getenv("PRODUCTS_TABLE_NAME"); value != "" {
+		productsTableName = value
 	}
 	if secret := os.Getenv("JWT_SECRET"); secret != "" {
 		jwtSecret = []byte(secret)
@@ -150,6 +190,25 @@ func HandleGetOrders(_ context.Context, _ events.APIGatewayProxyRequest, userID 
 	}
 
 	body, _ := json.Marshal(orders)
+	return successJSONResponse(200, string(body)), nil
+}
+
+func HandleValidateCoupon(_ context.Context, request events.APIGatewayProxyRequest, _ string) (events.APIGatewayProxyResponse, error) {
+	var req CouponRequest
+	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
+		return badRequestResponse("invalid request"), nil
+	}
+	items, subtotal, discount, err := priceItems(req.Items, req.CouponCode)
+	if err != nil {
+		return badRequestResponse(err.Error()), nil
+	}
+	body, _ := json.Marshal(CouponResponse{
+		CouponCode:     normalizeCouponCode(req.CouponCode),
+		Items:          items,
+		Subtotal:       subtotal,
+		DiscountAmount: discount,
+		Total:          roundMoney(subtotal - discount),
+	})
 	return successJSONResponse(200, string(body)), nil
 }
 
@@ -261,7 +320,7 @@ func createOrder(userID string, req CreateOrderRequest, request events.APIGatewa
 		return OrderResponse{}, fmt.Errorf("items are required")
 	}
 
-	items, subtotal, err := normalizeItems(req.Items)
+	items, subtotal, discountAmount, err := priceItems(req.Items, req.CouponCode)
 	if err != nil {
 		return OrderResponse{}, err
 	}
@@ -274,7 +333,6 @@ func createOrder(userID string, req CreateOrderRequest, request events.APIGatewa
 	}
 
 	shippingAmount := roundMoney(req.ShippingAmount)
-	discountAmount := roundMoney(req.DiscountAmount)
 	total := roundMoney(subtotal + shippingAmount - discountAmount)
 	if req.Total > 0 && roundMoney(req.Total) != total {
 		return OrderResponse{}, fmt.Errorf("order total does not match items")
@@ -319,6 +377,7 @@ func createOrder(userID string, req CreateOrderRequest, request events.APIGatewa
 		Subtotal:         subtotal,
 		ShippingAmount:   shippingAmount,
 		DiscountAmount:   discountAmount,
+		CouponCode:       normalizeCouponCode(req.CouponCode),
 		Total:            total,
 		Currency:         currency,
 		Status:           "pending_payment",
@@ -374,35 +433,108 @@ func getOrders(userID string) ([]OrderResponse, error) {
 	return orders, nil
 }
 
-func normalizeItems(items []OrderItem) ([]OrderItem, float64, error) {
+func priceItems(items []OrderItem, couponCode string) ([]OrderItem, float64, float64, error) {
 	normalized := make([]OrderItem, 0, len(items))
 	subtotal := 0.0
+	discountAmount := 0.0
+	couponCode = normalizeCouponCode(couponCode)
+	couponApplied := false
 
 	for _, item := range items {
 		item.ProductID = strings.TrimSpace(item.ProductID)
 		if item.ProductID == "" {
-			return nil, 0, fmt.Errorf("product_id is required")
+			return nil, 0, 0, fmt.Errorf("product_id is required")
 		}
 		if item.Quantity <= 0 {
-			return nil, 0, fmt.Errorf("quantity must be greater than zero")
+			return nil, 0, 0, fmt.Errorf("quantity must be greater than zero")
+		}
+		product, err := getProductPricing(item.ProductID)
+		if err != nil {
+			return nil, 0, 0, err
+		}
+		if product.Price <= 0 {
+			return nil, 0, 0, fmt.Errorf("product price must be greater than zero")
 		}
 
-		unitPrice := item.UnitPrice
-		if unitPrice <= 0 {
-			unitPrice = item.Price
-		}
-		if unitPrice <= 0 {
-			return nil, 0, fmt.Errorf("item price must be greater than zero")
-		}
-
-		item.Price = roundMoney(unitPrice)
+		item.BaseUnitPrice = roundMoney(product.Price)
+		item.Price = item.BaseUnitPrice
 		item.UnitPrice = item.Price
+		if couponCode != "" {
+			collection, err := getCollectionPricing(product.CollectionKey)
+			if err != nil {
+				return nil, 0, 0, err
+			}
+			if normalizeCouponCode(collection.CouponCode) == couponCode && collection.CouponSpreadReductionPercent > 0 {
+				reducedSpread := product.SpreadPercent - collection.CouponSpreadReductionPercent
+				if reducedSpread < 0 {
+					reducedSpread = 0
+				}
+				costPrice := product.CostPrice
+				if costPrice <= 0 {
+					costPrice = product.Price / (1 + product.SpreadPercent/100)
+				}
+				item.UnitPrice = calculateSpreadPrice(costPrice, reducedSpread)
+				item.Price = item.UnitPrice
+				item.CouponReductionPercent = collection.CouponSpreadReductionPercent
+				couponApplied = true
+			}
+		}
 		item.Subtotal = roundMoney(item.UnitPrice * float64(item.Quantity))
-		subtotal += item.Subtotal
+		item.DiscountAmount = roundMoney((item.BaseUnitPrice - item.UnitPrice) * float64(item.Quantity))
+		subtotal += roundMoney(item.BaseUnitPrice * float64(item.Quantity))
+		discountAmount += item.DiscountAmount
 		normalized = append(normalized, sanitizeItem(item))
 	}
 
-	return normalized, roundMoney(subtotal), nil
+	if couponCode != "" && !couponApplied {
+		return nil, 0, 0, fmt.Errorf("coupon is invalid for these products")
+	}
+	return normalized, roundMoney(subtotal), roundMoney(discountAmount), nil
+}
+
+func getProductPricing(id string) (ProductPricing, error) {
+	product, found, err := getPricingEntity(productsTableName, id, ProductPricing{})
+	if err != nil {
+		return ProductPricing{}, err
+	}
+	if !found && !strings.HasPrefix(id, "PRODUCT#") {
+		product, found, err = getPricingEntity(productsTableName, "PRODUCT#"+id, ProductPricing{})
+	}
+	if err != nil {
+		return ProductPricing{}, err
+	}
+	if !found || product.EntityType != "product" {
+		return ProductPricing{}, fmt.Errorf("product not found")
+	}
+	return product, nil
+}
+
+func getCollectionPricing(collectionKey string) (CollectionPricing, error) {
+	collection, found, err := getPricingEntity(productsTableName, "COLLECTION#"+collectionKey, CollectionPricing{})
+	if err != nil {
+		return CollectionPricing{}, err
+	}
+	if !found || collection.EntityType != "collection" {
+		return CollectionPricing{}, fmt.Errorf("collection not found")
+	}
+	return collection, nil
+}
+
+func getPricingEntity[T any](table string, id string, empty T) (T, bool, error) {
+	result, err := dynamoClient.GetItem(&dynamodb.GetItemInput{
+		TableName: aws.String(table),
+		Key:       map[string]*dynamodb.AttributeValue{"id": {S: aws.String(id)}},
+	})
+	if err != nil {
+		return empty, false, err
+	}
+	if result.Item == nil {
+		return empty, false, nil
+	}
+	if err := dynamodbattribute.UnmarshalMap(result.Item, &empty); err != nil {
+		return empty, false, err
+	}
+	return empty, true, nil
 }
 
 func sanitizeItem(item OrderItem) OrderItem {
@@ -505,6 +637,14 @@ func onlyDigits(value string) string {
 
 func roundMoney(value float64) float64 {
 	return float64(int(value*100+0.5)) / 100
+}
+
+func calculateSpreadPrice(costPrice float64, spreadPercent float64) float64 {
+	return roundMoney(costPrice * (1 + spreadPercent/100))
+}
+
+func normalizeCouponCode(value string) string {
+	return strings.ToUpper(strings.TrimSpace(value))
 }
 
 func generateID() string {

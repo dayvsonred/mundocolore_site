@@ -39,7 +39,7 @@ export class ProductRegistrationComponent implements OnInit {
     tamanho_inicio: [null],
     tamanho_fim: [null],
     tamanhos_array: [''],
-    preco: ['', [Validators.required, Validators.pattern(/^[0-9]+([.,][0-9]{1,2})?$/)]],
+    preco_custo: ['', [Validators.required, Validators.pattern(/^[0-9]+([.,][0-9]{1,2})?$/)]],
     imagem: [''],
     cores: ['']
   });
@@ -134,7 +134,7 @@ export class ProductRegistrationComponent implements OnInit {
       collection: collection.name || collection.slug,
       collection_slug: collection.slug,
       year: collection.year,
-      preco: String(value.preco || '').trim(),
+      preco_custo: String(value.preco_custo || '').trim(),
       tamanho_original: this.toOptionalString(value.tamanho_original),
       tamanho_inicio: sizeStart,
       tamanho_fim: sizeEnd,
@@ -159,7 +159,7 @@ export class ProductRegistrationComponent implements OnInit {
             tamanho_inicio: null,
             tamanho_fim: null,
             tamanhos_array: '',
-            preco: '',
+            preco_custo: '',
             imagem: '',
             cores: ''
           });
@@ -246,7 +246,7 @@ export class ProductRegistrationComponent implements OnInit {
         tamanho_inicio: null,
         tamanho_fim: null,
         tamanhos_array: '',
-        preco: '',
+        preco_custo: '',
         imagem: '',
         cores: ''
       });

@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type Brand struct {
@@ -35,19 +36,22 @@ type Brand struct {
 }
 
 type Collection struct {
-	ID             string `json:"id" dynamodbav:"id"`
-	EntityType     string `json:"entity_type" dynamodbav:"entity_type"`
-	Name           string `json:"name" dynamodbav:"name"`
-	Slug           string `json:"slug" dynamodbav:"slug"`
-	Brand          string `json:"brand" dynamodbav:"brand"`
-	BrandKey       string `json:"brand_key" dynamodbav:"brand_key"`
-	Year           string `json:"year" dynamodbav:"year"`
-	CollectionKey  string `json:"collection_key" dynamodbav:"collection_key"`
-	DisplayStartAt string `json:"display_start_at" dynamodbav:"display_start_at"`
-	DisplayEndAt   string `json:"display_end_at" dynamodbav:"display_end_at"`
-	S3Prefix       string `json:"s3_prefix" dynamodbav:"s3_prefix"`
-	CreatedAt      string `json:"created_at" dynamodbav:"created_at"`
-	UpdatedAt      string `json:"updated_at" dynamodbav:"updated_at"`
+	ID                           string  `json:"id" dynamodbav:"id"`
+	EntityType                   string  `json:"entity_type" dynamodbav:"entity_type"`
+	Name                         string  `json:"name" dynamodbav:"name"`
+	Slug                         string  `json:"slug" dynamodbav:"slug"`
+	Brand                        string  `json:"brand" dynamodbav:"brand"`
+	BrandKey                     string  `json:"brand_key" dynamodbav:"brand_key"`
+	Year                         string  `json:"year" dynamodbav:"year"`
+	CollectionKey                string  `json:"collection_key" dynamodbav:"collection_key"`
+	SpreadDefaultPercent         float64 `json:"spread_default_percent" dynamodbav:"spread_default_percent"`
+	CouponCode                   string  `json:"coupon_code,omitempty" dynamodbav:"coupon_code,omitempty"`
+	CouponSpreadReductionPercent float64 `json:"coupon_spread_reduction_percent" dynamodbav:"coupon_spread_reduction_percent"`
+	DisplayStartAt               string  `json:"display_start_at" dynamodbav:"display_start_at"`
+	DisplayEndAt                 string  `json:"display_end_at" dynamodbav:"display_end_at"`
+	S3Prefix                     string  `json:"s3_prefix" dynamodbav:"s3_prefix"`
+	CreatedAt                    string  `json:"created_at" dynamodbav:"created_at"`
+	UpdatedAt                    string  `json:"updated_at" dynamodbav:"updated_at"`
 }
 
 type Product struct {
@@ -59,7 +63,10 @@ type Product struct {
 	Name             string   `json:"name" dynamodbav:"name"`
 	Description      string   `json:"description" dynamodbav:"description"`
 	Price            float64  `json:"price" dynamodbav:"price"`
-	PriceRaw         string   `json:"preco,omitempty" dynamodbav:"price_raw,omitempty"`
+	CostPrice        float64  `json:"cost_price,omitempty" dynamodbav:"cost_price"`
+	CostPriceRaw     string   `json:"preco_custo,omitempty" dynamodbav:"cost_price_raw,omitempty"`
+	SpreadPercent    float64  `json:"spread_percent,omitempty" dynamodbav:"spread_percent"`
+	SpreadIsDefault  bool     `json:"spread_is_default,omitempty" dynamodbav:"spread_is_default"`
 	Category         string   `json:"category" dynamodbav:"category"`
 	Type             string   `json:"type" dynamodbav:"type"`
 	TypeKey          string   `json:"type_key,omitempty" dynamodbav:"type_key,omitempty"`
@@ -101,15 +108,27 @@ type CreateBrandRequest struct {
 }
 
 type CreateCollectionRequest struct {
-	Name             string `json:"name"`
-	Collection       string `json:"collection"`
-	Slug             string `json:"slug"`
-	Brand            string `json:"brand"`
-	Year             string `json:"year"`
-	DisplayStartAt   string `json:"display_start_at"`
-	DisplayEndAt     string `json:"display_end_at"`
-	ReleaseDate      string `json:"release_date"`
-	FinalizationDate string `json:"finalization_date"`
+	Name                         string   `json:"name"`
+	Collection                   string   `json:"collection"`
+	Slug                         string   `json:"slug"`
+	Brand                        string   `json:"brand"`
+	Year                         string   `json:"year"`
+	SpreadDefaultPercent         *float64 `json:"spread_default_percent"`
+	CouponCode                   string   `json:"coupon_code"`
+	CouponSpreadReductionPercent *float64 `json:"coupon_spread_reduction_percent"`
+	DisplayStartAt               string   `json:"display_start_at"`
+	DisplayEndAt                 string   `json:"display_end_at"`
+	ReleaseDate                  string   `json:"release_date"`
+	FinalizationDate             string   `json:"finalization_date"`
+}
+
+type UpdateCollectionRequest struct {
+	Name                         *string  `json:"name"`
+	SpreadDefaultPercent         *float64 `json:"spread_default_percent"`
+	CouponCode                   *string  `json:"coupon_code"`
+	CouponSpreadReductionPercent *float64 `json:"coupon_spread_reduction_percent"`
+	DisplayStartAt               *string  `json:"display_start_at"`
+	DisplayEndAt                 *string  `json:"display_end_at"`
 }
 
 type UploadImage struct {
@@ -129,6 +148,9 @@ type CreateProductRequest struct {
 	Descricao        string        `json:"descricao"`
 	Price            interface{}   `json:"price"`
 	Preco            interface{}   `json:"preco"`
+	CostPrice        interface{}   `json:"cost_price"`
+	PrecoCusto       interface{}   `json:"preco_custo"`
+	SpreadPercent    *float64      `json:"spread_percent"`
 	Category         string        `json:"category"`
 	Type             string        `json:"type"`
 	Brand            string        `json:"brand"`
@@ -193,12 +215,20 @@ type ProductsListResponse struct {
 	LastEvaluatedKey string    `json:"last_evaluated_key,omitempty"`
 }
 
+type UserRole struct {
+	ID            string `dynamodbav:"id"`
+	Active        bool   `dynamodbav:"active"`
+	DeactivatedAt string `dynamodbav:"deactivated_at,omitempty"`
+}
+
 var (
-	dynamoClient *dynamodb.DynamoDB
-	s3Client     *s3.S3
-	tableName    = "mundocolore-products"
-	imageBucket  = "mundocolorestore-imagems"
-	imageBaseURL string
+	dynamoClient  *dynamodb.DynamoDB
+	s3Client      *s3.S3
+	tableName     = "mundocolore-products"
+	imageBucket   = "mundocolorestore-imagems"
+	imageBaseURL  string
+	roleTableName = "mundocolore-role"
+	jwtSecret     = []byte("your-secret-key")
 )
 
 const (
@@ -222,6 +252,70 @@ func init() {
 	if value := os.Getenv("IMAGE_BASE_URL"); value != "" {
 		imageBaseURL = strings.TrimRight(value, "/")
 	}
+	if value := os.Getenv("ROLE_TABLE_NAME"); value != "" {
+		roleTableName = value
+	}
+	if value := os.Getenv("JWT_SECRET"); value != "" {
+		jwtSecret = []byte(value)
+	}
+}
+
+func authorizeAdmin(request events.APIGatewayProxyRequest) error {
+	tokenString := extractBearerToken(request.Headers)
+	if tokenString == "" {
+		return fmt.Errorf("admin authorization required")
+	}
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method")
+		}
+		return jwtSecret, nil
+	})
+	if err != nil || !token.Valid {
+		return fmt.Errorf("invalid token")
+	}
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return fmt.Errorf("invalid token")
+	}
+	userID, _ := claims["user_id"].(string)
+	if userID == "" {
+		userID, _ = claims["sub"].(string)
+	}
+	if userID == "" || !isActiveAdmin(userID) {
+		return fmt.Errorf("admin access required")
+	}
+	return nil
+}
+
+func isActiveAdmin(userID string) bool {
+	result, err := dynamoClient.GetItem(&dynamodb.GetItemInput{
+		TableName:      aws.String(roleTableName),
+		Key:            map[string]*dynamodb.AttributeValue{"id": {S: aws.String(userID)}},
+		ConsistentRead: aws.Bool(true),
+	})
+	if err != nil || result.Item == nil {
+		return false
+	}
+	var role UserRole
+	if err := dynamodbattribute.UnmarshalMap(result.Item, &role); err != nil {
+		return false
+	}
+	return role.Active && strings.TrimSpace(role.DeactivatedAt) == ""
+}
+
+func extractBearerToken(headers map[string]string) string {
+	for key, value := range headers {
+		if !strings.EqualFold(key, "Authorization") {
+			continue
+		}
+		parts := strings.SplitN(strings.TrimSpace(value), " ", 2)
+		if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+			return strings.TrimSpace(parts[1])
+		}
+		return strings.TrimSpace(value)
+	}
+	return ""
 }
 
 func HandleCreateBrand(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -269,8 +363,60 @@ func HandleGetCollections(_ context.Context, request events.APIGatewayProxyReque
 	if err != nil {
 		return serverErrorResponse(err), nil
 	}
+	if !strings.EqualFold(request.QueryStringParameters["include_pricing_config"], "true") {
+		for index := range collections {
+			collections[index].SpreadDefaultPercent = 0
+			collections[index].CouponCode = ""
+			collections[index].CouponSpreadReductionPercent = 0
+		}
+	}
 
 	body, _ := json.Marshal(map[string]interface{}{"collections": collections})
+	return successJSONResponse(200, string(body)), nil
+}
+
+func HandleUpdateCollection(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	id := extractCollectionIDFromPath(request.Path)
+	if id == "" {
+		return badRequestResponse("invalid collection id"), nil
+	}
+
+	var req UpdateCollectionRequest
+	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
+		return badRequestResponse("invalid request"), nil
+	}
+
+	collection, updatedCount, err := updateCollection(id, req)
+	if err != nil {
+		return badRequestResponse(err.Error()), nil
+	}
+
+	body, _ := json.Marshal(map[string]interface{}{
+		"collection":    collection,
+		"updated_count": updatedCount,
+	})
+	return successJSONResponse(200, string(body)), nil
+}
+
+func HandleRecalculateCollectionSpread(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	id := extractCollectionIDFromRecalculatePath(request.Path)
+	if id == "" {
+		return badRequestResponse("invalid collection id"), nil
+	}
+
+	collection, err := getCollection(id)
+	if err != nil {
+		return badRequestResponse(err.Error()), nil
+	}
+	updatedCount, err := recalculateCollectionProducts(collection)
+	if err != nil {
+		return serverErrorResponse(err), nil
+	}
+
+	body, _ := json.Marshal(map[string]interface{}{
+		"collection":    collection,
+		"updated_count": updatedCount,
+	})
 	return successJSONResponse(200, string(body)), nil
 }
 
@@ -368,7 +514,7 @@ func HandleGetProduct(_ context.Context, request events.APIGatewayProxyRequest) 
 		return notFoundWithMessage(err.Error()), nil
 	}
 
-	body, _ := json.Marshal(product)
+	body, _ := json.Marshal(sanitizeProductForCustomer(product))
 	return successJSONResponse(200, string(body)), nil
 }
 
@@ -425,6 +571,7 @@ func HandleGetProducts(_ context.Context, request events.APIGatewayProxyRequest)
 		IsNew:           parseOptionalBool(request.QueryStringParameters["is_new"]),
 		IsPromotion:     parseOptionalBool(request.QueryStringParameters["is_promotion"]),
 		IncludeInactive: strings.EqualFold(request.QueryStringParameters["include_inactive"], "true"),
+		IncludeCost:     strings.EqualFold(request.QueryStringParameters["include_cost"], "true"),
 		Limit:           limit,
 		LastKey:         lastKey,
 	})
@@ -563,19 +710,22 @@ func createCollection(req CreateCollectionRequest) (Collection, error) {
 	now := time.Now().Format(time.RFC3339)
 
 	collection := Collection{
-		ID:             "COLLECTION#" + collectionKey,
-		EntityType:     "collection",
-		Name:           firstNonEmpty(req.Name, req.Collection, slug),
-		Slug:           slug,
-		Brand:          brandKey,
-		BrandKey:       brandKey,
-		Year:           year,
-		CollectionKey:  collectionKey,
-		DisplayStartAt: displayStart,
-		DisplayEndAt:   displayEnd,
-		S3Prefix:       buildS3Prefix(brandKey, year, slug),
-		CreatedAt:      now,
-		UpdatedAt:      now,
+		ID:                           "COLLECTION#" + collectionKey,
+		EntityType:                   "collection",
+		Name:                         firstNonEmpty(req.Name, req.Collection, slug),
+		Slug:                         slug,
+		Brand:                        brandKey,
+		BrandKey:                     brandKey,
+		Year:                         year,
+		CollectionKey:                collectionKey,
+		SpreadDefaultPercent:         percentageValue(req.SpreadDefaultPercent),
+		CouponCode:                   normalizeCouponCode(req.CouponCode),
+		CouponSpreadReductionPercent: percentageValue(req.CouponSpreadReductionPercent),
+		DisplayStartAt:               displayStart,
+		DisplayEndAt:                 displayEnd,
+		S3Prefix:                     buildS3Prefix(brandKey, year, slug),
+		CreatedAt:                    now,
+		UpdatedAt:                    now,
 	}
 
 	if err := ensureS3Prefix(brandKey + "/"); err != nil {
@@ -589,6 +739,131 @@ func createCollection(req CreateCollectionRequest) (Collection, error) {
 	}
 
 	return collection, putEntity(collection)
+}
+
+func getCollection(id string) (Collection, error) {
+	if !strings.HasPrefix(id, "COLLECTION#") {
+		id = "COLLECTION#" + id
+	}
+	result, err := dynamoClient.GetItem(&dynamodb.GetItemInput{
+		TableName: aws.String(tableName),
+		Key:       map[string]*dynamodb.AttributeValue{"id": {S: aws.String(id)}},
+	})
+	if err != nil {
+		return Collection{}, err
+	}
+	if result.Item == nil {
+		return Collection{}, fmt.Errorf("collection not found")
+	}
+	var collection Collection
+	if err := dynamodbattribute.UnmarshalMap(result.Item, &collection); err != nil {
+		return Collection{}, err
+	}
+	if collection.EntityType != "collection" {
+		return Collection{}, fmt.Errorf("collection not found")
+	}
+	return collection, nil
+}
+
+func getCollectionByKey(collectionKey string) (Collection, error) {
+	return getCollection(collectionKey)
+}
+
+func updateCollection(id string, req UpdateCollectionRequest) (Collection, int, error) {
+	collection, err := getCollection(id)
+	if err != nil {
+		return Collection{}, 0, err
+	}
+	if req.Name != nil {
+		name := strings.TrimSpace(*req.Name)
+		if name == "" {
+			return Collection{}, 0, fmt.Errorf("collection name is required")
+		}
+		collection.Name = name
+	}
+	if req.SpreadDefaultPercent != nil {
+		collection.SpreadDefaultPercent = percentageValue(req.SpreadDefaultPercent)
+	}
+	if req.CouponCode != nil {
+		collection.CouponCode = normalizeCouponCode(*req.CouponCode)
+	}
+	if req.CouponSpreadReductionPercent != nil {
+		collection.CouponSpreadReductionPercent = percentageValue(req.CouponSpreadReductionPercent)
+	}
+	if req.DisplayStartAt != nil {
+		collection.DisplayStartAt = strings.TrimSpace(*req.DisplayStartAt)
+	}
+	if req.DisplayEndAt != nil {
+		collection.DisplayEndAt = strings.TrimSpace(*req.DisplayEndAt)
+	}
+	collection.UpdatedAt = time.Now().Format(time.RFC3339)
+	if err := putEntity(collection); err != nil {
+		return Collection{}, 0, err
+	}
+	updatedCount, err := recalculateCollectionProducts(collection)
+	if err != nil {
+		return Collection{}, 0, err
+	}
+	return collection, updatedCount, nil
+}
+
+func recalculateCollectionProducts(collection Collection) (int, error) {
+	products, err := getAllProductsByCollectionKey(collection.CollectionKey)
+	if err != nil {
+		return 0, err
+	}
+	applyCollectionToProducts(products, collection, time.Now().Format(time.RFC3339))
+	if err := putEntitiesBatch(products); err != nil {
+		return 0, err
+	}
+	return len(products), nil
+}
+
+func applyCollectionToProducts(products []Product, collection Collection, now string) {
+	for index := range products {
+		if products[index].CostPrice <= 0 {
+			products[index].CostPrice = products[index].Price
+			products[index].CostPriceRaw = strconv.FormatFloat(products[index].CostPrice, 'f', 2, 64)
+		}
+		products[index].Collection = collection.Name
+		products[index].SpreadPercent = collection.SpreadDefaultPercent
+		products[index].SpreadIsDefault = true
+		products[index].Price = calculateSpreadPrice(products[index].CostPrice, collection.SpreadDefaultPercent)
+		products[index].ReleaseDate = collection.DisplayStartAt
+		products[index].DisplayStartAt = collection.DisplayStartAt
+		products[index].FinalizationDate = collection.DisplayEndAt
+		products[index].DisplayEndAt = collection.DisplayEndAt
+		products[index].UpdatedAt = now
+	}
+}
+
+func getAllProductsByCollectionKey(collectionKey string) ([]Product, error) {
+	products := []Product{}
+	input := &dynamodb.QueryInput{
+		TableName:              aws.String(tableName),
+		IndexName:              aws.String("collection-index"),
+		KeyConditionExpression: aws.String("collection_key = :collection_key"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":collection_key": {S: aws.String(collectionKey)},
+		},
+	}
+	for {
+		result, err := dynamoClient.Query(input)
+		if err != nil {
+			return nil, err
+		}
+		for _, item := range result.Items {
+			var product Product
+			if err := dynamodbattribute.UnmarshalMap(item, &product); err == nil && product.EntityType == "product" {
+				products = append(products, product)
+			}
+		}
+		if len(result.LastEvaluatedKey) == 0 {
+			break
+		}
+		input.ExclusiveStartKey = result.LastEvaluatedKey
+	}
+	return products, nil
 }
 
 func createProduct(req CreateProductRequest) (Product, error) {
@@ -629,10 +904,31 @@ func buildProduct(req CreateProductRequest) (Product, error) {
 		return Product{}, fmt.Errorf("produto_id is required")
 	}
 
-	price, priceRaw := parsePrice(req.Price)
-	if priceRaw == "" {
-		price, priceRaw = parsePrice(req.Preco)
+	costPrice, costPriceRaw := parsePrice(req.CostPrice)
+	if costPriceRaw == "" {
+		costPrice, costPriceRaw = parsePrice(req.PrecoCusto)
 	}
+	if costPriceRaw == "" {
+		costPrice, costPriceRaw = parsePrice(req.Price)
+	}
+	if costPriceRaw == "" {
+		costPrice, costPriceRaw = parsePrice(req.Preco)
+	}
+	if costPrice <= 0 {
+		return Product{}, fmt.Errorf("cost price must be greater than zero")
+	}
+	collectionKey := buildCollectionKey(brandKey, year, collectionSlug)
+	collection, err := getCollectionByKey(collectionKey)
+	if err != nil {
+		return Product{}, err
+	}
+	spreadPercent := collection.SpreadDefaultPercent
+	spreadIsDefault := true
+	if req.SpreadPercent != nil {
+		spreadPercent = percentageValue(req.SpreadPercent)
+		spreadIsDefault = false
+	}
+	price := calculateSpreadPrice(costPrice, spreadPercent)
 
 	description := firstNonEmpty(req.Description, req.Descricao)
 	category := strings.TrimSpace(req.Category)
@@ -708,7 +1004,10 @@ func buildProduct(req CreateProductRequest) (Product, error) {
 		Name:             firstNonEmpty(req.Name, description, productID),
 		Description:      description,
 		Price:            price,
-		PriceRaw:         priceRaw,
+		CostPrice:        costPrice,
+		CostPriceRaw:     costPriceRaw,
+		SpreadPercent:    spreadPercent,
+		SpreadIsDefault:  spreadIsDefault,
 		Category:         category,
 		Type:             productType,
 		TypeKey:          normalizeKey(productType),
@@ -717,7 +1016,7 @@ func buildProduct(req CreateProductRequest) (Product, error) {
 		Collection:       firstNonEmpty(collectionName, collectionSlug),
 		CollectionSlug:   collectionSlug,
 		Year:             year,
-		CollectionKey:    buildCollectionKey(brandKey, year, collectionSlug),
+		CollectionKey:    collectionKey,
 		ReleaseDate:      req.ReleaseDate,
 		FinalizationDate: req.FinalizationDate,
 		DisplayStartAt:   req.DisplayStartAt,
@@ -776,13 +1075,24 @@ func updateProduct(id string, req CreateProductRequest) (Product, error) {
 		product.Name = firstNonEmpty(req.Name, description, product.Name)
 		product.Description = description
 	}
-	if req.Price != nil || req.Preco != nil {
-		price, priceRaw := parsePrice(req.Price)
+	costChanged := req.CostPrice != nil || req.PrecoCusto != nil || req.Price != nil || req.Preco != nil
+	if costChanged {
+		price, priceRaw := parsePrice(req.CostPrice)
+		if priceRaw == "" {
+			price, priceRaw = parsePrice(req.PrecoCusto)
+		}
+		if priceRaw == "" {
+			price, priceRaw = parsePrice(req.Price)
+		}
 		if priceRaw == "" {
 			price, priceRaw = parsePrice(req.Preco)
 		}
-		product.Price = price
-		product.PriceRaw = priceRaw
+		product.CostPrice = price
+		product.CostPriceRaw = priceRaw
+	}
+	if product.CostPrice <= 0 {
+		product.CostPrice = product.Price
+		product.CostPriceRaw = strconv.FormatFloat(product.CostPrice, 'f', 2, 64)
 	}
 	if req.Category != "" {
 		product.Category = strings.TrimSpace(req.Category)
@@ -813,6 +1123,18 @@ func updateProduct(id string, req CreateProductRequest) (Product, error) {
 	}
 	product.CollectionKey = buildCollectionKey(product.BrandKey, product.Year, product.CollectionSlug)
 	product.S3Prefix = buildS3Prefix(product.BrandKey, product.Year, product.CollectionSlug)
+	if req.SpreadPercent != nil {
+		product.SpreadPercent = percentageValue(req.SpreadPercent)
+		product.SpreadIsDefault = false
+	} else if product.SpreadPercent == 0 {
+		if collection, err := getCollectionByKey(product.CollectionKey); err == nil {
+			product.SpreadPercent = collection.SpreadDefaultPercent
+			product.SpreadIsDefault = true
+		}
+	}
+	if costChanged || req.SpreadPercent != nil {
+		product.Price = calculateSpreadPrice(product.CostPrice, product.SpreadPercent)
+	}
 
 	if req.ReleaseDate != "" {
 		product.ReleaseDate = req.ReleaseDate
@@ -1062,6 +1384,7 @@ type ProductQuery struct {
 	IsNew           *bool
 	IsPromotion     *bool
 	IncludeInactive bool
+	IncludeCost     bool
 	Limit           int
 	LastKey         string
 }
@@ -1152,6 +1475,9 @@ func getProducts(query ProductQuery) (ProductsListResponse, error) {
 			if productIsActive(item) {
 				product.IsActive = true
 			}
+			if !query.IncludeCost {
+				product = sanitizeProductForCustomer(product)
+			}
 			products = append(products, product)
 		}
 	}
@@ -1161,6 +1487,14 @@ func getProducts(query ProductQuery) (ProductsListResponse, error) {
 		response.LastEvaluatedKey = encodeLastEvaluatedKey(result.LastEvaluatedKey)
 	}
 	return response, nil
+}
+
+func sanitizeProductForCustomer(product Product) Product {
+	product.CostPrice = 0
+	product.CostPriceRaw = ""
+	product.SpreadPercent = 0
+	product.SpreadIsDefault = false
+	return product
 }
 
 func productIsActive(item map[string]*dynamodb.AttributeValue) bool {
@@ -1403,6 +1737,25 @@ func parseOptionalBool(value string) *bool {
 	return &parsed
 }
 
+func percentageValue(value *float64) float64 {
+	if value == nil || *value < 0 {
+		return 0
+	}
+	return roundMoney(*value)
+}
+
+func calculateSpreadPrice(costPrice float64, spreadPercent float64) float64 {
+	return roundMoney(costPrice * (1 + spreadPercent/100))
+}
+
+func roundMoney(value float64) float64 {
+	return float64(int(value*100+0.5)) / 100
+}
+
+func normalizeCouponCode(value string) string {
+	return strings.ToUpper(strings.TrimSpace(value))
+}
+
 func buildCollectionKey(brand string, year string, collection string) string {
 	return normalizeBrand(brand) + "#" + strings.TrimSpace(year) + "#" + slugify(collection)
 }
@@ -1628,6 +1981,22 @@ func extractProductImageIDFromPath(pathValue string) string {
 	return ""
 }
 
+func extractCollectionIDFromPath(pathValue string) string {
+	parts := strings.Split(strings.Trim(pathValue, "/"), "/")
+	if len(parts) < 3 || parts[len(parts)-2] != "collections" {
+		return ""
+	}
+	return parts[len(parts)-1]
+}
+
+func extractCollectionIDFromRecalculatePath(pathValue string) string {
+	parts := strings.Split(strings.Trim(pathValue, "/"), "/")
+	if len(parts) < 4 || parts[len(parts)-3] != "collections" || parts[len(parts)-1] != "recalculate-spread" {
+		return ""
+	}
+	return parts[len(parts)-2]
+}
+
 func generateID() string {
 	bytes := make([]byte, 16)
 	_, _ = rand.Read(bytes)
@@ -1645,6 +2014,14 @@ func successJSONResponse(statusCode int, body string) events.APIGatewayProxyResp
 func badRequestResponse(message string) events.APIGatewayProxyResponse {
 	return events.APIGatewayProxyResponse{
 		StatusCode: statusCodeBadRequest,
+		Body:       fmt.Sprintf(`{"error": "%s"}`, message),
+		Headers:    defaultHeaders(),
+	}
+}
+
+func unauthorizedResponse(message string) events.APIGatewayProxyResponse {
+	return events.APIGatewayProxyResponse{
+		StatusCode: 401,
 		Body:       fmt.Sprintf(`{"error": "%s"}`, message),
 		Headers:    defaultHeaders(),
 	}

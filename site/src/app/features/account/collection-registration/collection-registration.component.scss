@@ -68,7 +68,20 @@
     gap: 12px;
   }
 
+  .brand-groups {
+    display: grid;
+    gap: 24px;
+  }
+
+  .brand-title {
+    margin: 0 0 10px;
+    color: #333;
+    font-size: 17px;
+    font-weight: 600;
+  }
+
   .record-item {
+    width: 100%;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -77,6 +90,15 @@
     border: 1px solid #eee;
     border-radius: 8px;
     background: #fafafa;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover,
+    &.selected {
+      border-color: #3f51b5;
+      background: #f3f5ff;
+    }
 
     h3 {
       margin: 0 0 4px;

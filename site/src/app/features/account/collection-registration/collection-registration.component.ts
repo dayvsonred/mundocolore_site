@@ -9,6 +9,12 @@ import {
   ProductService
 } from 'src/app/core/services/product.service';
 
+interface CollectionBrandGroup {
+  brand: string;
+  label: string;
+  collections: ProductCollectionRecord[];
+}
+
 @Component({
   selector: 'app-collection-registration',
   templateUrl: './collection-registration.component.html',
@@ -20,6 +26,8 @@ export class CollectionRegistrationComponent implements OnInit {
   loadingBrands = false;
   loadingCollections = false;
   saving = false;
+  updating = false;
+  selectedCollection: ProductCollectionRecord | null = null;
 
   readonly form = this.formBuilder.group({
     brand: ['', Validators.required],
@@ -27,7 +35,19 @@ export class CollectionRegistrationComponent implements OnInit {
     slug: ['', [Validators.maxLength(80)]],
     year: [String(new Date().getFullYear()), [Validators.required, Validators.pattern(/^\d{4}$/)]],
     display_start_at: [''],
-    display_end_at: ['']
+    display_end_at: [''],
+    spread_default_percent: [0, [Validators.required, Validators.min(0)]],
+    coupon_code: ['', Validators.maxLength(40)],
+    coupon_spread_reduction_percent: [0, [Validators.required, Validators.min(0)]]
+  });
+
+  readonly editForm = this.formBuilder.group({
+    name: ['', [Validators.required, Validators.maxLength(80)]],
+    display_start_at: [''],
+    display_end_at: [''],
+    spread_default_percent: [0, [Validators.required, Validators.min(0)]],
+    coupon_code: ['', Validators.maxLength(40)],
+    coupon_spread_reduction_percent: [0, [Validators.required, Validators.min(0)]]
   });
 
   constructor(
@@ -90,7 +110,10 @@ export class CollectionRegistrationComponent implements OnInit {
       display_start_at: displayStartAt || undefined,
       display_end_at: displayEndAt || undefined,
       release_date: displayStartAt || undefined,
-      finalization_date: displayEndAt || undefined
+      finalization_date: displayEndAt || undefined,
+      spread_default_percent: Number(value.spread_default_percent || 0),
+      coupon_code: String(value.coupon_code || '').trim() || undefined,
+      coupon_spread_reduction_percent: Number(value.coupon_spread_reduction_percent || 0)
     })
       .pipe(finalize(() => this.saving = false))
       .subscribe({
@@ -102,7 +125,10 @@ export class CollectionRegistrationComponent implements OnInit {
             slug: '',
             year: String(new Date().getFullYear()),
             display_start_at: '',
-            display_end_at: ''
+            display_end_at: '',
+            spread_default_percent: 0,
+            coupon_code: '',
+            coupon_spread_reduction_percent: 0
           });
           this.snackBar.open('Colecao cadastrada.', 'Fechar', { duration: 3000 });
           this.loadCollections();
@@ -120,5 +146,68 @@ export class CollectionRegistrationComponent implements OnInit {
 
   getBrandValue(brand: ProductBrandRecord): string {
     return brand.brand_key || brand.brand || brand.name;
+  }
+
+  get collectionGroups(): CollectionBrandGroup[] {
+    const groups = new Map<string, ProductCollectionRecord[]>();
+    for (const collection of this.collections) {
+      const brand = collection.brand_key || collection.brand;
+      groups.set(brand, [...(groups.get(brand) || []), collection]);
+    }
+
+    return Array.from(groups.entries())
+      .map(([brand, collections]) => ({
+        brand,
+        label: this.getBrandLabel(brand),
+        collections: collections.sort((left, right) =>
+          left.year.localeCompare(right.year) || left.name.localeCompare(right.name)
+        )
+      }))
+      .sort((left, right) => left.label.localeCompare(right.label));
+  }
+
+  selectCollection(collection: ProductCollectionRecord): void {
+    this.selectedCollection = collection;
+    this.editForm.reset({
+      name: collection.name || '',
+      display_start_at: collection.display_start_at || '',
+      display_end_at: collection.display_end_at || '',
+      spread_default_percent: collection.spread_default_percent || 0,
+      coupon_code: collection.coupon_code || '',
+      coupon_spread_reduction_percent: collection.coupon_spread_reduction_percent || 0
+    });
+  }
+
+  cancelEdit(): void {
+    this.selectedCollection = null;
+  }
+
+  updateSelectedCollection(): void {
+    if (!this.selectedCollection || this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
+      return;
+    }
+    const value = this.editForm.getRawValue();
+    this.updating = true;
+    this.productService.updateCollection(this.selectedCollection.id || this.selectedCollection.collection_key || '', {
+      name: String(value.name || '').trim(),
+      display_start_at: String(value.display_start_at || '').trim(),
+      display_end_at: String(value.display_end_at || '').trim(),
+      spread_default_percent: Number(value.spread_default_percent || 0),
+      coupon_code: String(value.coupon_code || '').trim(),
+      coupon_spread_reduction_percent: Number(value.coupon_spread_reduction_percent || 0)
+    }).pipe(finalize(() => this.updating = false))
+      .subscribe({
+        next: (response) => {
+          this.selectedCollection = response.collection;
+          this.snackBar.open(
+            `Colecao atualizada em ${response.updated_count} produto(s).`,
+            'Fechar',
+            { duration: 5000 }
+          );
+          this.loadCollections();
+        },
+        error: () => this.snackBar.open('Nao foi possivel atualizar a colecao.', 'Fechar', { duration: 4000 })
+      });
   }
 }

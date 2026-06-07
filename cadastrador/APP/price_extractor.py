@@ -435,7 +435,7 @@ def _make_record(
         "tamanho_inicio": inicio,
         "tamanho_fim": fim,
         "tamanhos_array": tamanhos,
-        "preco": preco,
+        "preco_custo": preco,
     }
 
 
@@ -503,7 +503,7 @@ def _build_validation_rows(
         produto_id = raw["produto_id"]
         seen_products.add(produto_id)
         extracted = records_by_product.get(produto_id, [])
-        extracted_prices = [_coerce_decimal(item["preco"]) for item in extracted]
+        extracted_prices = [_coerce_decimal(item["preco_custo"]) for item in extracted]
         pdf_prices = raw["precos_pdf"]
         status = "OK"
         messages: list[str] = []
@@ -530,7 +530,7 @@ def _build_validation_rows(
                 "tamanhos_cabecalho": " | ".join(raw["tamanhos_cabecalho"]),
                 "precos_pdf": " | ".join(_format_price(price) for price in pdf_prices),
                 "tamanhos_extraidos": " | ".join(str(item["tamanho_original"]) for item in extracted),
-                "precos_extraidos": " | ".join(_format_price(item["preco"]) for item in extracted),
+                "precos_extraidos": " | ".join(_format_price(item["preco_custo"]) for item in extracted),
                 "observacao": " ".join(messages),
                 "linha_pdf": raw["linha_pdf"],
             }
@@ -548,7 +548,7 @@ def _build_validation_rows(
                 "tamanhos_cabecalho": "",
                 "precos_pdf": "",
                 "tamanhos_extraidos": " | ".join(str(item["tamanho_original"]) for item in extracted),
-                "precos_extraidos": " | ".join(_format_price(item["preco"]) for item in extracted),
+                "precos_extraidos": " | ".join(_format_price(item["preco_custo"]) for item in extracted),
                 "observacao": "Produto exportado, mas a linha bruta correspondente nao foi localizada no PDF.",
                 "linha_pdf": "",
             }
@@ -680,7 +680,7 @@ def _write_excel(records: list[dict[str, Any]], excel_path: Path) -> None:
         for record in records:
             row = dict(record)
             row["tamanhos_array"] = json.dumps(row["tamanhos_array"], ensure_ascii=False)
-            row["preco"] = _format_price(row["preco"])
+            row["preco_custo"] = _format_price(row["preco_custo"])
             rows.append(row)
         with pd.ExcelWriter(excel_path, engine="xlsxwriter") as writer:
             pd.DataFrame(rows).to_excel(writer, sheet_name="produtos", index=False)

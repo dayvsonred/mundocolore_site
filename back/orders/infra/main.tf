@@ -52,7 +52,8 @@ resource "aws_iam_role_policy" "dynamodb_policy" {
         ]
         Resource = [
           "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-orders",
-          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-orders/index/user-created-index"
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-orders/index/user-created-index",
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-products"
         ]
       }
     ]
@@ -74,8 +75,9 @@ resource "aws_lambda_function" "orders_lambda" {
 
   environment {
     variables = {
-      TABLE_NAME = "mundocolore-orders"
-      JWT_SECRET = var.jwt_secret
+      TABLE_NAME          = "mundocolore-orders"
+      PRODUCTS_TABLE_NAME = "mundocolore-products"
+      JWT_SECRET          = var.jwt_secret
     }
   }
 }
@@ -140,6 +142,28 @@ resource "aws_api_gateway_integration" "orders_options_integration" {
   rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
   resource_id             = aws_api_gateway_resource.orders_resource.id
   http_method             = aws_api_gateway_method.orders_options.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.orders_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_resource" "orders_coupon_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.orders_resource.id
+  path_part   = "coupon"
+}
+
+resource "aws_api_gateway_method" "orders_coupon_any" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.orders_coupon_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "orders_coupon_any_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.orders_coupon_resource.id
+  http_method             = aws_api_gateway_method.orders_coupon_any.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.orders_lambda.invoke_arn

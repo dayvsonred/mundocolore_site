@@ -100,8 +100,14 @@
           </mat-form-field>
 
           <mat-form-field appearance="outline">
-            <mat-label>Preco</mat-label>
-            <input matInput formControlName="preco">
+            <mat-label>Preco de custo</mat-label>
+            <input matInput formControlName="preco_custo">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Spread deste produto (%)</mat-label>
+            <input matInput type="number" min="0" step="0.01" formControlName="spread_percent">
+            <mat-hint>Altera o spread somente deste produto.</mat-hint>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="wide-field">

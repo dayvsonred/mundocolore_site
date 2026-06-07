@@ -54,7 +54,8 @@ resource "aws_iam_role_policy" "dynamodb_policy" {
         ]
         Resource = [
           "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-products",
-          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-products/index/*"
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-products/index/*",
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-role"
         ]
       },
       {
@@ -88,9 +89,11 @@ resource "aws_lambda_function" "products_lambda" {
 
   environment {
     variables = {
-      TABLE_NAME     = "mundocolore-products"
-      IMAGE_BUCKET   = "mundocolorestore-imagems"
-      IMAGE_BASE_URL = "https://mundocolorestore-imagems.s3.sa-east-1.amazonaws.com"
+      TABLE_NAME      = "mundocolore-products"
+      IMAGE_BUCKET    = "mundocolorestore-imagems"
+      IMAGE_BASE_URL  = "https://mundocolorestore-imagems.s3.sa-east-1.amazonaws.com"
+      ROLE_TABLE_NAME = "mundocolore-role"
+      JWT_SECRET      = var.jwt_secret
     }
   }
 }
@@ -356,6 +359,50 @@ resource "aws_api_gateway_integration_response" "products_collections_options_in
     "method.response.header.Access-Control-Allow-Methods" = "'GET,POST,OPTIONS'"
     "method.response.header.Access-Control-Allow-Origin"  = "'*'"
   }
+}
+
+resource "aws_api_gateway_resource" "products_collection_id_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.products_collections_resource.id
+  path_part   = "{collection_id}"
+}
+
+resource "aws_api_gateway_method" "products_collection_id_any" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.products_collection_id_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "products_collection_id_any_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.products_collection_id_resource.id
+  http_method             = aws_api_gateway_method.products_collection_id_any.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.products_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_resource" "products_collection_recalculate_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.products_collection_id_resource.id
+  path_part   = "recalculate-spread"
+}
+
+resource "aws_api_gateway_method" "products_collection_recalculate_any" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.products_collection_recalculate_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "products_collection_recalculate_any_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.products_collection_recalculate_resource.id
+  http_method             = aws_api_gateway_method.products_collection_recalculate_any.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.products_lambda.invoke_arn
 }
 
 resource "aws_api_gateway_resource" "products_id_resource" {

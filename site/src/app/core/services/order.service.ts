@@ -18,6 +18,9 @@ export interface OrderItem {
   quantity: number;
   price: number;
   unit_price?: number;
+  base_unit_price?: number;
+  coupon_reduction_percent?: number;
+  discount_amount?: number;
   subtotal?: number;
   product_snapshot?: any;
 }
@@ -29,6 +32,7 @@ export interface Order {
   subtotal?: number;
   shipping_amount?: number;
   discount_amount?: number;
+  coupon_code?: string;
   total: number;
   currency?: string;
   status: string;
@@ -77,6 +81,7 @@ export interface CreateOrderPayload {
   subtotal: number;
   shipping_amount: number;
   discount_amount: number;
+  coupon_code?: string;
   total: number;
   currency: string;
   billing: OrderPerson;
@@ -84,6 +89,14 @@ export interface CreateOrderPayload {
   delivery_address: OrderAddress;
   payment: OrderPayment;
   checkout_metadata?: any;
+}
+
+export interface CouponResponse {
+  coupon_code: string;
+  items: OrderItem[];
+  subtotal: number;
+  discount_amount: number;
+  total: number;
 }
 
 @Injectable({
@@ -109,5 +122,13 @@ export class OrderService {
     return this.http.post<Order>(`${this.apiUrl}/orders`, payload, { headers: this.getHeaders() }).pipe(
       catchError(error => throwError(error))
     );
+  }
+
+  validateCoupon(couponCode: string, items: OrderItem[]): Observable<CouponResponse> {
+    return this.http.post<CouponResponse>(
+      `${this.apiUrl}/orders/coupon`,
+      { coupon_code: couponCode, items },
+      { headers: this.getHeaders() }
+    ).pipe(catchError(error => throwError(error)));
   }
 }

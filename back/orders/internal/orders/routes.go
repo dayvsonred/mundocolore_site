@@ -33,6 +33,9 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 
 	switch request.HTTPMethod {
 	case "POST":
+		if strings.HasSuffix(request.Path, "/orders/coupon") {
+			return HandleValidateCoupon(ctx, request, userID)
+		}
 		if strings.HasSuffix(request.Path, "/orders") {
 			return HandleCreateOrder(ctx, request, userID)
 		}

@@ -40,7 +40,8 @@ export class ProductListComponent implements OnInit {
     collection: ['', Validators.required],
     collection_slug: ['', Validators.required],
     year: ['', [Validators.required, Validators.pattern(/^\d{4}$/)]],
-    preco: ['', [Validators.required, Validators.pattern(/^[0-9]+([.,][0-9]{1,2})?$/)]],
+    preco_custo: ['', [Validators.required, Validators.pattern(/^[0-9]+([.,][0-9]{1,2})?$/)]],
+    spread_percent: [0, [Validators.required, Validators.min(0)]],
     category: ['produto', Validators.required],
     type: ['produto', Validators.required],
     tamanho_original: [''],
@@ -127,6 +128,7 @@ export class ProductListComponent implements OnInit {
       collection: String(filters.collection || '').trim() || undefined,
       is_new: filters.is_new ? true : undefined,
       include_inactive: !!filters.include_inactive,
+      include_cost: true,
       limit: 100
     }).pipe(finalize(() => this.loading = false))
       .subscribe({
@@ -155,7 +157,8 @@ export class ProductListComponent implements OnInit {
       collection: product.collection || '',
       collection_slug: product.collection_slug || '',
       year: product.year || '',
-      preco: product.preco || String(product.price || ''),
+      preco_custo: product.preco_custo || String(product.cost_price || product.price || ''),
+      spread_percent: product.spread_percent || 0,
       category: product.category || 'produto',
       type: product.type || 'produto',
       tamanho_original: product.tamanho_original || '',
@@ -195,7 +198,8 @@ export class ProductListComponent implements OnInit {
       collection: String(value.collection || '').trim(),
       collection_slug: String(value.collection_slug || '').trim(),
       year: String(value.year || '').trim(),
-      preco: String(value.preco || '').trim(),
+      preco_custo: String(value.preco_custo || '').trim(),
+      spread_percent: Number(value.spread_percent || 0),
       category: String(value.category || 'produto').trim(),
       type: String(value.type || 'produto').trim(),
       tamanho_original: String(value.tamanho_original || '').trim() || undefined,

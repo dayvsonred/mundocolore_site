@@ -74,12 +74,13 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline">
-        <mat-label>Preco</mat-label>
-        <input matInput formControlName="preco" placeholder="99.90">
-        <mat-error *ngIf="form.controls.preco.hasError('required')">
-          Informe o preco
+        <mat-label>Preco de custo</mat-label>
+        <input matInput formControlName="preco_custo" placeholder="99.90">
+        <mat-hint>O preco de venda sera calculado com o spread da colecao.</mat-hint>
+        <mat-error *ngIf="form.controls.preco_custo.hasError('required')">
+          Informe o preco de custo
         </mat-error>
-        <mat-error *ngIf="form.controls.preco.hasError('pattern')">
+        <mat-error *ngIf="form.controls.preco_custo.hasError('pattern')">
           Use o formato 99.90 ou 99,90
         </mat-error>
       </mat-form-field>

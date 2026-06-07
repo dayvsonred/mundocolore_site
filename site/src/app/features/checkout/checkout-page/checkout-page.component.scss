@@ -344,6 +344,35 @@
   color: #5f6672;
 }
 
+.coupon-box {
+  display: grid;
+  gap: 8px;
+
+  label {
+    font-weight: 700;
+  }
+
+  div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  input {
+    min-width: 0;
+    min-height: 42px;
+    border: 1px solid #d6d9df;
+    border-radius: 8px;
+    padding: 0 10px;
+    text-transform: uppercase;
+  }
+
+  span {
+    color: #1e714f;
+    font-size: 13px;
+  }
+}
+
 .summary-total {
   border-top: 1px solid #e1e4ea;
   padding-top: 14px;

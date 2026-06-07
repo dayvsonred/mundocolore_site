@@ -428,7 +428,7 @@ class MainWindow(QMainWindow):
         self.price_pdf_combo.currentIndexChanged.connect(self._refresh_page_counts)
         self.catalog_pdf_combo.currentIndexChanged.connect(self._refresh_page_counts)
 
-        form.addRow("Tabela de valores", self.price_pdf_combo)
+        form.addRow("Tabela de precos de custo", self.price_pdf_combo)
         form.addRow("Paginas da tabela", self.price_pages_label)
         form.addRow("Pagina inicial tabela", self.price_start)
         form.addRow("Pagina final tabela", self.price_end)
@@ -440,9 +440,9 @@ class MainWindow(QMainWindow):
         right.addWidget(form_box)
 
         actions = QHBoxLayout()
-        self.process_price_btn = QPushButton("Processar tabela de valores")
+        self.process_price_btn = QPushButton("Processar precos de custo")
         self.process_price_btn.clicked.connect(self.process_price_table)
-        self.validate_price_btn = QPushButton("Validar tabela de valores")
+        self.validate_price_btn = QPushButton("Validar precos de custo")
         self.validate_price_btn.clicked.connect(self.validate_price_table)
         self.catalog_btn = QPushButton("Buscar imagen")
         self.catalog_btn.clicked.connect(self.search_catalog_images)

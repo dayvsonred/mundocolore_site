@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable, catchError, map, throwError } from 'rxjs';
 import { Product } from '../models/product.model';
 import { environment } from '../../../environments/environment';
+import { AuthenticationService } from './auth.service';
 
 export interface ProductBrandRecord {
   id?: string;
@@ -22,6 +23,9 @@ export interface ProductCollectionRecord {
   brand_key?: string;
   year: string;
   collection_key?: string;
+  spread_default_percent: number;
+  coupon_code?: string;
+  coupon_spread_reduction_percent: number;
   display_start_at?: string;
   display_end_at?: string;
   s3_prefix?: string;
@@ -44,6 +48,23 @@ export interface CreateProductCollectionPayload {
   display_end_at?: string;
   release_date?: string;
   finalization_date?: string;
+  spread_default_percent: number;
+  coupon_code?: string;
+  coupon_spread_reduction_percent?: number;
+}
+
+export interface UpdateProductCollectionPayload {
+  name: string;
+  display_start_at: string;
+  display_end_at: string;
+  spread_default_percent: number;
+  coupon_code: string;
+  coupon_spread_reduction_percent: number;
+}
+
+export interface UpdateProductCollectionResponse {
+  collection: ProductCollectionRecord;
+  updated_count: number;
 }
 
 export interface CreateProductPayload {
@@ -57,6 +78,9 @@ export interface CreateProductPayload {
   descricao?: string;
   price?: string | number;
   preco?: string | number;
+  cost_price?: string | number;
+  preco_custo?: string | number;
+  spread_percent?: number;
   category?: string;
   type?: string;
   brand: string;
@@ -93,6 +117,7 @@ export interface ProductListQuery {
   is_new?: boolean;
   is_promotion?: boolean;
   include_inactive?: boolean;
+  include_cost?: boolean;
   limit?: number;
   last_key?: string;
 }
@@ -125,7 +150,11 @@ export class ProductService {
   private apiUrl = environment.apiUrl;
   private catalogPageState: CatalogPageSnapshot | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private authService: AuthenticationService) {}
+
+  private getAdminHeaders(): HttpHeaders {
+    return new HttpHeaders().set('Authorization', `Bearer ${this.authService.getToken() || ''}`);
+  }
 
   getProducts(category?: string, limit?: number, lastKey?: string): Observable<Product[]> {
     return this.getProductsByQuery({ category, limit, last_key: lastKey }).pipe(
@@ -144,11 +173,15 @@ export class ProductService {
     if (query.is_new !== undefined) params = params.set('is_new', String(query.is_new));
     if (query.is_promotion !== undefined) params = params.set('is_promotion', String(query.is_promotion));
     if (query.include_inactive) params = params.set('include_inactive', 'true');
+    if (query.include_cost) params = params.set('include_cost', 'true');
     if (query.limit) params = params.set('limit', query.limit.toString());
     if (query.last_key) params = params.set('last_key', query.last_key);
 
     return this.http
-      .get<Product[] | ProductListPage>(`${this.apiUrl}/products`, { params })
+      .get<Product[] | ProductListPage>(`${this.apiUrl}/products`, {
+        params,
+        headers: query.include_cost ? this.getAdminHeaders() : undefined
+      })
       .pipe(
         map((response) => this.normalizeProductListPage(response)),
         catchError((error) => throwError(() => error))
@@ -210,19 +243,19 @@ export class ProductService {
   }
 
   createProduct(product: CreateProductPayload): Observable<Product> {
-    return this.http.post<Product>(`${this.apiUrl}/products`, product).pipe(
+    return this.http.post<Product>(`${this.apiUrl}/products`, product, { headers: this.getAdminHeaders() }).pipe(
       catchError((error) => throwError(() => error))
     );
   }
 
   updateProduct(id: string, product: Partial<CreateProductPayload>): Observable<Product> {
-    return this.http.patch<Product>(`${this.apiUrl}/products/${encodeURIComponent(id)}`, product).pipe(
+    return this.http.patch<Product>(`${this.apiUrl}/products/${encodeURIComponent(id)}`, product, { headers: this.getAdminHeaders() }).pipe(
       catchError((error) => throwError(() => error))
     );
   }
 
   deleteProduct(id: string): Observable<{ deleted: boolean; id: string }> {
-    return this.http.delete<{ deleted: boolean; id: string }>(`${this.apiUrl}/products/${encodeURIComponent(id)}`).pipe(
+    return this.http.delete<{ deleted: boolean; id: string }>(`${this.apiUrl}/products/${encodeURIComponent(id)}`, { headers: this.getAdminHeaders() }).pipe(
       catchError((error) => throwError(() => error))
     );
   }
@@ -237,7 +270,7 @@ export class ProductService {
   }
 
   createBrand(payload: CreateProductBrandPayload): Observable<ProductBrandRecord> {
-    return this.http.post<ProductBrandRecord>(`${this.apiUrl}/products/brands`, payload).pipe(
+    return this.http.post<ProductBrandRecord>(`${this.apiUrl}/products/brands`, payload, { headers: this.getAdminHeaders() }).pipe(
       catchError((error) => throwError(() => error))
     );
   }
@@ -246,11 +279,12 @@ export class ProductService {
     let params = new HttpParams();
     if (brand) params = params.set('brand', brand);
     if (year) params = params.set('year', year);
+    params = params.set('include_pricing_config', 'true');
 
     return this.http
       .get<ProductCollectionRecord[] | { collections: ProductCollectionRecord[] }>(
         `${this.apiUrl}/products/collections`,
-        { params }
+        { params, headers: this.getAdminHeaders() }
       )
       .pipe(
         map((response) => (Array.isArray(response) ? response : response?.collections ?? [])),
@@ -259,8 +293,24 @@ export class ProductService {
   }
 
   createCollection(payload: CreateProductCollectionPayload): Observable<ProductCollectionRecord> {
-    return this.http.post<ProductCollectionRecord>(`${this.apiUrl}/products/collections`, payload).pipe(
+    return this.http.post<ProductCollectionRecord>(`${this.apiUrl}/products/collections`, payload, { headers: this.getAdminHeaders() }).pipe(
       catchError((error) => throwError(() => error))
     );
+  }
+
+  updateCollection(id: string, payload: UpdateProductCollectionPayload): Observable<UpdateProductCollectionResponse> {
+    return this.http.patch<UpdateProductCollectionResponse>(
+      `${this.apiUrl}/products/collections/${encodeURIComponent(id)}`,
+      payload,
+      { headers: this.getAdminHeaders() }
+    ).pipe(catchError((error) => throwError(() => error)));
+  }
+
+  recalculateCollectionSpread(id: string): Observable<{ collection: ProductCollectionRecord; updated_count: number }> {
+    return this.http.post<{ collection: ProductCollectionRecord; updated_count: number }>(
+      `${this.apiUrl}/products/collections/${encodeURIComponent(id)}/recalculate-spread`,
+      {},
+      { headers: this.getAdminHeaders() }
+    ).pipe(catchError((error) => throwError(() => error)));
   }
 }
