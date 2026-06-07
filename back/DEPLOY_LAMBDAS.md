@@ -41,12 +41,15 @@ Pre-requisitos:
 - Terraform instalado e disponivel no `PATH`.
 - Perfil AWS `mundocolore` configurado.
 
-A infraestrutura de `products` exige o segredo JWT. Antes de publicar essa
-Lambda, disponibilize-o para o Terraform sem gravar o valor no repositorio:
+O script carrega automaticamente o segredo JWT do arquivo local:
 
-```powershell
-$env:TF_VAR_jwt_secret = "<segredo-jwt>"
+```text
+C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\back\.jwt
 ```
+
+Esse arquivo deve conter somente o segredo JWT, possui no minimo 32 caracteres
+e esta ignorado pelo Git. O script disponibiliza o valor como
+`TF_VAR_jwt_secret` para o Terraform de todas as Lambdas.
 
 Na raiz da pasta `back`, confira primeiro quais Lambdas seriam publicadas:
 
@@ -58,7 +61,6 @@ python .\deploy_lambdas.py --dry-run
 Para compilar e publicar todas as Lambdas com versao pendente:
 
 ```powershell
-$env:TF_VAR_jwt_secret = "<segredo-jwt>"
 python .\deploy_lambdas.py
 ```
 

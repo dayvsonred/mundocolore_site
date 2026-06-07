@@ -17,6 +17,7 @@ from typing import Iterable
 
 
 BACKEND_DIR = Path(__file__).resolve().parent
+JWT_FILE_PATH = BACKEND_DIR / ".jwt"
 VERSION_PATTERN = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 PLAN_FILE_NAME = ".deploy.tfplan"
 CONTACT_TERRAFORM_ARGS = (
@@ -24,11 +25,6 @@ CONTACT_TERRAFORM_ARGS = (
     "-var=dynamodb_table=core",
     "-var=lambda_zip=../lambda.zip",
 )
-REQUIRED_ENV_BY_MODULE = {
-    "products": ("TF_VAR_jwt_secret",),
-}
-
-
 @dataclass(frozen=True)
 class LambdaModule:
     name: str
@@ -109,16 +105,15 @@ def ensure_tools() -> None:
         raise RuntimeError(f"Ferramenta(s) nao encontrada(s) no PATH: {', '.join(missing)}")
 
 
-def ensure_required_environment(modules: list[LambdaModule], env: dict[str, str]) -> None:
-    missing: list[str] = []
-    for module in modules:
-        for variable in REQUIRED_ENV_BY_MODULE.get(module.name, ()):
-            if not env.get(variable, "").strip():
-                missing.append(f"{module.name}: {variable}")
-    if missing:
-        raise RuntimeError(
-            "Variavel(is) de ambiente obrigatoria(s) ausente(s): " + ", ".join(missing)
+def load_jwt_secret(path: Path = JWT_FILE_PATH) -> str:
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"Arquivo JWT nao encontrado: {path}. Crie o arquivo com um segredo forte."
         )
+    secret = path.read_text(encoding="utf-8").strip()
+    if len(secret) < 32:
+        raise ValueError(f"{path} deve conter um segredo JWT com pelo menos 32 caracteres.")
+    return secret
 
 
 def terraform_args(module: LambdaModule) -> list[str]:
@@ -259,12 +254,12 @@ def main() -> int:
 
         env = os.environ.copy()
         env["AWS_PROFILE"] = args.profile
-        if not args.dry_run:
-            ensure_required_environment(pending, env)
+        env["TF_VAR_jwt_secret"] = load_jwt_secret()
         failures: list[str] = []
         print(
             f"\nLambdas pendentes: {', '.join(module.name for module in pending)}"
             f"\nAWS_PROFILE: {args.profile}"
+            f"\nJWT_SECRET: carregado de {JWT_FILE_PATH.name}"
         )
 
         for module in pending:

@@ -1,7 +1,7 @@
 variable "jwt_secret" {
   description = "Secret key for JWT"
   type        = string
-  default     = "your-secret-key"
+  sensitive   = true
 }
 
 variable "login_basic_auth" {

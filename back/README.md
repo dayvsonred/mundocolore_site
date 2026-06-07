@@ -110,6 +110,11 @@ Este setup foi otimizado para o Free Tier da AWS:
 ```powershell
 cd "C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\back"
 
+python .\deploy_lambdas.py --continue-on-error
+```
+
+
+```teste
 python .\deploy_lambdas.py --dry-run
 ```
 
