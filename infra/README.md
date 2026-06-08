@@ -21,7 +21,7 @@ if ($account -ne "261955339827") { throw "Conta AWS errada: $account" }
 
 ## 1) Build do Angular
 ```powershell
-cd site
+cd "C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\site"
 npm install
 npm run build -- --configuration production
 ```
@@ -46,7 +46,9 @@ terraform apply
 
 ## 3) Invalidar cache CloudFront
 ```powershell
+cd "C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\infra\terraform"
 $distributionId = terraform output -raw cloudfront_distribution_id
+$env:AWS_PROFILE="mundocolore"
 aws cloudfront create-invalidation --distribution-id $distributionId --paths "/*"
 ```
 
@@ -58,6 +60,8 @@ No `terraform.tfvars`:
 
 Depois:
 ```powershell
+cd "C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\infra\terraform"
+$env:AWS_PROFILE="mundocolore"
 terraform plan
 terraform apply
 ```

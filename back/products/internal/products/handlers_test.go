@@ -139,3 +139,25 @@ func TestNormalizeCollectionCouponsMigratesLegacyCoupon(t *testing.T) {
 		t.Fatalf("expected legacy coupon to be migrated, got %#v", coupons)
 	}
 }
+
+func TestApplyProductOptionDefaults(t *testing.T) {
+	product := Product{}
+	applyProductOptionDefaults(&product)
+
+	if got := fmt.Sprint(product.Size); got != "[UNICO]" {
+		t.Fatalf("expected default size UNICO, got %s", got)
+	}
+	if product.SizeOriginal != "UNICO" {
+		t.Fatalf("expected default original size UNICO, got %q", product.SizeOriginal)
+	}
+	if got := fmt.Sprint(product.Colors); got != "[9999999]" {
+		t.Fatalf("expected default color 9999999, got %s", got)
+	}
+}
+
+func TestNormalizeProductColorsKeepsRegisteredColors(t *testing.T) {
+	colors := normalizeProductColors([]string{" 120000 ", "120000", "AZUL"})
+	if got := fmt.Sprint(colors); got != "[120000 AZUL]" {
+		t.Fatalf("expected normalized registered colors, got %s", got)
+	}
+}

@@ -34,4 +34,8 @@ export class CartPageComponent implements OnInit {
   checkout(): void {
     this.router.navigate(['/checkout']);
   }
+
+  getColorLabel(color: string): string {
+    return color === '9999999' ? 'Cor unica' : color;
+  }
 }

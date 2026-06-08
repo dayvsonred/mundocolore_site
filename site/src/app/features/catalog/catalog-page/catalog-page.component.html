@@ -154,7 +154,7 @@
                 [checked]="isSelected(selectedColors, color)"
                 (change)="toggleOption(selectedColors, color)">
               <span class="color-swatch" [style.background]="getColorSwatch(color)" aria-hidden="true"></span>
-              <span>{{ color }}</span>
+              <span>{{ getColorLabel(color) }}</span>
             </label>
             <p *ngIf="!colorOptions.length" class="empty-options">Sem cores disponiveis.</p>
           </div>

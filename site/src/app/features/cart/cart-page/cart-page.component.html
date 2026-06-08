@@ -6,7 +6,7 @@
       <div class="item-details">
         <h3>{{ item.product.name }}</h3>
         <p>Tamanho: {{ item.size }}</p>
-        <p>Cor: {{ item.color }}</p>
+        <p>Cor: {{ getColorLabel(item.color) }}</p>
         <p>Preço: R$ {{ item.product.price | number:'1.2-2' }}</p>
         <div class="quantity">
           <button (click)="updateQuantity(item, item.quantity - 1)" [disabled]="item.quantity <= 1">-</button>

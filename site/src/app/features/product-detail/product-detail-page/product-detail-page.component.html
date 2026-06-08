@@ -35,7 +35,7 @@
           [class.selected]="selectedColor === color"
           (click)="selectColor(color)">
           <span class="color-swatch" [style.background]="getColorSwatch(color)" aria-hidden="true"></span>
-          {{ color }}
+          {{ getColorLabel(color) }}
         </button>
       </div>
       <ng-template #noColors>

@@ -261,6 +261,9 @@ export class CatalogPageComponent implements OnInit {
   }
 
   getColorSwatch(color: string): string {
+    if (color === '9999999') {
+      return '#f4ede7';
+    }
     const normalized = color.trim();
 
     if (/^#?[0-9a-f]{3}([0-9a-f]{3})?$/i.test(normalized)) {
@@ -268,6 +271,10 @@ export class CatalogPageComponent implements OnInit {
     }
 
     return normalized;
+  }
+
+  getColorLabel(color: string): string {
+    return color === '9999999' ? 'Cor unica' : color;
   }
 
   private async ensureMinimumFilteredProducts(): Promise<void> {

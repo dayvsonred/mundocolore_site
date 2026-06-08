@@ -243,6 +243,8 @@ const (
 	lambdaName       = "products"
 	healthKeyValue   = "health-check-products"
 	healthTimeLayout = "2006-01-02 15:04:05"
+	defaultSize      = "UNICO"
+	defaultColor     = "9999999"
 )
 
 func init() {
@@ -979,6 +981,14 @@ func buildProduct(req CreateProductRequest) (Product, error) {
 	if len(size) == 0 && strings.TrimSpace(req.SizeOriginal) != "" {
 		size = []string{strings.TrimSpace(req.SizeOriginal)}
 	}
+	if len(size) == 0 {
+		size = []string{defaultSize}
+	}
+	sizeOriginal := strings.TrimSpace(req.SizeOriginal)
+	if sizeOriginal == "" && len(size) == 1 && strings.EqualFold(size[0], defaultSize) {
+		sizeOriginal = defaultSize
+	}
+	colors := normalizeProductColors(req.Colors)
 
 	s3Prefix := buildS3Prefix(brandKey, year, collectionSlug)
 	imageNames := mergeStrings(req.Imagem, req.Images)
@@ -1055,11 +1065,11 @@ func buildProduct(req CreateProductRequest) (Product, error) {
 		DisplayEndAt:     req.DisplayEndAt,
 		Size:             size,
 		AgeGroup:         req.AgeGroup,
-		SizeOriginal:     req.SizeOriginal,
+		SizeOriginal:     sizeOriginal,
 		SizeStart:        sizeValueToInt(req.SizeStart),
 		SizeEnd:          sizeValueToInt(req.SizeEnd),
 		SizesArray:       sizeValuesToInts(req.SizesArray),
-		Colors:           req.Colors,
+		Colors:           colors,
 		Image:            firstString(imageURLs),
 		ImageURL:         firstString(imageURLs),
 		Images:           imageNames,
@@ -1201,8 +1211,9 @@ func updateProduct(id string, req CreateProductRequest) (Product, error) {
 		product.SizesArray = sizeValuesToInts(req.SizesArray)
 	}
 	if len(req.Colors) > 0 {
-		product.Colors = req.Colors
+		product.Colors = normalizeProductColors(req.Colors)
 	}
+	applyProductOptionDefaults(&product)
 	if req.Stock != 0 {
 		product.Stock = req.Stock
 	}
@@ -1522,6 +1533,7 @@ func getProducts(query ProductQuery) (ProductsListResponse, error) {
 }
 
 func sanitizeProductForCustomer(product Product) Product {
+	applyProductOptionDefaults(&product)
 	product.CostPrice = 0
 	product.CostPriceRaw = ""
 	product.SpreadPercent = 0
@@ -1879,6 +1891,37 @@ func sizeValuesToStrings(values []interface{}) []string {
 		}
 	}
 	return result
+}
+
+func applyProductOptionDefaults(product *Product) {
+	if len(product.Size) == 0 {
+		product.Size = []string{defaultSize}
+	}
+	if strings.TrimSpace(product.SizeOriginal) == "" && len(product.Size) == 1 && strings.EqualFold(product.Size[0], defaultSize) {
+		product.SizeOriginal = defaultSize
+	}
+	product.Colors = normalizeProductColors(product.Colors)
+}
+
+func normalizeProductColors(colors []string) []string {
+	normalized := make([]string, 0, len(colors))
+	seen := map[string]struct{}{}
+	for _, color := range colors {
+		value := strings.TrimSpace(color)
+		if value == "" {
+			continue
+		}
+		key := strings.ToUpper(value)
+		if _, exists := seen[key]; exists {
+			continue
+		}
+		seen[key] = struct{}{}
+		normalized = append(normalized, value)
+	}
+	if len(normalized) == 0 {
+		return []string{defaultColor}
+	}
+	return normalized
 }
 
 func sizeValuesToInts(values []interface{}) []int {

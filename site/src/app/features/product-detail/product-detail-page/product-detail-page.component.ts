@@ -11,6 +11,8 @@ import { NotificationService } from '../../../core/services/notification.service
   styleUrls: ['./product-detail-page.component.scss']
 })
 export class ProductDetailPageComponent implements OnInit {
+  readonly defaultSize = 'UNICO';
+  readonly defaultColor = '9999999';
   product: Product | undefined;
   selectedSize = '';
   selectedColor = '';
@@ -29,8 +31,8 @@ export class ProductDetailPageComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id') ?? '';
     this.productService.getProductById(id).subscribe(product => {
       this.product = product;
-      this.selectedSize = '';
-      this.selectedColor = '';
+      this.selectedSize = this.productSizes.includes(this.defaultSize) ? this.defaultSize : '';
+      this.selectedColor = this.productColors.includes(this.defaultColor) ? this.defaultColor : '';
       this.validationMessage = '';
     });
   }
@@ -88,13 +90,16 @@ export class ProductDetailPageComponent implements OnInit {
       ? this.product.tamanhos_array.map(size => String(size))
       : [];
 
-    return this.uniqueOptions([...productSizes, ...registeredSizes]);
+    const sizes = this.uniqueOptions([...productSizes, ...registeredSizes]);
+    return sizes.length ? sizes : [this.defaultSize];
   }
 
   get productColors(): string[] {
-    return this.product && Array.isArray(this.product.cores)
-      ? this.uniqueOptions(this.product.cores)
-      : [];
+    if (!this.product) {
+      return [];
+    }
+    const colors = Array.isArray(this.product.cores) ? this.uniqueOptions(this.product.cores) : [];
+    return colors.length ? colors : [this.defaultColor];
   }
 
   get productImage(): string {
@@ -102,6 +107,9 @@ export class ProductDetailPageComponent implements OnInit {
   }
 
   getColorSwatch(color: string): string {
+    if (color === this.defaultColor) {
+      return '#f4ede7';
+    }
     const normalized = color.trim();
 
     if (/^#?[0-9a-f]{3}([0-9a-f]{3})?$/i.test(normalized)) {
@@ -109,6 +117,10 @@ export class ProductDetailPageComponent implements OnInit {
     }
 
     return normalized;
+  }
+
+  getColorLabel(color: string): string {
+    return color === this.defaultColor ? 'Cor unica' : color;
   }
 
   private uniqueOptions(values: Array<string | number | undefined | null>): string[] {
