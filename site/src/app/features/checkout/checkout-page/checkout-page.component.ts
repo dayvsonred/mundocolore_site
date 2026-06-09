@@ -255,7 +255,7 @@ export class CheckoutPageComponent implements OnInit {
   }
 
   get deliveryEstimateText(): string {
-    return 'Chega em ate 7 dias uteis apos a confirmacao do pagamento';
+    return 'Chega em alguns dias apos a confirmacao do pagamento';
   }
 
   get buyerName(): string {
@@ -270,19 +270,8 @@ export class CheckoutPageComponent implements OnInit {
     return this.currentUser?.email || '';
   }
 
-  get firstProductImage(): string {
-    return this.cartItems[0]?.product?.image || this.cartItems[0]?.product?.image_url || 'assets/images/logo-mundo-colore.jpg';
-  }
-
-  get productSummaryName(): string {
-    if (this.cartItems.length === 1) {
-      return this.cartItems[0].product.name;
-    }
-    return `${this.cartItems.length} produtos selecionados`;
-  }
-
-  get totalQuantity(): number {
-    return this.cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  getProductCode(item: CartItem): string {
+    return item.product.produto_id || item.product.id;
   }
 
   private calculateTotals(): void {

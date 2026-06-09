@@ -68,6 +68,36 @@
           <button
             type="button"
             class="section-toggle"
+            [attr.aria-expanded]="sectionOpen.brand"
+            (click)="toggleSection('brand')">
+            Marca
+            <span class="section-chevron" aria-hidden="true"></span>
+          </button>
+
+          <div *ngIf="sectionOpen.brand" class="option-list">
+            <label class="search-field">
+              <span>Buscar marca</span>
+              <input
+                type="search"
+                [(ngModel)]="brandSearch"
+                placeholder="Digite o nome">
+            </label>
+
+            <label *ngFor="let brand of visibleBrandOptions" class="checkbox-option">
+              <input
+                type="checkbox"
+                [checked]="isSelected(selectedBrands, brand)"
+                (change)="toggleOption(selectedBrands, brand)">
+              <span>{{ brand }}</span>
+            </label>
+            <p *ngIf="!visibleBrandOptions.length" class="empty-options">Nenhuma marca encontrada.</p>
+          </div>
+        </section>
+
+        <section class="filter-section">
+          <button
+            type="button"
+            class="section-toggle"
             [attr.aria-expanded]="sectionOpen.category"
             (click)="toggleSection('category')">
             Categoria
@@ -104,36 +134,6 @@
                 (change)="toggleOption(selectedSizes, size)">
               <span>{{ size }}</span>
             </label>
-          </div>
-        </section>
-
-        <section class="filter-section">
-          <button
-            type="button"
-            class="section-toggle"
-            [attr.aria-expanded]="sectionOpen.brand"
-            (click)="toggleSection('brand')">
-            Marca
-            <span class="section-chevron" aria-hidden="true"></span>
-          </button>
-
-          <div *ngIf="sectionOpen.brand" class="option-list">
-            <label class="search-field">
-              <span>Buscar marca</span>
-              <input
-                type="search"
-                [(ngModel)]="brandSearch"
-                placeholder="Digite o nome">
-            </label>
-
-            <label *ngFor="let brand of visibleBrandOptions" class="checkbox-option">
-              <input
-                type="checkbox"
-                [checked]="isSelected(selectedBrands, brand)"
-                (change)="toggleOption(selectedBrands, brand)">
-              <span>{{ brand }}</span>
-            </label>
-            <p *ngIf="!visibleBrandOptions.length" class="empty-options">Nenhuma marca encontrada.</p>
           </div>
         </section>
 

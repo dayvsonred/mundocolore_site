@@ -50,12 +50,12 @@ export class CatalogPageComponent implements OnInit {
   productLoadError = '';
   isFilterDrawerOpen = false;
   sectionOpen: Record<FilterSection, boolean> = {
-    code: true,
-    category: true,
-    size: true,
-    brand: true,
+    code: false,
+    category: false,
+    size: false,
+    brand: false,
     color: false,
-    price: true,
+    price: false,
     promotions: false
   };
 

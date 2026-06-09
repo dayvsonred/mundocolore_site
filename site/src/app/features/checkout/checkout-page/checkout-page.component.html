@@ -142,11 +142,13 @@
       </section>
 
       <section class="review-block product-delivery">
-        <img [src]="firstProductImage" [alt]="productSummaryName">
         <div>
           <h2>{{ deliveryEstimateText }}</h2>
-          <strong>{{ productSummaryName }}</strong>
-          <span>Quantidade: {{ totalQuantity }}</span>
+          <ul class="product-name-list">
+            <li *ngFor="let item of cartItems">
+              {{ item.product.name }} - Codigo: {{ getProductCode(item) }}
+            </li>
+          </ul>
         </div>
       </section>
 
