@@ -121,11 +121,7 @@ python .\deploy_lambdas.py --dry-run
 ###  Redeploy
 
 ```powershell
-aws apigateway create-deployment \
-  --rest-api-id b8i4etrh23 \
-  --stage-name prod \
-  --profile mundocolore \
-  --region sa-east-1
+aws apigateway create-deployment  --rest-api-id b8i4etrh23  --stage-name prod  --profile mundocolore   --region sa-east-1
 ```
 
 

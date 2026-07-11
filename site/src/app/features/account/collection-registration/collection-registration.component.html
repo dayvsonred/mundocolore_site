@@ -60,6 +60,12 @@
         <input matInput type="number" min="0" step="0.01" formControlName="spread_default_percent">
       </mat-form-field>
 
+      <mat-form-field appearance="outline">
+        <mat-label>Limite para Credito Colore (R$)</mat-label>
+        <input matInput type="number" min="0" step="0.01" formControlName="credit_colore_max_amount">
+        <mat-hint>Zero desabilita o Credito Colore nesta colecao.</mat-hint>
+      </mat-form-field>
+
     </div>
 
     <section class="coupon-section" formArrayName="coupons">
@@ -126,7 +132,7 @@
             (click)="selectCollection(collection)">
             <div>
               <h3>{{ collection.name }}</h3>
-              <p>{{ collection.year }} / Spread: {{ collection.spread_default_percent || 0 }}% / Cupons: {{ couponSummary(collection) }}</p>
+              <p>{{ collection.year }} / Spread: {{ collection.spread_default_percent || 0 }}% / Credito Colore: R$ {{ (collection.credit_colore_max_amount || 0) | number:'1.2-2' }} / Cupons: {{ couponSummary(collection) }}</p>
             </div>
             <span>{{ collection.s3_prefix || collection.collection_key || '-' }}</span>
           </button>
@@ -159,6 +165,11 @@
         <mat-form-field appearance="outline">
           <mat-label>Spread padrao (%)</mat-label>
           <input matInput type="number" min="0" step="0.01" formControlName="spread_default_percent">
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Limite para Credito Colore (R$)</mat-label>
+          <input matInput type="number" min="0" step="0.01" formControlName="credit_colore_max_amount">
+          <mat-hint>Zero desabilita o Credito Colore nesta colecao.</mat-hint>
         </mat-form-field>
       </div>
       <section class="coupon-section" formArrayName="coupons">

@@ -6,6 +6,7 @@ import { AuthenticationService } from '../../../core/services/auth.service';
 import { CartService } from '../../../core/services/cart.service';
 import { CreateOrderPayload, Order, OrderPayment, OrderService } from '../../../core/services/order.service';
 import { CartItem } from '../../../core/models/product.model';
+import { CreditColore, CreditColoreService } from '../../../core/services/credit-colore.service';
 
 type CheckoutStep = 'address' | 'payment' | 'review' | 'order-payment';
 
@@ -37,6 +38,8 @@ export class CheckoutPageComponent implements OnInit {
   appliedCouponCode = '';
   applyingCoupon = false;
   private couponUnitPrices: Record<string, number> = {};
+  creditColore: CreditColore | null = null;
+  creditColoreInstallments = 1;
 
   addressForm: AddressPayload = {
     observation: 'Endereco principal',
@@ -74,6 +77,14 @@ export class CheckoutPageComponent implements OnInit {
       status: 'pending',
       icon: 'receipt_long',
       description: 'O boleto sera gerado apos a confirmacao da compra.'
+    },
+    {
+      method: 'credit_colore',
+      label: 'Credito Colore',
+      amount: 0,
+      status: 'pending_approval',
+      icon: 'account_balance_wallet',
+      description: 'Use seu credito pre-aprovado e parcele em ate 5 vezes.'
     }
   ];
 
@@ -82,6 +93,7 @@ export class CheckoutPageComponent implements OnInit {
     private authService: AuthenticationService,
     private cartService: CartService,
     private orderService: OrderService,
+    private creditColoreService: CreditColoreService,
     private router: Router
   ) {}
 
@@ -102,6 +114,10 @@ export class CheckoutPageComponent implements OnInit {
     });
 
     this.loadAddresses();
+    this.creditColoreService.getCredit().subscribe({
+      next: credit => this.creditColore = credit,
+      error: () => this.creditColore = null
+    });
   }
 
   loadAddresses(): void {
@@ -164,6 +180,10 @@ export class CheckoutPageComponent implements OnInit {
   continueFromPayment(): void {
     if (!this.selectedPayment) {
       this.errorMessage = 'Selecione uma forma de pagamento para continuar.';
+      return;
+    }
+    if (this.selectedPayment.method === 'credit_colore' && (!this.creditColore || this.creditColore.available_credit < this.total)) {
+      this.errorMessage = 'Seu saldo de Credito Colore nao e suficiente para esta compra.';
       return;
     }
 
@@ -369,7 +389,8 @@ export class CheckoutPageComponent implements OnInit {
         method: this.selectedPayment?.method || '',
         label: this.selectedPayment?.label || '',
         amount: this.total,
-        status: 'pending'
+        status: this.selectedPayment?.method === 'credit_colore' ? 'pending_approval' : 'pending',
+        installments: this.selectedPayment?.method === 'credit_colore' ? this.creditColoreInstallments : 1
       },
       checkout_metadata: {
         source: 'site',

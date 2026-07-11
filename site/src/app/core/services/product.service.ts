@@ -27,6 +27,7 @@ export interface ProductCollectionRecord {
   coupon_code?: string;
   coupon_spread_reduction_percent: number;
   coupons?: ProductCollectionCoupon[];
+  credit_colore_max_amount: number;
   display_start_at?: string;
   display_end_at?: string;
   s3_prefix?: string;
@@ -58,6 +59,7 @@ export interface CreateProductCollectionPayload {
   coupon_code?: string;
   coupon_spread_reduction_percent?: number;
   coupons?: ProductCollectionCoupon[];
+  credit_colore_max_amount?: number;
 }
 
 export interface UpdateProductCollectionPayload {
@@ -68,6 +70,7 @@ export interface UpdateProductCollectionPayload {
   coupon_code: string;
   coupon_spread_reduction_percent: number;
   coupons: ProductCollectionCoupon[];
+  credit_colore_max_amount: number;
 }
 
 export interface UpdateProductCollectionResponse {

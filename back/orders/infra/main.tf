@@ -48,12 +48,15 @@ resource "aws_iam_role_policy" "dynamodb_policy" {
           "dynamodb:GetItem",
           "dynamodb:PutItem",
           "dynamodb:Query",
-          "dynamodb:Scan"
+          "dynamodb:Scan",
+          "dynamodb:UpdateItem"
         ]
         Resource = [
           "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-orders",
           "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-orders/index/user-created-index",
-          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-products"
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-products",
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-credit",
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-role"
         ]
       }
     ]
@@ -77,6 +80,8 @@ resource "aws_lambda_function" "orders_lambda" {
     variables = {
       TABLE_NAME          = "mundocolore-orders"
       PRODUCTS_TABLE_NAME = "mundocolore-products"
+      CREDIT_TABLE_NAME   = "mundocolore-credit"
+      ROLE_TABLE_NAME     = "mundocolore-role"
       JWT_SECRET          = var.jwt_secret
     }
   }
@@ -151,6 +156,50 @@ resource "aws_api_gateway_resource" "orders_coupon_resource" {
   rest_api_id = data.aws_api_gateway_rest_api.gateway.id
   parent_id   = aws_api_gateway_resource.orders_resource.id
   path_part   = "coupon"
+}
+
+resource "aws_api_gateway_resource" "orders_admin_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.orders_resource.id
+  path_part   = "admin"
+}
+
+resource "aws_api_gateway_resource" "orders_admin_proxy_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.orders_admin_resource.id
+  path_part   = "{proxy+}"
+}
+
+resource "aws_api_gateway_method" "orders_admin_any" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.orders_admin_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_method" "orders_admin_proxy_any" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.orders_admin_proxy_resource.id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "orders_admin_any" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.orders_admin_resource.id
+  http_method             = aws_api_gateway_method.orders_admin_any.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.orders_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_integration" "orders_admin_proxy_any" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.orders_admin_proxy_resource.id
+  http_method             = aws_api_gateway_method.orders_admin_proxy_any.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.orders_lambda.invoke_arn
 }
 
 resource "aws_api_gateway_method" "orders_coupon_any" {

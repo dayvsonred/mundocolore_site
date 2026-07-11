@@ -1,0 +1,20 @@
+<section class="admin-page">
+  <header><h1>Lista de usuarios</h1><p>Consulte usuarios e conceda Credito Colore.</p></header>
+  <form class="filters" (ngSubmit)="loadUsers()">
+    <mat-form-field appearance="outline"><mat-label>Nome</mat-label><input matInput name="name" [(ngModel)]="filters['name']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>E-mail</mat-label><input matInput name="email" [(ngModel)]="filters['email']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Celular</mat-label><input matInput name="phone" [(ngModel)]="filters['phone']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>CPF</mat-label><input matInput name="cpf" [(ngModel)]="filters['cpf']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Criado a partir de</mat-label><input matInput type="date" name="created_from" [(ngModel)]="filters['created_from']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Criado ate</mat-label><input matInput type="date" name="created_to" [(ngModel)]="filters['created_to']"></mat-form-field>
+    <button mat-raised-button color="primary" type="submit">Filtrar</button><button mat-stroked-button type="button" (click)="clearFilters()">Limpar</button>
+  </form>
+  <mat-spinner *ngIf="loading" diameter="34"></mat-spinner>
+  <div class="records" *ngIf="!loading">
+    <article *ngFor="let user of users">
+      <div><h3>{{ user.name }}</h3><p>{{ user.email }} | {{ user.phone || '-' }} | CPF {{ user.cpf || '-' }}</p><small>Criado em {{ user.created_at | date:'dd/MM/yyyy HH:mm' }}</small></div>
+      <div class="credit"><span>Limite: R$ {{ user.credit.credit_limit | number:'1.2-2' }}</span><span>Disponivel: R$ {{ user.credit.available_credit | number:'1.2-2' }}</span></div>
+      <div class="add-credit"><input type="number" min="0.01" step="0.01" [(ngModel)]="creditAmounts[user.id]" [ngModelOptions]="{standalone:true}" placeholder="Valor"><button mat-raised-button color="primary" (click)="addCredit(user)">Adicionar credito</button></div>
+    </article>
+  </div>
+</section>

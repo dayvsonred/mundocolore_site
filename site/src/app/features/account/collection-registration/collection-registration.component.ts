@@ -44,6 +44,7 @@ export class CollectionRegistrationComponent implements OnInit {
     display_start_at: [''],
     display_end_at: [''],
     spread_default_percent: [0, [Validators.required, Validators.min(0)]],
+    credit_colore_max_amount: [0, [Validators.required, Validators.min(0)]],
     coupons: this.formBuilder.array([this.createCouponGroup()])
   });
 
@@ -52,6 +53,7 @@ export class CollectionRegistrationComponent implements OnInit {
     display_start_at: [''],
     display_end_at: [''],
     spread_default_percent: [0, [Validators.required, Validators.min(0)]],
+    credit_colore_max_amount: [0, [Validators.required, Validators.min(0)]],
     coupons: this.formBuilder.array([this.createCouponGroup()])
   });
 
@@ -117,6 +119,7 @@ export class CollectionRegistrationComponent implements OnInit {
       release_date: displayStartAt || undefined,
       finalization_date: displayEndAt || undefined,
       spread_default_percent: Number(value.spread_default_percent || 0),
+      credit_colore_max_amount: Number(value.credit_colore_max_amount || 0),
       coupons: this.couponPayload(this.formCoupons)
     })
       .pipe(finalize(() => this.saving = false))
@@ -130,7 +133,8 @@ export class CollectionRegistrationComponent implements OnInit {
             year: String(new Date().getFullYear()),
             display_start_at: '',
             display_end_at: '',
-            spread_default_percent: 0
+            spread_default_percent: 0,
+            credit_colore_max_amount: 0
           });
           this.resetCoupons(this.formCoupons);
           this.snackBar.open('Colecao cadastrada.', 'Fechar', { duration: 3000 });
@@ -208,7 +212,8 @@ export class CollectionRegistrationComponent implements OnInit {
       name: collection.name || '',
       display_start_at: collection.display_start_at || '',
       display_end_at: collection.display_end_at || '',
-      spread_default_percent: collection.spread_default_percent || 0
+      spread_default_percent: collection.spread_default_percent || 0,
+      credit_colore_max_amount: collection.credit_colore_max_amount || 0
     });
     this.resetCoupons(this.editCoupons, this.collectionCoupons(collection));
   }
@@ -229,6 +234,7 @@ export class CollectionRegistrationComponent implements OnInit {
       display_start_at: String(value.display_start_at || '').trim(),
       display_end_at: String(value.display_end_at || '').trim(),
       spread_default_percent: Number(value.spread_default_percent || 0),
+      credit_colore_max_amount: Number(value.credit_colore_max_amount || 0),
       coupon_code: '',
       coupon_spread_reduction_percent: 0,
       coupons: this.couponPayload(this.editCoupons)

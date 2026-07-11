@@ -71,6 +71,12 @@ variable "dynamodb_tables" {
       hash_key      = "id"
       hash_key_type = "S"
     }
+    credit = {
+      name          = "mundocolore-credit"
+      billing_mode  = "PAY_PER_REQUEST"
+      hash_key      = "user_id"
+      hash_key_type = "S"
+    }
     products = {
       name          = "mundocolore-products"
       billing_mode  = "PAY_PER_REQUEST"

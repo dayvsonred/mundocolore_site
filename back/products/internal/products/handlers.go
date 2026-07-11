@@ -48,6 +48,7 @@ type Collection struct {
 	CouponCode                   string             `json:"coupon_code,omitempty" dynamodbav:"coupon_code,omitempty"`
 	CouponSpreadReductionPercent float64            `json:"coupon_spread_reduction_percent" dynamodbav:"coupon_spread_reduction_percent"`
 	Coupons                      []CollectionCoupon `json:"coupons,omitempty" dynamodbav:"coupons,omitempty"`
+	CreditColoreMaxAmount        float64            `json:"credit_colore_max_amount" dynamodbav:"credit_colore_max_amount"`
 	DisplayStartAt               string             `json:"display_start_at" dynamodbav:"display_start_at"`
 	DisplayEndAt                 string             `json:"display_end_at" dynamodbav:"display_end_at"`
 	S3Prefix                     string             `json:"s3_prefix" dynamodbav:"s3_prefix"`
@@ -123,6 +124,7 @@ type CreateCollectionRequest struct {
 	CouponCode                   string             `json:"coupon_code"`
 	CouponSpreadReductionPercent *float64           `json:"coupon_spread_reduction_percent"`
 	Coupons                      []CollectionCoupon `json:"coupons"`
+	CreditColoreMaxAmount        *float64           `json:"credit_colore_max_amount"`
 	DisplayStartAt               string             `json:"display_start_at"`
 	DisplayEndAt                 string             `json:"display_end_at"`
 	ReleaseDate                  string             `json:"release_date"`
@@ -135,6 +137,7 @@ type UpdateCollectionRequest struct {
 	CouponCode                   *string             `json:"coupon_code"`
 	CouponSpreadReductionPercent *float64            `json:"coupon_spread_reduction_percent"`
 	Coupons                      *[]CollectionCoupon `json:"coupons"`
+	CreditColoreMaxAmount        *float64            `json:"credit_colore_max_amount"`
 	DisplayStartAt               *string             `json:"display_start_at"`
 	DisplayEndAt                 *string             `json:"display_end_at"`
 }
@@ -737,6 +740,7 @@ func createCollection(req CreateCollectionRequest) (Collection, error) {
 		CouponCode:                   normalizeCouponCode(req.CouponCode),
 		CouponSpreadReductionPercent: percentageValue(req.CouponSpreadReductionPercent),
 		Coupons:                      coupons,
+		CreditColoreMaxAmount:        moneyValue(req.CreditColoreMaxAmount),
 		DisplayStartAt:               displayStart,
 		DisplayEndAt:                 displayEnd,
 		S3Prefix:                     buildS3Prefix(brandKey, year, slug),
@@ -823,6 +827,9 @@ func updateCollection(id string, req UpdateCollectionRequest) (Collection, int, 
 			collection.CouponCode = ""
 			collection.CouponSpreadReductionPercent = 0
 		}
+	}
+	if req.CreditColoreMaxAmount != nil {
+		collection.CreditColoreMaxAmount = moneyValue(req.CreditColoreMaxAmount)
 	}
 	if req.DisplayStartAt != nil {
 		collection.DisplayStartAt = strings.TrimSpace(*req.DisplayStartAt)
@@ -1782,6 +1789,13 @@ func parseOptionalBool(value string) *bool {
 }
 
 func percentageValue(value *float64) float64 {
+	if value == nil || *value < 0 {
+		return 0
+	}
+	return roundMoney(*value)
+}
+
+func moneyValue(value *float64) float64 {
 	if value == nil || *value < 0 {
 		return 0
 	}

@@ -13,6 +13,8 @@ import { BrandRegistrationComponent } from './brand-registration/brand-registrat
 import { CollectionRegistrationComponent } from './collection-registration/collection-registration.component';
 import { ProductListComponent } from './product-list/product-list.component';
 import { ProductRegistrationComponent } from './product-registration/product-registration.component';
+import { AdminUsersComponent } from './admin-users/admin-users.component';
+import { AdminOrdersComponent } from './admin-orders/admin-orders.component';
 
 @NgModule({
   imports: [
@@ -30,7 +32,9 @@ import { ProductRegistrationComponent } from './product-registration/product-reg
     BrandRegistrationComponent,
     CollectionRegistrationComponent,
     ProductListComponent,
-    ProductRegistrationComponent
+    ProductRegistrationComponent,
+    AdminUsersComponent,
+    AdminOrdersComponent
   ],
   exports: [AccountPageComponent]
 })

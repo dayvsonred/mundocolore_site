@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable, throwError, catchError } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { Observable, throwError, catchError, map } from 'rxjs';
 import { AuthenticationService } from './auth.service';
 import { environment } from '../../../environments/environment';
 
@@ -45,6 +45,14 @@ export interface Order {
   user_agent?: string;
   created_at: string;
   updated_at?: string;
+  approved_at?: string;
+  status_history?: OrderStatusHistory[];
+}
+
+export interface OrderStatusHistory {
+  status: string;
+  changed_at: string;
+  changed_by: string;
 }
 
 export interface OrderPerson {
@@ -74,6 +82,7 @@ export interface OrderPayment {
   label: string;
   amount: number;
   status?: string;
+  installments?: number;
 }
 
 export interface CreateOrderPayload {
@@ -128,6 +137,24 @@ export class OrderService {
     return this.http.post<CouponResponse>(
       `${this.apiUrl}/orders/coupon`,
       { coupon_code: couponCode, items },
+      { headers: this.getHeaders() }
+    ).pipe(catchError(error => throwError(error)));
+  }
+
+  getAdminOrders(filters: Record<string, string | number> = {}): Observable<Order[]> {
+    let params = new HttpParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== '' && value !== null && value !== undefined) params = params.set(key, String(value));
+    });
+    return this.http.get<{ orders: Order[] }>(`${this.apiUrl}/orders/admin`, {
+      headers: this.getHeaders(), params
+    }).pipe(map(response => response.orders || []), catchError(error => throwError(error)));
+  }
+
+  updateOrderStatus(orderId: string, status: string): Observable<Order> {
+    return this.http.patch<Order>(
+      `${this.apiUrl}/orders/admin/${encodeURIComponent(orderId)}/status`,
+      { status },
       { headers: this.getHeaders() }
     ).pipe(catchError(error => throwError(error)));
   }

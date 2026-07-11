@@ -161,3 +161,14 @@ func TestNormalizeProductColorsKeepsRegisteredColors(t *testing.T) {
 		t.Fatalf("expected normalized registered colors, got %s", got)
 	}
 }
+
+func TestMoneyValueRoundsAndRejectsNegativeValues(t *testing.T) {
+	value := 123.456
+	if got := moneyValue(&value); got != 123.46 {
+		t.Fatalf("expected 123.46, got %.2f", got)
+	}
+	negative := -1.0
+	if got := moneyValue(&negative); got != 0 {
+		t.Fatalf("expected negative value to become zero, got %.2f", got)
+	}
+}

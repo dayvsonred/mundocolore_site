@@ -33,3 +33,17 @@ func TestFindCouponReductionSupportsCouponListAndLegacyCoupon(t *testing.T) {
 		t.Fatalf("expected invalid coupon reduction 0, got %.2f", got)
 	}
 }
+
+func TestOrderMatchesFiltersSupportsUserBrandCollectionAndValue(t *testing.T) {
+	order := Order{
+		UserID: "user-1", Total: 250, CreatedAt: "2026-06-08T12:00:00Z", Status: "pending_approval",
+		Customer: OrderPerson{Name: "Maria", Email: "maria@example.com"},
+		Items:    []OrderItem{{Brand: "Marca A", Collection: "Verao"}},
+	}
+	if !orderMatchesFilters(order, map[string]string{"user": "maria", "brand": "marca a", "collection": "verao", "min_value": "200", "max_value": "300"}) {
+		t.Fatal("expected order to match admin filters")
+	}
+	if orderMatchesFilters(order, map[string]string{"status": "approved"}) {
+		t.Fatal("expected status filter not to match")
+	}
+}

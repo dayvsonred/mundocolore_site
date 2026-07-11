@@ -19,6 +19,8 @@ export class UserSidebarComponent implements OnInit {
   isAdmin = false;
 
   private readonly adminMenuItems: MenuItem[] = [
+    { label: 'Lista usuarios', route: '/minha-conta/lista-usuarios', icon: 'people' },
+    { label: 'Lista pedidos', route: '/minha-conta/lista-pedidos', icon: 'receipt_long' },
     {
       label: 'Cadastro de marcas',
       route: '/minha-conta/cadastro-marcas',

@@ -109,6 +109,18 @@
       </button>
     </div>
 
+    <div class="credit-colore-details" *ngIf="selectedPayment?.method === 'credit_colore'">
+      <p>Credito disponivel: <strong>R$ {{ (creditColore?.available_credit || 0) | number:'1.2-2' }}</strong></p>
+      <label>
+        Parcelas
+        <select [(ngModel)]="creditColoreInstallments">
+          <option *ngFor="let installment of [1,2,3,4,5]" [ngValue]="installment">
+            {{ installment }}x de R$ {{ total / installment | number:'1.2-2' }}
+          </option>
+        </select>
+      </label>
+    </div>
+
     <div class="action-row">
       <button type="button" class="secondary-action" (click)="goToAddressStep()">Alterar endereco</button>
       <button type="button" class="primary-action" (click)="continueFromPayment()">Continuar Compra</button>

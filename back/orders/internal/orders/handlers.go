@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -29,6 +31,8 @@ type Order struct {
 	Total            float64                `json:"total" dynamodbav:"total"`
 	Currency         string                 `json:"currency" dynamodbav:"currency"`
 	Status           string                 `json:"status" dynamodbav:"status"`
+	StatusHistory    []OrderStatusHistory   `json:"status_history" dynamodbav:"status_history"`
+	ApprovedAt       string                 `json:"approved_at,omitempty" dynamodbav:"approved_at,omitempty"`
 	Billing          OrderPerson            `json:"billing" dynamodbav:"billing"`
 	Customer         OrderPerson            `json:"customer" dynamodbav:"customer"`
 	DeliveryAddress  OrderAddress           `json:"delivery_address" dynamodbav:"delivery_address"`
@@ -38,6 +42,12 @@ type Order struct {
 	UserAgent        string                 `json:"user_agent" dynamodbav:"user_agent"`
 	CreatedAt        string                 `json:"created_at" dynamodbav:"created_at"`
 	UpdatedAt        string                 `json:"updated_at" dynamodbav:"updated_at"`
+}
+
+type OrderStatusHistory struct {
+	Status    string `json:"status" dynamodbav:"status"`
+	ChangedAt string `json:"changed_at" dynamodbav:"changed_at"`
+	ChangedBy string `json:"changed_by" dynamodbav:"changed_by"`
 }
 
 type OrderItem struct {
@@ -84,10 +94,15 @@ type OrderAddress struct {
 }
 
 type OrderPayment struct {
-	Method string  `json:"method" dynamodbav:"method"`
-	Label  string  `json:"label" dynamodbav:"label"`
-	Amount float64 `json:"amount" dynamodbav:"amount"`
-	Status string  `json:"status" dynamodbav:"status"`
+	Method       string  `json:"method" dynamodbav:"method"`
+	Label        string  `json:"label" dynamodbav:"label"`
+	Amount       float64 `json:"amount" dynamodbav:"amount"`
+	Status       string  `json:"status" dynamodbav:"status"`
+	Installments int     `json:"installments,omitempty" dynamodbav:"installments,omitempty"`
+}
+
+type UpdateOrderStatusRequest struct {
+	Status string `json:"status"`
 }
 
 type CreateOrderRequest struct {
@@ -124,6 +139,18 @@ type CollectionPricing struct {
 	CouponCode                   string             `dynamodbav:"coupon_code"`
 	CouponSpreadReductionPercent float64            `dynamodbav:"coupon_spread_reduction_percent"`
 	Coupons                      []CollectionCoupon `dynamodbav:"coupons,omitempty"`
+	CreditColoreMaxAmount        float64            `dynamodbav:"credit_colore_max_amount"`
+}
+
+type Credit struct {
+	UserID      string  `dynamodbav:"user_id"`
+	CreditLimit float64 `dynamodbav:"credit_limit"`
+	UsedCredit  float64 `dynamodbav:"used_credit"`
+}
+
+type UserRole struct {
+	Active        bool   `dynamodbav:"active"`
+	DeactivatedAt string `dynamodbav:"deactivated_at,omitempty"`
 }
 
 type CollectionCoupon struct {
@@ -148,6 +175,8 @@ var (
 	dynamoClient      *dynamodb.DynamoDB
 	tableName         = "mundocolore-orders"
 	productsTableName = "mundocolore-products"
+	creditTableName   = "mundocolore-credit"
+	roleTableName     = "mundocolore-role"
 	jwtSecret         = []byte("your-secret-key")
 )
 
@@ -168,6 +197,12 @@ func init() {
 	}
 	if value := os.Getenv("PRODUCTS_TABLE_NAME"); value != "" {
 		productsTableName = value
+	}
+	if value := os.Getenv("CREDIT_TABLE_NAME"); value != "" {
+		creditTableName = value
+	}
+	if value := os.Getenv("ROLE_TABLE_NAME"); value != "" {
+		roleTableName = value
 	}
 	if secret := os.Getenv("JWT_SECRET"); secret != "" {
 		jwtSecret = []byte(secret)
@@ -196,6 +231,29 @@ func HandleGetOrders(_ context.Context, _ events.APIGatewayProxyRequest, userID 
 	}
 
 	body, _ := json.Marshal(orders)
+	return successJSONResponse(200, string(body)), nil
+}
+
+func HandleGetAdminOrders(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	orders, err := getAdminOrders(request.QueryStringParameters)
+	if err != nil {
+		return serverErrorResponse(err), nil
+	}
+	body, _ := json.Marshal(map[string]interface{}{"orders": orders})
+	return successJSONResponse(200, string(body)), nil
+}
+
+func HandleUpdateOrderStatus(_ context.Context, request events.APIGatewayProxyRequest, adminUserID string) (events.APIGatewayProxyResponse, error) {
+	orderID := extractOrderIDFromAdminPath(request.Path)
+	var req UpdateOrderStatusRequest
+	if orderID == "" || json.Unmarshal([]byte(request.Body), &req) != nil {
+		return badRequestResponse("invalid request"), nil
+	}
+	order, err := updateOrderStatus(orderID, req.Status, adminUserID)
+	if err != nil {
+		return badRequestResponse(err.Error()), nil
+	}
+	body, _ := json.Marshal(order)
 	return successJSONResponse(200, string(body)), nil
 }
 
@@ -375,6 +433,20 @@ func createOrder(userID string, req CreateOrderRequest, request events.APIGatewa
 	if strings.TrimSpace(payment.Status) == "" {
 		payment.Status = "pending"
 	}
+	status := "pending_payment"
+	if payment.Method == "credit_colore" {
+		if payment.Installments < 1 || payment.Installments > 5 {
+			return OrderResponse{}, fmt.Errorf("credit colore installments must be between 1 and 5")
+		}
+		if err := validateCreditColoreCollections(items, total); err != nil {
+			return OrderResponse{}, err
+		}
+		if err := reserveCredit(userID, total); err != nil {
+			return OrderResponse{}, err
+		}
+		status = "pending_approval"
+		payment.Status = "pending_approval"
+	}
 
 	order := Order{
 		ID:               generateID(),
@@ -386,7 +458,8 @@ func createOrder(userID string, req CreateOrderRequest, request events.APIGatewa
 		CouponCode:       normalizeCouponCode(req.CouponCode),
 		Total:            total,
 		Currency:         currency,
-		Status:           "pending_payment",
+		Status:           status,
+		StatusHistory:    []OrderStatusHistory{{Status: status, ChangedAt: now, ChangedBy: userID}},
 		Billing:          billing,
 		Customer:         customer,
 		DeliveryAddress:  sanitizeAddress(req.DeliveryAddress),
@@ -400,6 +473,9 @@ func createOrder(userID string, req CreateOrderRequest, request events.APIGatewa
 
 	item, err := dynamodbattribute.MarshalMap(order)
 	if err != nil {
+		if payment.Method == "credit_colore" {
+			_ = releaseCredit(userID, total)
+		}
 		return OrderResponse{}, err
 	}
 
@@ -412,6 +488,261 @@ func createOrder(userID string, req CreateOrderRequest, request events.APIGatewa
 	}
 
 	return OrderResponse(order), nil
+}
+
+func validateCreditColoreCollections(items []OrderItem, total float64) error {
+	seen := map[string]struct{}{}
+	for _, item := range items {
+		product, err := getProductPricing(item.ProductID)
+		if err != nil {
+			return err
+		}
+		if _, exists := seen[product.CollectionKey]; exists {
+			continue
+		}
+		seen[product.CollectionKey] = struct{}{}
+		collection, err := getCollectionPricing(product.CollectionKey)
+		if err != nil {
+			return err
+		}
+		if collection.CreditColoreMaxAmount <= 0 {
+			return fmt.Errorf("credit colore is not available for collection %s", product.CollectionKey)
+		}
+		if total > collection.CreditColoreMaxAmount {
+			return fmt.Errorf("order exceeds credit colore limit for collection %s", product.CollectionKey)
+		}
+	}
+	return nil
+}
+
+func reserveCredit(userID string, amount float64) error {
+	credit, err := getCredit(userID)
+	if err != nil {
+		return err
+	}
+	newUsed := roundMoney(credit.UsedCredit + amount)
+	if newUsed > credit.CreditLimit {
+		return fmt.Errorf("insufficient credit colore balance")
+	}
+	_, err = dynamoClient.UpdateItem(&dynamodb.UpdateItemInput{
+		TableName:           aws.String(creditTableName),
+		Key:                 map[string]*dynamodb.AttributeValue{"user_id": {S: aws.String(userID)}},
+		UpdateExpression:    aws.String("SET used_credit = :new_used, updated_at = :updated_at"),
+		ConditionExpression: aws.String("used_credit = :old_used AND credit_limit >= :new_used"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":old_used":   {N: aws.String(fmt.Sprintf("%.2f", credit.UsedCredit))},
+			":new_used":   {N: aws.String(fmt.Sprintf("%.2f", newUsed))},
+			":updated_at": {S: aws.String(time.Now().UTC().Format(time.RFC3339))},
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("credit colore balance changed or is insufficient")
+	}
+	return nil
+}
+
+func releaseCredit(userID string, amount float64) error {
+	_, err := dynamoClient.UpdateItem(&dynamodb.UpdateItemInput{
+		TableName:           aws.String(creditTableName),
+		Key:                 map[string]*dynamodb.AttributeValue{"user_id": {S: aws.String(userID)}},
+		UpdateExpression:    aws.String("SET used_credit = used_credit - :amount, updated_at = :updated_at"),
+		ConditionExpression: aws.String("used_credit >= :amount"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":amount":     {N: aws.String(fmt.Sprintf("%.2f", roundMoney(amount)))},
+			":updated_at": {S: aws.String(time.Now().UTC().Format(time.RFC3339))},
+		},
+	})
+	return err
+}
+
+func getCredit(userID string) (Credit, error) {
+	result, err := dynamoClient.GetItem(&dynamodb.GetItemInput{
+		TableName:      aws.String(creditTableName),
+		Key:            map[string]*dynamodb.AttributeValue{"user_id": {S: aws.String(userID)}},
+		ConsistentRead: aws.Bool(true),
+	})
+	if err != nil {
+		return Credit{}, err
+	}
+	if result.Item == nil {
+		return Credit{}, fmt.Errorf("insufficient credit colore balance")
+	}
+	var credit Credit
+	if err := dynamodbattribute.UnmarshalMap(result.Item, &credit); err != nil {
+		return Credit{}, err
+	}
+	return credit, nil
+}
+
+func getAdminOrders(filters map[string]string) ([]OrderResponse, error) {
+	items, err := scanAll(tableName)
+	if err != nil {
+		return nil, err
+	}
+	orders := make([]OrderResponse, 0, len(items))
+	for _, item := range items {
+		var order Order
+		if dynamodbattribute.UnmarshalMap(item, &order) != nil || order.ID == "" || order.Status == "health" {
+			continue
+		}
+		if !orderMatchesFilters(order, filters) {
+			continue
+		}
+		orders = append(orders, OrderResponse(order))
+	}
+	sortOrders(orders, filters["sort"])
+	return orders, nil
+}
+
+func orderMatchesFilters(order Order, filters map[string]string) bool {
+	contains := func(value, query string) bool {
+		return query == "" || strings.Contains(strings.ToLower(value), strings.ToLower(query))
+	}
+	if !contains(order.UserID+" "+order.Customer.Name+" "+order.Customer.Email+" "+order.Customer.CPF, filters["user"]) {
+		return false
+	}
+	if filters["status"] != "" && order.Status != filters["status"] {
+		return false
+	}
+	if filters["created_from"] != "" && order.CreatedAt < filters["created_from"] {
+		return false
+	}
+	if filters["created_to"] != "" && order.CreatedAt > filters["created_to"]+"T23:59:59" {
+		return false
+	}
+	if filters["min_value"] != "" {
+		if value, _ := strconv.ParseFloat(filters["min_value"], 64); order.Total < value {
+			return false
+		}
+	}
+	if filters["max_value"] != "" {
+		if value, _ := strconv.ParseFloat(filters["max_value"], 64); value > 0 && order.Total > value {
+			return false
+		}
+	}
+	for _, item := range order.Items {
+		if contains(item.Brand, filters["brand"]) && contains(item.Collection, filters["collection"]) {
+			return true
+		}
+	}
+	return filters["brand"] == "" && filters["collection"] == ""
+}
+
+func sortOrders(orders []OrderResponse, sortValue string) {
+	sort.Slice(orders, func(i, j int) bool {
+		switch sortValue {
+		case "value_asc":
+			return orders[i].Total < orders[j].Total
+		case "value_desc":
+			return orders[i].Total > orders[j].Total
+		case "date_asc":
+			return orders[i].CreatedAt < orders[j].CreatedAt
+		default:
+			return orders[i].CreatedAt > orders[j].CreatedAt
+		}
+	})
+}
+
+func updateOrderStatus(orderID, status, adminUserID string) (OrderResponse, error) {
+	allowed := map[string]bool{
+		"approved": true, "packed": true, "shipped": true, "delivered": true, "finished": true, "cancelled": true,
+	}
+	status = strings.ToLower(strings.TrimSpace(status))
+	if !allowed[status] {
+		return OrderResponse{}, fmt.Errorf("invalid order status")
+	}
+	order, err := findOrderByID(orderID)
+	if err != nil {
+		return OrderResponse{}, err
+	}
+	if order.Status == "cancelled" && status != "cancelled" {
+		return OrderResponse{}, fmt.Errorf("cancelled order cannot change status")
+	}
+	if status == "cancelled" && order.Status != "cancelled" && order.Payment.Method == "credit_colore" {
+		if err := releaseCredit(order.UserID, order.Total); err != nil {
+			return OrderResponse{}, err
+		}
+	}
+	now := time.Now().UTC().Format(time.RFC3339)
+	order.Status = status
+	order.UpdatedAt = now
+	order.StatusHistory = append(order.StatusHistory, OrderStatusHistory{Status: status, ChangedAt: now, ChangedBy: adminUserID})
+	if status == "approved" {
+		order.ApprovedAt = now
+		order.Payment.Status = "approved"
+	} else if status == "cancelled" {
+		order.Payment.Status = "cancelled"
+	}
+	item, err := dynamodbattribute.MarshalMap(order)
+	if err != nil {
+		return OrderResponse{}, err
+	}
+	_, err = dynamoClient.PutItem(&dynamodb.PutItemInput{TableName: aws.String(tableName), Item: item})
+	if err != nil && status == "cancelled" && order.Payment.Method == "credit_colore" {
+		_ = reserveCredit(order.UserID, order.Total)
+	}
+	return OrderResponse(order), err
+}
+
+func findOrderByID(orderID string) (Order, error) {
+	var startKey map[string]*dynamodb.AttributeValue
+	for {
+		result, err := dynamoClient.Scan(&dynamodb.ScanInput{
+			TableName:                 aws.String(tableName),
+			FilterExpression:          aws.String("id = :id"),
+			ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{":id": {S: aws.String(orderID)}},
+			ExclusiveStartKey:         startKey,
+		})
+		if err != nil {
+			return Order{}, err
+		}
+		if len(result.Items) > 0 {
+			var order Order
+			err = dynamodbattribute.UnmarshalMap(result.Items[0], &order)
+			return order, err
+		}
+		if len(result.LastEvaluatedKey) == 0 {
+			return Order{}, fmt.Errorf("order not found")
+		}
+		startKey = result.LastEvaluatedKey
+	}
+}
+
+func scanAll(table string) ([]map[string]*dynamodb.AttributeValue, error) {
+	items := []map[string]*dynamodb.AttributeValue{}
+	var startKey map[string]*dynamodb.AttributeValue
+	for {
+		result, err := dynamoClient.Scan(&dynamodb.ScanInput{TableName: aws.String(table), ExclusiveStartKey: startKey})
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, result.Items...)
+		if len(result.LastEvaluatedKey) == 0 {
+			return items, nil
+		}
+		startKey = result.LastEvaluatedKey
+	}
+}
+
+func isActiveAdmin(userID string) bool {
+	result, err := dynamoClient.GetItem(&dynamodb.GetItemInput{
+		TableName:      aws.String(roleTableName),
+		Key:            map[string]*dynamodb.AttributeValue{"id": {S: aws.String(userID)}},
+		ConsistentRead: aws.Bool(true),
+	})
+	if err != nil || result.Item == nil {
+		return false
+	}
+	var role UserRole
+	return dynamodbattribute.UnmarshalMap(result.Item, &role) == nil && role.Active && strings.TrimSpace(role.DeactivatedAt) == ""
+}
+
+func extractOrderIDFromAdminPath(path string) string {
+	parts := strings.Split(path, "/orders/admin/")
+	if len(parts) < 2 {
+		return ""
+	}
+	return strings.Split(strings.Trim(parts[len(parts)-1], "/"), "/")[0]
 }
 
 func getOrders(userID string) ([]OrderResponse, error) {

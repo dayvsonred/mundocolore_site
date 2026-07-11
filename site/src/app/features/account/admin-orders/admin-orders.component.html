@@ -1,0 +1,24 @@
+<section class="admin-page">
+  <header><h1>Lista de pedidos</h1><p>Consulte, aprove e acompanhe todos os pedidos.</p></header>
+  <form class="filters" (ngSubmit)="loadOrders()">
+    <mat-form-field appearance="outline"><mat-label>Usuario</mat-label><input matInput name="user" [(ngModel)]="filters['user']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Marca</mat-label><input matInput name="brand" [(ngModel)]="filters['brand']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Colecao</mat-label><input matInput name="collection" [(ngModel)]="filters['collection']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Status</mat-label><mat-select name="status" [(ngModel)]="filters['status']"><mat-option value="">Todos</mat-option><mat-option value="pending_payment">Aguardando pagamento</mat-option><mat-option value="pending_approval">Aguardando aprovacao</mat-option><mat-option *ngFor="let status of statuses" [value]="status[0]">{{ status[1] }}</mat-option></mat-select></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Data inicial</mat-label><input matInput type="date" name="created_from" [(ngModel)]="filters['created_from']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Data final</mat-label><input matInput type="date" name="created_to" [(ngModel)]="filters['created_to']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Valor minimo</mat-label><input matInput type="number" name="min_value" [(ngModel)]="filters['min_value']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Valor maximo</mat-label><input matInput type="number" name="max_value" [(ngModel)]="filters['max_value']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Ordenar</mat-label><mat-select name="sort" [(ngModel)]="filters['sort']"><mat-option value="date_desc">Mais recentes</mat-option><mat-option value="date_asc">Mais antigos</mat-option><mat-option value="value_desc">Maior valor</mat-option><mat-option value="value_asc">Menor valor</mat-option></mat-select></mat-form-field>
+    <button mat-raised-button color="primary" type="submit">Filtrar</button><button mat-stroked-button type="button" (click)="pendingApproval()">Pendentes de aprovacao</button><button mat-stroked-button type="button" (click)="clearFilters()">Limpar</button>
+  </form>
+  <mat-spinner *ngIf="loading" diameter="34"></mat-spinner>
+  <div class="records" *ngIf="!loading">
+    <article *ngFor="let order of orders">
+      <div><h3>Pedido {{ order.id }}</h3><p>{{ order.customer?.name }} | {{ order.customer?.email }}</p><small>{{ order.created_at | date:'dd/MM/yyyy HH:mm' }} | {{ order.payment?.label }} | {{ order.status }}</small></div>
+      <strong>R$ {{ order.total | number:'1.2-2' }}</strong>
+      <mat-form-field appearance="outline"><mat-label>Alterar status</mat-label><mat-select (selectionChange)="changeStatus(order, $event.value)"><mat-option *ngFor="let status of statuses" [value]="status[0]">{{ status[1] }}</mat-option></mat-select></mat-form-field>
+      <div class="history"><span *ngFor="let event of order.status_history">{{ event.status }}: {{ event.changed_at | date:'dd/MM/yyyy HH:mm' }}</span></div>
+    </article>
+  </div>
+</section>

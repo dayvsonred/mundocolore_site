@@ -31,6 +31,18 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		return unauthorizedResponse("invalid token"), nil
 	}
 
+	if strings.Contains(request.Path, "/orders/admin") {
+		if !isActiveAdmin(userID) {
+			return unauthorizedResponse("admin access required"), nil
+		}
+		if request.HTTPMethod == "GET" && strings.HasSuffix(request.Path, "/orders/admin") {
+			return HandleGetAdminOrders(ctx, request)
+		}
+		if (request.HTTPMethod == "PATCH" || request.HTTPMethod == "PUT") && strings.HasSuffix(request.Path, "/status") {
+			return HandleUpdateOrderStatus(ctx, request, userID)
+		}
+	}
+
 	switch request.HTTPMethod {
 	case "POST":
 		if strings.HasSuffix(request.Path, "/orders/coupon") {
