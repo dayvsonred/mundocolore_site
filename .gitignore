@@ -17,6 +17,7 @@ temp/
 .env.*
 !.env.example
 back/.jwt
+back/send_email/.chave_brevo_api_key
 
 # Logs
 logs/

@@ -2,8 +2,11 @@ package creditcolore
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -14,6 +17,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -61,17 +65,29 @@ type AddCreditRequest struct {
 	Amount float64 `json:"amount"`
 }
 
+type EmailQueuePayload struct {
+	ID      string            `json:"id"`
+	UUID    string            `json:"uuid"`
+	Type    string            `json:"type"`
+	ToEmail string            `json:"to_email"`
+	ToName  string            `json:"to_name,omitempty"`
+	Data    map[string]string `json:"data"`
+}
+
 var (
-	dynamoClient *dynamodb.DynamoDB
-	tableName    = "mundocolore-credit"
-	usersTable   = "mundocolore-users"
-	roleTable    = "mundocolore-role"
-	jwtSecret    = []byte("your-secret-key")
+	dynamoClient  *dynamodb.DynamoDB
+	sqsClient     *sqs.SQS
+	tableName     = "mundocolore-credit"
+	usersTable    = "mundocolore-users"
+	roleTable     = "mundocolore-role"
+	emailQueueURL = ""
+	jwtSecret     = []byte("your-secret-key")
 )
 
 func init() {
 	sess := session.Must(session.NewSession(&aws.Config{Region: aws.String("sa-east-1")}))
 	dynamoClient = dynamodb.New(sess)
+	sqsClient = sqs.New(sess)
 	if value := os.Getenv("TABLE_NAME"); value != "" {
 		tableName = value
 	}
@@ -84,6 +100,9 @@ func init() {
 	if value := os.Getenv("JWT_SECRET"); value != "" {
 		jwtSecret = []byte(value)
 	}
+	if value := os.Getenv("EMAIL_QUEUE_URL"); value != "" {
+		emailQueueURL = value
+	}
 }
 
 func HandleGetCredit(_ context.Context, userID string) (events.APIGatewayProxyResponse, error) {
@@ -92,6 +111,56 @@ func HandleGetCredit(_ context.Context, userID string) (events.APIGatewayProxyRe
 		return errorResponse(500, err.Error()), nil
 	}
 	return marshalResponse(200, toCreditResponse(credit)), nil
+}
+
+func getUserByID(userID string) (User, error) {
+	result, err := dynamoClient.GetItem(&dynamodb.GetItemInput{
+		TableName: aws.String(usersTable),
+		Key:       map[string]*dynamodb.AttributeValue{"id": {S: aws.String(userID)}},
+	})
+	if err != nil {
+		return User{}, err
+	}
+	if result.Item == nil {
+		return User{}, fmt.Errorf("user not found")
+	}
+	var user User
+	if err := dynamodbattribute.UnmarshalMap(result.Item, &user); err != nil {
+		return User{}, err
+	}
+	return user, nil
+}
+
+func enqueueCreditAddedEmail(userID string, amount float64, credit Credit) error {
+	if strings.TrimSpace(emailQueueURL) == "" {
+		return nil
+	}
+	user, err := getUserByID(userID)
+	if err != nil || strings.TrimSpace(user.Email) == "" {
+		return err
+	}
+	emailID := generateID()
+	payload := EmailQueuePayload{
+		ID:      emailID,
+		UUID:    emailID,
+		Type:    "notificacao-credito-colore-adicionado",
+		ToEmail: user.Email,
+		ToName:  user.Name,
+		Data: map[string]string{
+			"nome_do_cliente":    user.Name,
+			"valor_credito":      formatBRL(amount),
+			"credito_disponivel": formatBRL(toCreditResponse(credit).AvailableCredit),
+		},
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	_, err = sqsClient.SendMessage(&sqs.SendMessageInput{
+		QueueUrl:    aws.String(emailQueueURL),
+		MessageBody: aws.String(string(body)),
+	})
+	return err
 }
 
 func HandleListUsers(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -194,6 +263,9 @@ func HandleAddCredit(_ context.Context, request events.APIGatewayProxyRequest, a
 	credit, err := getOrCreateCredit(userID)
 	if err != nil {
 		return errorResponse(500, err.Error()), nil
+	}
+	if err := enqueueCreditAddedEmail(userID, req.Amount, credit); err != nil {
+		log.Printf("failed to enqueue credit email user=%s: %v", userID, err)
 	}
 	return marshalResponse(200, toCreditResponse(credit)), nil
 }
@@ -313,6 +385,16 @@ func onlyDigits(value string) string {
 func roundMoney(value float64) float64 {
 	parsed, _ := strconv.ParseFloat(fmt.Sprintf("%.2f", value), 64)
 	return parsed
+}
+
+func formatBRL(value float64) string {
+	return fmt.Sprintf("R$ %.2f", roundMoney(value))
+}
+
+func generateID() string {
+	bytes := make([]byte, 16)
+	_, _ = rand.Read(bytes)
+	return hex.EncodeToString(bytes)
 }
 
 func marshalResponse(status int, value interface{}) events.APIGatewayProxyResponse {

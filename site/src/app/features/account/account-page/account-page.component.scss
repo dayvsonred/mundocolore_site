@@ -112,11 +112,30 @@
           .value {
             color: #333;
           }
+
+          .email-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #b26a00;
+            font-weight: 600;
+
+            mat-icon {
+              width: 18px;
+              height: 18px;
+              font-size: 18px;
+            }
+
+            &.confirmed {
+              color: #2e7d32;
+            }
+          }
         }
       }
 
       .account-actions {
         display: flex;
+        flex-wrap: wrap;
         gap: 12px;
         margin-top: 24px;
       }

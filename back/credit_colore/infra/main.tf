@@ -16,6 +16,12 @@ data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 data "aws_api_gateway_rest_api" "gateway" { name = "mundocolore-gateway" }
 
+locals {
+  email_queue_name = "mundocolore-send-email"
+  email_queue_url  = "https://sqs.${data.aws_region.current.name}.amazonaws.com/${data.aws_caller_identity.current.account_id}/${local.email_queue_name}"
+  email_queue_arn  = "arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${local.email_queue_name}"
+}
+
 resource "aws_iam_role" "lambda_role" {
   name = "lb_mundocolore-credit-colore-role"
   assume_role_policy = jsonencode({
@@ -29,15 +35,22 @@ resource "aws_iam_role_policy" "dynamodb_policy" {
   role = aws_iam_role.lambda_role.id
   policy = jsonencode({
     Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Scan", "dynamodb:Query"]
-      Resource = [
-        "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-credit",
-        "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-users",
-        "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-role"
-      ]
-    }]
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Scan", "dynamodb:Query"]
+        Resource = [
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-credit",
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-users",
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-role"
+        ]
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["sqs:SendMessage"]
+        Resource = local.email_queue_arn
+      }
+    ]
   })
 }
 
@@ -55,6 +68,7 @@ resource "aws_lambda_function" "credit_colore_lambda" {
       TABLE_NAME       = "mundocolore-credit"
       USERS_TABLE_NAME = "mundocolore-users"
       ROLE_TABLE_NAME  = "mundocolore-role"
+      EMAIL_QUEUE_URL  = local.email_queue_url
       JWT_SECRET       = var.jwt_secret
     }
   }

@@ -21,6 +21,9 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		if strings.HasSuffix(request.Path, "/admin/check") {
 			return HandleAdminCheck(ctx, request)
 		}
+		if strings.HasSuffix(request.Path, "/confirmEmail") {
+			return HandleConfirmEmail(ctx, request)
+		}
 	}
 
 	if request.HTTPMethod == "POST" && strings.HasSuffix(request.Path, "/register") {
@@ -37,6 +40,10 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 
 	if request.HTTPMethod == "PUT" && strings.HasSuffix(request.Path, "/profile") {
 		return HandleUpdateProfile(ctx, request)
+	}
+
+	if request.HTTPMethod == "POST" && strings.HasSuffix(request.Path, "/resend-email-confirmation") {
+		return HandleResendEmailConfirmation(ctx, request)
 	}
 
 	return notFoundResponse(), nil

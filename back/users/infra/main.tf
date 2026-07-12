@@ -20,6 +20,9 @@ locals {
   cors_allow_headers = "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token"
   cors_allow_methods = "GET,POST,PUT,PATCH,DELETE,OPTIONS"
   cors_allow_origin  = "*"
+  email_queue_name   = "mundocolore-send-email"
+  email_queue_url    = "https://sqs.${data.aws_region.current.name}.amazonaws.com/${data.aws_caller_identity.current.account_id}/${local.email_queue_name}"
+  email_queue_arn    = "arn:aws:sqs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:${local.email_queue_name}"
 }
 
 # IAM Role for Lambda
@@ -53,6 +56,7 @@ resource "aws_iam_role_policy" "dynamodb_policy" {
         Action = [
           "dynamodb:GetItem",
           "dynamodb:PutItem",
+          "dynamodb:UpdateItem",
           "dynamodb:Scan",
           "dynamodb:Query"
         ]
@@ -61,6 +65,13 @@ resource "aws_iam_role_policy" "dynamodb_policy" {
           "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-users/index/*",
           "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-role"
         ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "sqs:SendMessage"
+        ]
+        Resource = local.email_queue_arn
       }
     ]
   })
@@ -83,6 +94,8 @@ resource "aws_lambda_function" "users_lambda" {
     variables = {
       TABLE_NAME      = "mundocolore-users"
       ROLE_TABLE_NAME = "mundocolore-role"
+      EMAIL_QUEUE_URL = local.email_queue_url
+      SITE_BASE_URL   = "https://mundocolorestore.com"
       JWT_SECRET      = var.jwt_secret
     }
   }
@@ -187,6 +200,50 @@ resource "aws_api_gateway_method" "profile_get" {
   resource_id   = aws_api_gateway_resource.profile_resource.id
   http_method   = "GET"
   authorization = "NONE"
+}
+
+resource "aws_api_gateway_resource" "confirm_email_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.users_resource.id
+  path_part   = "confirmEmail"
+}
+
+resource "aws_api_gateway_method" "confirm_email_get" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.confirm_email_resource.id
+  http_method   = "GET"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "confirm_email_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.confirm_email_resource.id
+  http_method             = aws_api_gateway_method.confirm_email_get.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.users_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_resource" "resend_email_confirmation_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.users_resource.id
+  path_part   = "resend-email-confirmation"
+}
+
+resource "aws_api_gateway_method" "resend_email_confirmation_post" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.resend_email_confirmation_resource.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "resend_email_confirmation_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.resend_email_confirmation_resource.id
+  http_method             = aws_api_gateway_method.resend_email_confirmation_post.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.users_lambda.invoke_arn
 }
 
 resource "aws_api_gateway_integration" "profile_integration" {
@@ -326,6 +383,8 @@ locals {
     users_register      = aws_api_gateway_resource.register_resource.id
     users_login         = aws_api_gateway_resource.login_resource.id
     users_profile       = aws_api_gateway_resource.profile_resource.id
+    users_confirm_email = aws_api_gateway_resource.confirm_email_resource.id
+    users_resend_email  = aws_api_gateway_resource.resend_email_confirmation_resource.id
     users_admin         = aws_api_gateway_resource.admin_resource.id
     users_admin_check   = aws_api_gateway_resource.admin_check_resource.id
     users_show_id       = aws_api_gateway_resource.show_id_resource.id

@@ -18,6 +18,7 @@ from typing import Iterable
 
 BACKEND_DIR = Path(__file__).resolve().parent
 JWT_FILE_PATH = BACKEND_DIR / ".jwt"
+BREVO_API_KEY_FILE_PATH = BACKEND_DIR / "send_email" / ".chave_brevo_api_key"
 VERSION_PATTERN = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 PLAN_FILE_NAME = ".deploy.tfplan"
 CONTACT_TERRAFORM_ARGS = (
@@ -116,6 +117,17 @@ def load_jwt_secret(path: Path = JWT_FILE_PATH) -> str:
     return secret
 
 
+def load_brevo_api_key(path: Path = BREVO_API_KEY_FILE_PATH) -> str:
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"Arquivo Brevo nao encontrado: {path}. Crie o arquivo com a chave da API."
+        )
+    api_key = path.read_text(encoding="utf-8").strip()
+    if not api_key:
+        raise ValueError(f"{path} deve conter a chave da API Brevo.")
+    return api_key
+
+
 def terraform_args(module: LambdaModule) -> list[str]:
     return list(CONTACT_TERRAFORM_ARGS) if module.name == "contact" else []
 
@@ -210,6 +222,12 @@ def pending_modules(modules: list[LambdaModule]) -> list[LambdaModule]:
     return pending
 
 
+def deployment_order(module: LambdaModule) -> tuple[int, str]:
+    if module.name == "send_email":
+        return (0, module.name)
+    return (1, module.name)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Compila e publica Lambdas Go cuja version_local e superior a version_update."
@@ -245,6 +263,7 @@ def main() -> int:
     try:
         modules = discover_modules(selected_names)
         pending = pending_modules(modules)
+        pending.sort(key=deployment_order)
         if not pending:
             print("\nNenhuma Lambda possui version_local superior a version_update.")
             return 0
@@ -255,6 +274,8 @@ def main() -> int:
         env = os.environ.copy()
         env["AWS_PROFILE"] = args.profile
         env["TF_VAR_jwt_secret"] = load_jwt_secret()
+        if any(module.name == "send_email" for module in pending):
+            env["TF_VAR_brevo_api_key"] = load_brevo_api_key()
         failures: list[str] = []
         print(
             f"\nLambdas pendentes: {', '.join(module.name for module in pending)}"

@@ -317,6 +317,25 @@ export class AuthenticationService {
     );
   }
 
+  resendEmailConfirmation(): Observable<any> {
+    const token = this.getToken();
+    if (!token) {
+      return throwError(() => 'No token');
+    }
+
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.post<any>(`${this.apiUrl}/users/resend-email-confirmation`, {}, { headers }).pipe(
+      catchError((error) =>
+        throwError(
+          () =>
+            error?.error?.message ||
+            error?.error?.error ||
+            'Nao foi possivel reenviar o email de confirmacao.'
+        )
+      )
+    );
+  }
+
   sendPageVisualization(payload: {
     page: string;
     timestamp?: string;
@@ -405,6 +424,8 @@ export class AuthenticationService {
     const userBirthDate = response?.user?.birth_date || response?.birth_date || '';
     const userGender = response?.user?.gender || response?.gender || '';
     const userRole = response?.user?.role ?? response?.role ?? false;
+    const emailConfirmed = response?.user?.email_confirmed ?? response?.email_confirmed ?? false;
+    const emailConfirmedAt = response?.user?.email_confirmed_at || response?.email_confirmed_at || '';
     const contaNivel = response?.conta_nivel ?? {};
     const isAdmin = !!(response?.user?.is_admin ?? response?.is_admin ?? false);
 
@@ -430,6 +451,8 @@ export class AuthenticationService {
         birth_date: userBirthDate,
         gender: userGender,
         role: userRole,
+        email_confirmed: emailConfirmed,
+        email_confirmed_at: emailConfirmedAt,
         conta_nivel_ativo: contaNivel.ativo ?? null,
         conta_nivel_data_update: contaNivel.data_update ?? null,
         conta_nivel_data_nivel: contaNivel.nivel ?? null,
@@ -488,6 +511,8 @@ export class AuthenticationService {
       birth_date: profile?.birth_date || currentUser.birth_date || '',
       gender: profile?.gender || currentUser.gender || '',
       role: profile?.role ?? currentUser.role ?? false,
+      email_confirmed: profile?.email_confirmed ?? currentUser.email_confirmed ?? false,
+      email_confirmed_at: profile?.email_confirmed_at || currentUser.email_confirmed_at || '',
       isAdmin: profile?.is_admin ?? currentUser.isAdmin ?? false
     };
 

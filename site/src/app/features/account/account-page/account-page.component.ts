@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { AuthenticationService } from 'src/app/core/services/auth.service';
+import { NotificationService } from 'src/app/core/services/notification.service';
 
 interface RecentOrder {
   id: string;
@@ -18,8 +19,10 @@ interface RecentOrder {
 export class AccountPageComponent implements OnInit {
   user = {
     name: 'Usuario',
-    email: ''
+    email: '',
+    email_confirmed: false
   };
+  resendingConfirmation = false;
 
   recentOrders: RecentOrder[] = [];
   defaultAddress = 'Rua das Flores, 123 - Sao Paulo/SP';
@@ -27,7 +30,8 @@ export class AccountPageComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private authService: AuthenticationService
+    private authService: AuthenticationService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -35,9 +39,20 @@ export class AccountPageComponent implements OnInit {
     if (currentUser) {
       this.user = {
         name: currentUser.fullName || currentUser.name || 'Usuario',
-        email: currentUser.email || ''
+        email: currentUser.email || '',
+        email_confirmed: !!currentUser.email_confirmed
       };
     }
+    this.authService.getProfile().subscribe({
+      next: (profile) => {
+        this.user = {
+          name: profile?.name || this.user.name,
+          email: profile?.email || this.user.email,
+          email_confirmed: !!profile?.email_confirmed
+        };
+      },
+      error: () => {}
+    });
     this.loadMockData();
   }
 
@@ -72,6 +87,24 @@ export class AccountPageComponent implements OnInit {
 
   changePassword(): void {
     console.log('Change password');
+  }
+
+  resendEmailConfirmation(): void {
+    if (this.user.email_confirmed || this.resendingConfirmation) {
+      return;
+    }
+
+    this.resendingConfirmation = true;
+    this.authService.resendEmailConfirmation().subscribe({
+      next: () => {
+        this.resendingConfirmation = false;
+        this.notificationService.openSnackBar('Email de confirmacao enviado.');
+      },
+      error: (error) => {
+        this.resendingConfirmation = false;
+        this.notificationService.openSnackBar(error || 'Nao foi possivel reenviar o email.');
+      }
+    });
   }
 
   manageAddresses(): void {

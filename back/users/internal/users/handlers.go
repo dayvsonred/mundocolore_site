@@ -6,6 +6,8 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -15,21 +17,26 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
-	ID        string `json:"id" dynamodbav:"id"`
-	Email     string `json:"email" dynamodbav:"email"`
-	Name      string `json:"name,omitempty" dynamodbav:"name"`
-	CPF       string `json:"cpf,omitempty" dynamodbav:"cpf"`
-	Phone     string `json:"phone,omitempty" dynamodbav:"phone"`
-	BirthDate string `json:"birth_date,omitempty" dynamodbav:"birth_date"`
-	Gender    string `json:"gender,omitempty" dynamodbav:"gender"`
-	Role      bool   `json:"role" dynamodbav:"ROLE"`
-	Password  string `json:"-" dynamodbav:"password"`
-	CreatedAt string `json:"created_at" dynamodbav:"created_at"`
+	ID                           string `json:"id" dynamodbav:"id"`
+	Email                        string `json:"email" dynamodbav:"email"`
+	Name                         string `json:"name,omitempty" dynamodbav:"name"`
+	CPF                          string `json:"cpf,omitempty" dynamodbav:"cpf"`
+	Phone                        string `json:"phone,omitempty" dynamodbav:"phone"`
+	BirthDate                    string `json:"birth_date,omitempty" dynamodbav:"birth_date"`
+	Gender                       string `json:"gender,omitempty" dynamodbav:"gender"`
+	Role                         bool   `json:"role" dynamodbav:"ROLE"`
+	Password                     string `json:"-" dynamodbav:"password"`
+	CreatedAt                    string `json:"created_at" dynamodbav:"created_at"`
+	EmailConfirmed               bool   `json:"email_confirmed" dynamodbav:"email_confirmed"`
+	EmailConfirmedAt             string `json:"email_confirmed_at,omitempty" dynamodbav:"email_confirmed_at,omitempty"`
+	EmailConfirmationToken       string `json:"-" dynamodbav:"email_confirmation_token,omitempty"`
+	EmailConfirmationRequestedAt string `json:"email_confirmation_requested_at,omitempty" dynamodbav:"email_confirmation_requested_at,omitempty"`
 }
 
 type UserRole struct {
@@ -66,22 +73,36 @@ type LoginRequest struct {
 }
 
 type UserResponse struct {
-	ID        string `json:"id"`
-	Email     string `json:"email"`
-	Name      string `json:"name"`
-	CPF       string `json:"cpf,omitempty"`
-	Phone     string `json:"phone,omitempty"`
-	BirthDate string `json:"birth_date,omitempty"`
-	Gender    string `json:"gender,omitempty"`
-	Role      bool   `json:"role"`
-	IsAdmin   bool   `json:"is_admin"`
-	Token     string `json:"token,omitempty"`
+	ID               string `json:"id"`
+	Email            string `json:"email"`
+	Name             string `json:"name"`
+	CPF              string `json:"cpf,omitempty"`
+	Phone            string `json:"phone,omitempty"`
+	BirthDate        string `json:"birth_date,omitempty"`
+	Gender           string `json:"gender,omitempty"`
+	Role             bool   `json:"role"`
+	IsAdmin          bool   `json:"is_admin"`
+	Token            string `json:"token,omitempty"`
+	EmailConfirmed   bool   `json:"email_confirmed"`
+	EmailConfirmedAt string `json:"email_confirmed_at,omitempty"`
+}
+
+type EmailQueuePayload struct {
+	ID      string            `json:"id"`
+	UUID    string            `json:"uuid"`
+	Type    string            `json:"type"`
+	ToEmail string            `json:"to_email"`
+	ToName  string            `json:"to_name,omitempty"`
+	Data    map[string]string `json:"data"`
 }
 
 var (
 	dynamoClient  *dynamodb.DynamoDB
+	sqsClient     *sqs.SQS
 	tableName     = "mundocolore-users"
 	roleTableName = "mundocolore-role"
+	emailQueueURL = ""
+	siteBaseURL   = "https://mundocolorestore.com"
 	jwtSecret     = []byte("your-secret-key")
 )
 
@@ -96,6 +117,7 @@ func init() {
 		Region: aws.String("sa-east-1"),
 	}))
 	dynamoClient = dynamodb.New(sess)
+	sqsClient = sqs.New(sess)
 	if value := os.Getenv("TABLE_NAME"); value != "" {
 		tableName = value
 	}
@@ -104,6 +126,12 @@ func init() {
 	}
 	if secret := os.Getenv("JWT_SECRET"); secret != "" {
 		jwtSecret = []byte(secret)
+	}
+	if value := os.Getenv("EMAIL_QUEUE_URL"); value != "" {
+		emailQueueURL = value
+	}
+	if value := os.Getenv("SITE_BASE_URL"); value != "" {
+		siteBaseURL = strings.TrimRight(value, "/")
 	}
 }
 
@@ -186,6 +214,89 @@ func HandleUpdateProfile(_ context.Context, request events.APIGatewayProxyReques
 
 	body, _ := json.Marshal(user)
 	return successJSONResponse(200, string(body)), nil
+}
+
+func HandleConfirmEmail(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	email := strings.ToLower(strings.TrimSpace(request.QueryStringParameters["email"]))
+	token := strings.TrimSpace(request.QueryStringParameters["token"])
+	if email == "" || token == "" {
+		return badRequestResponse("email and token are required"), nil
+	}
+
+	user, err := findUserByEmail(email)
+	if err != nil {
+		return badRequestResponse("invalid email confirmation link"), nil
+	}
+	if user.EmailConfirmed {
+		return successJSONResponse(200, `{"message":"email already confirmed","email_confirmed":true}`), nil
+	}
+	if user.EmailConfirmationToken == "" || user.EmailConfirmationToken != token {
+		return badRequestResponse("invalid email confirmation link"), nil
+	}
+
+	now := time.Now().UTC().Format(time.RFC3339)
+	_, err = dynamoClient.UpdateItem(&dynamodb.UpdateItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {S: aws.String(user.ID)},
+		},
+		UpdateExpression: aws.String("SET email_confirmed = :confirmed, email_confirmed_at = :confirmed_at REMOVE email_confirmation_token"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":confirmed":    {BOOL: aws.Bool(true)},
+			":confirmed_at": {S: aws.String(now)},
+		},
+	})
+	if err != nil {
+		return serverErrorResponse(err), nil
+	}
+
+	return successJSONResponse(200, `{"message":"email confirmed","email_confirmed":true}`), nil
+}
+
+func HandleResendEmailConfirmation(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	token := extractBearerToken(request.Headers)
+	if token == "" {
+		return unauthorizedResponse("no token"), nil
+	}
+
+	userID, err := validateJWT(token)
+	if err != nil {
+		return unauthorizedResponse("invalid token"), nil
+	}
+
+	user, err := getUserEntity(userID)
+	if err != nil {
+		return notFoundWithMessage(err.Error()), nil
+	}
+	if user.EmailConfirmed {
+		return badRequestResponse("email already confirmed"), nil
+	}
+
+	confirmationToken := generateID()
+	now := time.Now().UTC().Format(time.RFC3339)
+	_, err = dynamoClient.UpdateItem(&dynamodb.UpdateItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {S: aws.String(user.ID)},
+		},
+		UpdateExpression: aws.String("SET email_confirmation_token = :token, email_confirmation_requested_at = :requested_at"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":token":        {S: aws.String(confirmationToken)},
+			":requested_at": {S: aws.String(now)},
+		},
+	})
+	if err != nil {
+		return serverErrorResponse(err), nil
+	}
+
+	user.EmailConfirmationToken = confirmationToken
+	user.EmailConfirmationRequestedAt = now
+	if err := enqueueEmailConfirmation(user); err != nil {
+		log.Printf("failed to enqueue confirmation email for user=%s: %v", user.ID, err)
+		return serverErrorResponse(err), nil
+	}
+
+	return successJSONResponse(200, `{"message":"confirmation email sent"}`), nil
 }
 
 func HandleGetUserByID(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -340,16 +451,19 @@ func createUser(req CreateUserRequest) (UserResponse, error) {
 	}
 
 	user := User{
-		ID:        generateID(),
-		Email:     email,
-		Name:      name,
-		CPF:       onlyDigits(req.CPF),
-		Phone:     strings.TrimSpace(req.Phone),
-		BirthDate: strings.TrimSpace(req.BirthDate),
-		Gender:    strings.TrimSpace(req.Gender),
-		Role:      false,
-		Password:  hashedPassword,
-		CreatedAt: time.Now().Format(time.RFC3339),
+		ID:                           generateID(),
+		Email:                        email,
+		Name:                         name,
+		CPF:                          onlyDigits(req.CPF),
+		Phone:                        strings.TrimSpace(req.Phone),
+		BirthDate:                    strings.TrimSpace(req.BirthDate),
+		Gender:                       strings.TrimSpace(req.Gender),
+		Role:                         false,
+		Password:                     hashedPassword,
+		CreatedAt:                    time.Now().Format(time.RFC3339),
+		EmailConfirmed:               false,
+		EmailConfirmationToken:       generateID(),
+		EmailConfirmationRequestedAt: time.Now().UTC().Format(time.RFC3339),
 	}
 
 	item, err := dynamodbattribute.MarshalMap(user)
@@ -363,6 +477,10 @@ func createUser(req CreateUserRequest) (UserResponse, error) {
 	})
 	if err != nil {
 		return UserResponse{}, err
+	}
+
+	if err := enqueueEmailConfirmation(user); err != nil {
+		log.Printf("failed to enqueue confirmation email for user=%s: %v", user.ID, err)
 	}
 
 	token, err := generateJWT(user.ID)
@@ -440,6 +558,29 @@ func getUserEntity(userID string) (User, error) {
 	return user, nil
 }
 
+func findUserByEmail(email string) (User, error) {
+	result, err := dynamoClient.Scan(&dynamodb.ScanInput{
+		TableName:        aws.String(tableName),
+		FilterExpression: aws.String("email = :email"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":email": {S: aws.String(email)},
+		},
+		Limit: aws.Int64(1),
+	})
+	if err != nil {
+		return User{}, err
+	}
+	if len(result.Items) == 0 {
+		return User{}, fmt.Errorf("user not found")
+	}
+
+	var user User
+	if err := dynamodbattribute.UnmarshalMap(result.Items[0], &user); err != nil {
+		return User{}, err
+	}
+	return user, nil
+}
+
 func updateUserProfile(userID string, req UpdateProfileRequest) (UserResponse, error) {
 	user, err := getUserEntity(userID)
 	if err != nil {
@@ -504,17 +645,53 @@ func isUserAdmin(user User) bool {
 func toUserResponse(user User, token string) UserResponse {
 	isAdmin := isUserAdmin(user)
 	return UserResponse{
-		ID:        user.ID,
-		Email:     user.Email,
-		Name:      user.Name,
-		CPF:       user.CPF,
-		Phone:     user.Phone,
-		BirthDate: user.BirthDate,
-		Gender:    user.Gender,
-		Role:      user.Role,
-		IsAdmin:   isAdmin,
-		Token:     token,
+		ID:               user.ID,
+		Email:            user.Email,
+		Name:             user.Name,
+		CPF:              user.CPF,
+		Phone:            user.Phone,
+		BirthDate:        user.BirthDate,
+		Gender:           user.Gender,
+		Role:             user.Role,
+		IsAdmin:          isAdmin,
+		Token:            token,
+		EmailConfirmed:   user.EmailConfirmed,
+		EmailConfirmedAt: user.EmailConfirmedAt,
 	}
+}
+
+func enqueueEmailConfirmation(user User) error {
+	if strings.TrimSpace(emailQueueURL) == "" {
+		return nil
+	}
+
+	confirmationLink := fmt.Sprintf(
+		"%s/auth/confirmar-email?email=%s&token=%s",
+		siteBaseURL,
+		url.QueryEscape(user.Email),
+		url.QueryEscape(user.EmailConfirmationToken),
+	)
+	emailID := generateID()
+	payload := EmailQueuePayload{
+		ID:      emailID,
+		UUID:    emailID,
+		Type:    "confirmacao-email-usuario",
+		ToEmail: user.Email,
+		ToName:  user.Name,
+		Data: map[string]string{
+			"nome_do_cliente":  user.Name,
+			"link_confirmacao": confirmationLink,
+		},
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	_, err = sqsClient.SendMessage(&sqs.SendMessageInput{
+		QueueUrl:    aws.String(emailQueueURL),
+		MessageBody: aws.String(string(body)),
+	})
+	return err
 }
 
 func generateJWT(userID string) (string, error) {

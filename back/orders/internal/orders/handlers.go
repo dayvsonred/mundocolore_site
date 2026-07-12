@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"sort"
 	"strconv"
@@ -17,6 +18,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -171,12 +173,23 @@ type CouponResponse struct {
 	Total          float64     `json:"total"`
 }
 
+type EmailQueuePayload struct {
+	ID      string            `json:"id"`
+	UUID    string            `json:"uuid"`
+	Type    string            `json:"type"`
+	ToEmail string            `json:"to_email"`
+	ToName  string            `json:"to_name,omitempty"`
+	Data    map[string]string `json:"data"`
+}
+
 var (
 	dynamoClient      *dynamodb.DynamoDB
+	sqsClient         *sqs.SQS
 	tableName         = "mundocolore-orders"
 	productsTableName = "mundocolore-products"
 	creditTableName   = "mundocolore-credit"
 	roleTableName     = "mundocolore-role"
+	emailQueueURL     = ""
 	jwtSecret         = []byte("your-secret-key")
 )
 
@@ -192,6 +205,7 @@ func init() {
 		Region: aws.String("sa-east-1"),
 	}))
 	dynamoClient = dynamodb.New(sess)
+	sqsClient = sqs.New(sess)
 	if value := os.Getenv("TABLE_NAME"); value != "" {
 		tableName = value
 	}
@@ -206,6 +220,9 @@ func init() {
 	}
 	if secret := os.Getenv("JWT_SECRET"); secret != "" {
 		jwtSecret = []byte(secret)
+	}
+	if value := os.Getenv("EMAIL_QUEUE_URL"); value != "" {
+		emailQueueURL = value
 	}
 }
 
@@ -486,6 +503,9 @@ func createOrder(userID string, req CreateOrderRequest, request events.APIGatewa
 	if err != nil {
 		return OrderResponse{}, err
 	}
+	if err := enqueueOrderEmail("notificacao-pedido-criado", order); err != nil {
+		log.Printf("failed to enqueue order created email order=%s: %v", order.ID, err)
+	}
 
 	return OrderResponse(order), nil
 }
@@ -680,6 +700,15 @@ func updateOrderStatus(orderID, status, adminUserID string) (OrderResponse, erro
 	_, err = dynamoClient.PutItem(&dynamodb.PutItemInput{TableName: aws.String(tableName), Item: item})
 	if err != nil && status == "cancelled" && order.Payment.Method == "credit_colore" {
 		_ = reserveCredit(order.UserID, order.Total)
+	}
+	if err == nil {
+		emailType := "notificacao-status-pedido"
+		if status == "pending_approval" {
+			emailType = "notificacao-pedido-em-analize"
+		}
+		if enqueueErr := enqueueOrderEmail(emailType, order); enqueueErr != nil {
+			log.Printf("failed to enqueue order status email order=%s: %v", order.ID, enqueueErr)
+		}
 	}
 	return OrderResponse(order), err
 }
@@ -983,6 +1012,40 @@ func calculateSpreadPrice(costPrice float64, spreadPercent float64) float64 {
 
 func normalizeCouponCode(value string) string {
 	return strings.ToUpper(strings.TrimSpace(value))
+}
+
+func enqueueOrderEmail(emailType string, order Order) error {
+	if strings.TrimSpace(emailQueueURL) == "" || strings.TrimSpace(order.Customer.Email) == "" {
+		return nil
+	}
+
+	emailID := generateID()
+	payload := EmailQueuePayload{
+		ID:      emailID,
+		UUID:    emailID,
+		Type:    emailType,
+		ToEmail: order.Customer.Email,
+		ToName:  order.Customer.Name,
+		Data: map[string]string{
+			"nome_do_cliente":  order.Customer.Name,
+			"numero_do_pedido": order.ID,
+			"valor_do_pedido":  formatBRL(order.Total),
+			"status_do_pedido": order.Status,
+		},
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	_, err = sqsClient.SendMessage(&sqs.SendMessageInput{
+		QueueUrl:    aws.String(emailQueueURL),
+		MessageBody: aws.String(string(body)),
+	})
+	return err
+}
+
+func formatBRL(value float64) string {
+	return fmt.Sprintf("R$ %.2f", roundMoney(value))
 }
 
 func findCouponReduction(collection CollectionPricing, couponCode string) float64 {

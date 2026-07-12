@@ -212,5 +212,43 @@ variable "dynamodb_tables" {
         }
       ]
     }
+    emails = {
+      name          = "mundocolore-emails"
+      billing_mode  = "PAY_PER_REQUEST"
+      hash_key      = "id"
+      hash_key_type = "S"
+      attributes = [
+        {
+          name = "id"
+          type = "S"
+        },
+        {
+          name = "type"
+          type = "S"
+        },
+        {
+          name = "to_email"
+          type = "S"
+        },
+        {
+          name = "received_at"
+          type = "S"
+        }
+      ]
+      global_secondary_indexes = [
+        {
+          name            = "type-received-index"
+          hash_key        = "type"
+          range_key       = "received_at"
+          projection_type = "ALL"
+        },
+        {
+          name            = "to-email-received-index"
+          hash_key        = "to_email"
+          range_key       = "received_at"
+          projection_type = "ALL"
+        }
+      ]
+    }
   }
 }

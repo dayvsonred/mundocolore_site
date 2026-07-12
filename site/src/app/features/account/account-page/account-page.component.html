@@ -50,12 +50,28 @@
           <span class="label">Email:</span>
           <span class="value">{{ user.email }}</span>
         </div>
+        <div class="info-item">
+          <span class="label">Status:</span>
+          <span class="email-status" [class.confirmed]="user.email_confirmed">
+            <mat-icon>{{ user.email_confirmed ? 'verified' : 'mark_email_unread' }}</mat-icon>
+            {{ user.email_confirmed ? 'Email confirmado' : 'Email ainda nao confirmado' }}
+          </span>
+        </div>
       </div>
 
       <div class="account-actions">
         <button mat-stroked-button (click)="editProfile()">
           <mat-icon>edit</mat-icon>
           Editar dados
+        </button>
+        <button
+          *ngIf="!user.email_confirmed"
+          mat-stroked-button
+          color="primary"
+          [disabled]="resendingConfirmation"
+          (click)="resendEmailConfirmation()">
+          <mat-icon>outgoing_mail</mat-icon>
+          Reenviar confirmacao
         </button>
         <button mat-stroked-button (click)="changePassword()">
           <mat-icon>lock</mat-icon>
