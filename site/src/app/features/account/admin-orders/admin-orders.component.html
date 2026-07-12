@@ -2,8 +2,22 @@
   <header><h1>Lista de pedidos</h1><p>Consulte, aprove e acompanhe todos os pedidos.</p></header>
   <form class="filters" (ngSubmit)="loadOrders()">
     <mat-form-field appearance="outline"><mat-label>Usuario</mat-label><input matInput name="user" [(ngModel)]="filters['user']"></mat-form-field>
-    <mat-form-field appearance="outline"><mat-label>Marca</mat-label><input matInput name="brand" [(ngModel)]="filters['brand']"></mat-form-field>
-    <mat-form-field appearance="outline"><mat-label>Colecao</mat-label><input matInput name="collection" [(ngModel)]="filters['collection']"></mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Marca</mat-label>
+      <mat-select name="brand" [(ngModel)]="filters['brand']" (selectionChange)="onBrandFilterChange()" [disabled]="loadingOptions">
+        <mat-option value="">Todas</mat-option>
+        <mat-option *ngFor="let brand of brands" [value]="brandFilterValue(brand)">{{ brand.name || brandFilterValue(brand) }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Colecao</mat-label>
+      <mat-select name="collection" [(ngModel)]="filters['collection']" [disabled]="loadingOptions || !filteredCollections.length">
+        <mat-option value="">Todas</mat-option>
+        <mat-option *ngFor="let collection of filteredCollections" [value]="collectionFilterValue(collection)">
+          {{ collectionLabel(collection) }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
     <mat-form-field appearance="outline"><mat-label>Status</mat-label><mat-select name="status" [(ngModel)]="filters['status']"><mat-option value="">Todos</mat-option><mat-option value="pending_payment">Aguardando pagamento</mat-option><mat-option value="pending_approval">Aguardando aprovacao</mat-option><mat-option *ngFor="let status of statuses" [value]="status[0]">{{ status[1] }}</mat-option></mat-select></mat-form-field>
     <mat-form-field appearance="outline"><mat-label>Data inicial</mat-label><input matInput type="date" name="created_from" [(ngModel)]="filters['created_from']"></mat-form-field>
     <mat-form-field appearance="outline"><mat-label>Data final</mat-label><input matInput type="date" name="created_to" [(ngModel)]="filters['created_to']"></mat-form-field>
@@ -14,11 +28,67 @@
   </form>
   <mat-spinner *ngIf="loading" diameter="34"></mat-spinner>
   <div class="records" *ngIf="!loading">
-    <article *ngFor="let order of orders">
-      <div><h3>Pedido {{ order.id }}</h3><p>{{ order.customer?.name }} | {{ order.customer?.email }}</p><small>{{ order.created_at | date:'dd/MM/yyyy HH:mm' }} | {{ order.payment?.label }} | {{ order.status }}</small></div>
-      <strong>R$ {{ order.total | number:'1.2-2' }}</strong>
-      <mat-form-field appearance="outline"><mat-label>Alterar status</mat-label><mat-select (selectionChange)="changeStatus(order, $event.value)"><mat-option *ngFor="let status of statuses" [value]="status[0]">{{ status[1] }}</mat-option></mat-select></mat-form-field>
-      <div class="history"><span *ngFor="let event of order.status_history">{{ event.status }}: {{ event.changed_at | date:'dd/MM/yyyy HH:mm' }}</span></div>
-    </article>
+    <mat-expansion-panel *ngFor="let order of orders" class="order-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <span>Pedido {{ order.id }}</span>
+          <small>{{ order.customer?.name }} | {{ order.created_at | date:'dd/MM/yyyy HH:mm' }}</small>
+        </mat-panel-title>
+        <mat-panel-description>
+          <span>{{ statusLabel(order.status) }}</span>
+          <strong>R$ {{ order.total | number:'1.2-2' }}</strong>
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="order-summary">
+        <div>
+          <h3>Cliente</h3>
+          <p>{{ order.customer?.name || '-' }}</p>
+          <span>{{ order.customer?.email || '-' }}</span>
+          <span>CPF {{ order.customer?.cpf || '-' }}</span>
+        </div>
+        <div>
+          <h3>Entrega</h3>
+          <p>{{ order.delivery_address?.street }}, {{ order.delivery_address?.number }}</p>
+          <span>{{ order.delivery_address?.neighborhood }} - {{ order.delivery_address?.city }}/{{ order.delivery_address?.state }}</span>
+          <span>CEP {{ order.delivery_address?.zip_code || '-' }}</span>
+        </div>
+        <div>
+          <h3>Pagamento</h3>
+          <p>{{ order.payment?.label || '-' }}</p>
+          <span>{{ order.payment?.installments || 1 }}x | {{ order.payment?.status || '-' }}</span>
+          <span>Total R$ {{ order.total | number:'1.2-2' }}</span>
+        </div>
+        <mat-form-field appearance="outline">
+          <mat-label>Alterar status</mat-label>
+          <mat-select [(ngModel)]="selectedStatus[order.id]" [ngModelOptions]="{standalone:true}" (selectionChange)="changeStatus(order, $event.value)">
+            <mat-option *ngFor="let status of statuses" [value]="status[0]">{{ status[1] }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <section class="items-section">
+        <h3>Itens do pedido</h3>
+        <div class="items-list">
+          <div class="item-row" *ngFor="let item of order.items">
+            <img *ngIf="item.product_image" [src]="item.product_image" [alt]="item.product_name || item.product_code || 'Produto'">
+            <div class="item-info">
+              <strong>{{ item.product_name || item.product_code || item.product_id }}</strong>
+              <span>{{ item.brand || '-' }} | {{ item.collection || '-' }}</span>
+              <span>Tamanho {{ item.size || '-' }} | Cor {{ item.color || '-' }}</span>
+            </div>
+            <div class="item-values">
+              <span>{{ item.quantity }} un.</span>
+              <span>R$ {{ (item.unit_price || item.price) | number:'1.2-2' }}</span>
+              <strong>R$ {{ (item.subtotal || ((item.unit_price || item.price) * item.quantity)) | number:'1.2-2' }}</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="history">
+        <span *ngFor="let event of order.status_history">{{ statusLabel(event.status) }}: {{ event.changed_at | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+    </mat-expansion-panel>
   </div>
 </section>

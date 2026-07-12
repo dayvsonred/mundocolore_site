@@ -44,7 +44,7 @@ terraform plan
 terraform apply
 ```
 
-## 3) Invalidar cache CloudFront
+## 3) Invalidar cache CloudFront - atualizar site para não entegrar CACHE
 ```powershell
 cd "C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\infra\terraform"
 $distributionId = terraform output -raw cloudfront_distribution_id
