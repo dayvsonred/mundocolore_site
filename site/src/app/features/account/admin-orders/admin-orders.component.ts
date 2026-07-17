@@ -9,6 +9,9 @@ import { ConfirmDialogComponent, ConfirmDialogModel } from '../../../shared/conf
 @Component({ selector: 'app-admin-orders', templateUrl: './admin-orders.component.html', styleUrls: ['./admin-orders.component.scss'] })
 export class AdminOrdersComponent implements OnInit {
   orders: Order[] = [];
+  page = 1;
+  pageSize = 10;
+  readonly pageSizeOptions = [10, 20, 50, 100, 200];
   brands: ProductBrandRecord[] = [];
   collections: ProductCollectionRecord[] = [];
   filters: Record<string, string | number> = { sort: 'date_desc' };
@@ -46,6 +49,7 @@ export class AdminOrdersComponent implements OnInit {
     this.ordersService.getAdminOrders(this.filters).pipe(finalize(() => this.loading = false)).subscribe({
       next: orders => {
         this.orders = orders;
+        this.page = 1;
         this.selectedStatus = orders.reduce((statuses, order) => {
           statuses[order.id] = '';
           return statuses;
@@ -65,7 +69,38 @@ export class AdminOrdersComponent implements OnInit {
 
   clearFilters(): void {
     this.filters = { sort: 'date_desc' };
+    this.page = 1;
     this.loadOrders();
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.orders.length / this.pageSize));
+  }
+
+  get pagedOrders(): Order[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.orders.slice(start, start + this.pageSize);
+  }
+
+  get pageStart(): number {
+    if (!this.orders.length) return 0;
+    return (this.page - 1) * this.pageSize + 1;
+  }
+
+  get pageEnd(): number {
+    return Math.min(this.page * this.pageSize, this.orders.length);
+  }
+
+  onPageSizeChange(): void {
+    this.page = 1;
+  }
+
+  previousPage(): void {
+    this.page = Math.max(1, this.page - 1);
+  }
+
+  nextPage(): void {
+    this.page = Math.min(this.totalPages, this.page + 1);
   }
 
   onBrandFilterChange(): void {

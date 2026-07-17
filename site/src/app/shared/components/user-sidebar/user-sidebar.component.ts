@@ -20,7 +20,8 @@ export class UserSidebarComponent implements OnInit {
 
   private readonly adminMenuItems: MenuItem[] = [
     { label: 'Lista usuarios', route: '/minha-conta/lista-usuarios', icon: 'people' },
-    { label: 'Lista pedidos', route: '/minha-conta/lista-pedidos', icon: 'receipt_long' },
+    { label: 'Pedidos', route: '/minha-conta/lista-pedidos', icon: 'receipt_long' },
+    { label: 'Pedidos pagamentos', route: '/minha-conta/pedidos-pagamentos', icon: 'payments' },
     {
       label: 'Cadastro de marcas',
       route: '/minha-conta/cadastro-marcas',

@@ -1,0 +1,92 @@
+<section class="admin-payments-page">
+  <header>
+    <h1>Pedidos pagamentos</h1>
+    <p>Acompanhe parcelas de pedidos aprovados e marque pagamentos quando necessario.</p>
+  </header>
+
+  <form class="filters" (ngSubmit)="loadInstallments()">
+    <mat-form-field appearance="outline">
+      <mat-label>Cliente ou pedido</mat-label>
+      <input matInput name="user" [(ngModel)]="filters['user']">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select name="status" [(ngModel)]="filters['status']">
+        <mat-option value="a_pagar">A PAGAR</mat-option>
+        <mat-option value="paga">PAGA</mat-option>
+        <mat-option value="todas">TODAS</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" type="submit">Filtrar</button>
+    <button mat-stroked-button type="button" (click)="clearFilters()">Limpar</button>
+  </form>
+
+  <mat-spinner *ngIf="loading" diameter="34"></mat-spinner>
+
+  <div class="table-card" *ngIf="!loading">
+    <div *ngIf="installments.length === 0" class="empty-state">
+      <mat-icon>payments</mat-icon>
+      <span>Nenhuma parcela encontrada.</span>
+    </div>
+
+    <ng-container *ngIf="installments.length > 0">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cliente</th>
+              <th>Pedido</th>
+              <th>Parcela</th>
+              <th>Vencimento</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th>Acao</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let installment of pagedInstallments">
+              <td>
+                <strong>{{ installment.user_name || '-' }}</strong>
+                <span>{{ installment.user_email || installment.user_id }}</span>
+              </td>
+              <td>{{ installment.order_id }}</td>
+              <td>{{ installment.number }}/{{ installment.total }}</td>
+              <td>{{ installment.due_date | date:'dd/MM/yyyy' }}</td>
+              <td>{{ installment.amount | currency:'BRL':'symbol':'1.2-2' }}</td>
+              <td>
+                <span class="status-pill" [class.paid]="statusLabel(installment.status) === 'Paga'">
+                  {{ statusLabel(installment.status) }}
+                </span>
+              </td>
+              <td>
+                <button
+                  mat-stroked-button
+                  color="primary"
+                  type="button"
+                  [disabled]="statusLabel(installment.status) === 'Paga' || paying[installment.id]"
+                  (click)="markAsPaid(installment)">
+                  Marcar paga
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-bar">
+        <span>{{ installments.length }} parcelas</span>
+        <div>
+          <button mat-icon-button type="button" [disabled]="page === 1" (click)="previousPage()" matTooltip="Pagina anterior">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <span>Pagina {{ page }} de {{ totalPages }}</span>
+          <button mat-icon-button type="button" [disabled]="page === totalPages" (click)="nextPage()" matTooltip="Proxima pagina">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</section>

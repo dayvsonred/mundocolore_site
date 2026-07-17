@@ -27,8 +27,29 @@
     <button mat-raised-button color="primary" type="submit">Filtrar</button><button mat-stroked-button type="button" (click)="pendingApproval()">Pendentes de aprovacao</button><button mat-stroked-button type="button" (click)="clearFilters()">Limpar</button>
   </form>
   <mat-spinner *ngIf="loading" diameter="34"></mat-spinner>
+  <div class="pagination-bar" *ngIf="!loading && orders.length > 0">
+    <div class="page-size">
+      <span>Itens por pagina</span>
+      <mat-form-field appearance="outline">
+        <mat-select [(ngModel)]="pageSize" [ngModelOptions]="{standalone:true}" (selectionChange)="onPageSizeChange()">
+          <mat-option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <span class="page-count">{{ pageStart }}-{{ pageEnd }} de {{ orders.length }}</span>
+    <div class="page-actions">
+      <button mat-icon-button type="button" [disabled]="page === 1" (click)="previousPage()" matTooltip="Pagina anterior">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+      <span>Pagina {{ page }} de {{ totalPages }}</span>
+      <button mat-icon-button type="button" [disabled]="page === totalPages" (click)="nextPage()" matTooltip="Proxima pagina">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    </div>
+  </div>
   <div class="records" *ngIf="!loading">
-    <mat-expansion-panel *ngFor="let order of orders" class="order-panel">
+    <p *ngIf="orders.length === 0" class="empty-message">Nenhum pedido encontrado.</p>
+    <mat-expansion-panel *ngFor="let order of pagedOrders" class="order-panel">
       <mat-expansion-panel-header>
         <mat-panel-title>
           <span>Pedido {{ order.id }}</span>

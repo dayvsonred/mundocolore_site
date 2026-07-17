@@ -10,6 +10,7 @@ import { ProductListComponent } from './product-list/product-list.component';
 import { ProductRegistrationComponent } from './product-registration/product-registration.component';
 import { AdminUsersComponent } from './admin-users/admin-users.component';
 import { AdminOrdersComponent } from './admin-orders/admin-orders.component';
+import { AdminOrderPaymentsComponent } from './admin-order-payments/admin-order-payments.component';
 
 const routes: Routes = [
   {
@@ -28,6 +29,7 @@ const routes: Routes = [
       { path: 'lista-produtos', component: ProductListComponent, canActivate: [AdminGuard] },
       { path: 'lista-usuarios', component: AdminUsersComponent, canActivate: [AdminGuard] },
       { path: 'lista-pedidos', component: AdminOrdersComponent, canActivate: [AdminGuard] },
+      { path: 'pedidos-pagamentos', component: AdminOrderPaymentsComponent, canActivate: [AdminGuard] },
     ]
   }
 ];

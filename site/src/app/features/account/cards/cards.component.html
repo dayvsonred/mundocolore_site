@@ -1,47 +1,130 @@
 <div class="cards-page">
   <div class="page-header">
-    <h1>Meus Cartões</h1>
-    <p>Gerencie seus métodos de pagamento</p>
+    <h1>Cartao Colore</h1>
+    <p>Acompanhe seu credito, compras e parcelas do Mundo Colore Store.</p>
   </div>
 
-  <div class="cards-section">
-    <div *ngIf="cards.length === 0" class="no-cards">
-      <mat-icon>credit_card</mat-icon>
-      <h3>Você não possui métodos de pagamento cadastrados</h3>
-      <p>Adicione um cartão para facilitar suas compras.</p>
-      <button mat-raised-button color="primary" (click)="addNewCard()">
-        Adicionar cartão
-      </button>
-    </div>
+  <div *ngIf="loading" class="loading-state">
+    <mat-icon>hourglass_top</mat-icon>
+    <span>Carregando cartao...</span>
+  </div>
 
-    <div *ngIf="cards.length > 0" class="cards-grid">
-      <div *ngFor="let card of cards" class="card-item">
-        <div class="card-display">
-          <div class="card-header">
-            <mat-icon>{{ getCardBrandIcon(card.brand) }}</mat-icon>
-            <span *ngIf="card.isDefault" class="default-badge">Padrão</span>
-          </div>
-          <div class="card-number">
-            **** **** **** {{ card.lastFour }}
-          </div>
-          <div class="card-details">
-            <span class="holder">{{ card.holderName }}</span>
-            <span class="expiry">{{ card.expiryMonth.toString().padStart(2, '0') }}/{{ card.expiryYear }}</span>
-          </div>
+  <ng-container *ngIf="!loading && credit">
+    <section class="summary-grid">
+      <div class="colore-card" *ngIf="card">
+        <div class="card-topline">
+          <mat-icon>credit_card</mat-icon>
+          <span>Credito Colore</span>
         </div>
-        <div class="card-actions">
-          <button mat-stroked-button (click)="deleteCard(card)">
-            Remover
+        <div class="card-number">{{ formatCardNumber(card.number) }}</div>
+        <div class="card-details">
+          <span>{{ card.holder_name }}</span>
+          <span>{{ card.expiry_month.toString().padStart(2, '0') }}/{{ card.expiry_year }}</span>
+        </div>
+      </div>
+
+      <div class="credit-panel">
+        <div>
+          <span class="metric-label">Credito disponivel</span>
+          <strong>{{ credit.available_credit | currency:'BRL':'symbol':'1.2-2' }}</strong>
+        </div>
+        <div>
+          <span class="metric-label">Limite aprovado</span>
+          <strong>{{ credit.credit_limit | currency:'BRL':'symbol':'1.2-2' }}</strong>
+        </div>
+        <div>
+          <span class="metric-label">Credito usado</span>
+          <strong>{{ credit.used_credit | currency:'BRL':'symbol':'1.2-2' }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section">
+      <div class="section-header">
+        <h2>Parcelas de compras aprovadas</h2>
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          <mat-select
+            [(ngModel)]="installmentStatusFilter"
+            [ngModelOptions]="{standalone:true}"
+            (selectionChange)="onInstallmentStatusFilterChange()">
+            <mat-option value="a_pagar">A PAGAR</mat-option>
+            <mat-option value="paga">PAGA</mat-option>
+            <mat-option value="todas">TODAS</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div *ngIf="filteredInstallments.length === 0" class="empty-state">
+        <mat-icon>receipt_long</mat-icon>
+        <p>Nenhuma parcela encontrada para este filtro.</p>
+      </div>
+
+      <div *ngIf="filteredInstallments.length > 0" class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Pedido</th>
+              <th>Parcela</th>
+              <th>Vencimento</th>
+              <th>Valor</th>
+              <th>
+                <button type="button" class="sort-button" (click)="sortByStatus()">
+                  Status
+                  <mat-icon>{{ statusSortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward' }}</mat-icon>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let installment of pagedInstallments">
+              <td>{{ installment.order_id }}</td>
+              <td>{{ installment.number }}/{{ installment.total }}</td>
+              <td>{{ installment.due_date | date:'dd/MM/yyyy' }}</td>
+              <td>{{ installment.amount | currency:'BRL':'symbol':'1.2-2' }}</td>
+              <td>
+                <span class="status-pill" [class.paid]="statusLabel(installment.status) === 'Paga'">
+                  {{ statusLabel(installment.status) }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="installment-pagination" *ngIf="filteredInstallments.length > 0">
+        <span>{{ installmentPageStart }}-{{ installmentPageEnd }} de {{ filteredInstallments.length }}</span>
+        <div>
+          <button mat-icon-button type="button" [disabled]="installmentPage === 1" (click)="previousInstallmentPage()" matTooltip="Pagina anterior">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <span>Pagina {{ installmentPage }} de {{ installmentTotalPages }}</span>
+          <button mat-icon-button type="button" [disabled]="installmentPage === installmentTotalPages" (click)="nextInstallmentPage()" matTooltip="Proxima pagina">
+            <mat-icon>chevron_right</mat-icon>
           </button>
         </div>
       </div>
+    </section>
 
-      <div class="add-card-item" (click)="addNewCard()">
-        <div class="add-content">
-          <mat-icon>add</mat-icon>
-          <h3>Adicionar cartão</h3>
+    <section class="content-section">
+      <div class="section-header">
+        <h2>Transacoes de credito</h2>
+      </div>
+
+      <div *ngIf="history.length === 0" class="empty-state">
+        <mat-icon>timeline</mat-icon>
+        <p>Nenhuma movimentacao de credito ate agora.</p>
+      </div>
+
+      <div *ngIf="history.length > 0" class="history-list">
+        <div *ngFor="let item of history" class="history-item">
+          <div>
+            <strong>{{ historyLabel(item.type) }}</strong>
+            <span>{{ item.created_at | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <strong>{{ item.amount | currency:'BRL':'symbol':'1.2-2' }}</strong>
         </div>
       </div>
-    </div>
-  </div>
+    </section>
+  </ng-container>
 </div>

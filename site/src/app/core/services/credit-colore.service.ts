@@ -9,8 +9,42 @@ export interface CreditColore {
   credit_limit: number;
   used_credit: number;
   available_credit: number;
+  card?: ColoreCard;
+  installments?: CreditInstallment[];
+  history?: CreditHistory[];
   created_at?: string;
   updated_at?: string;
+}
+
+export interface ColoreCard {
+  id: string;
+  number: string;
+  last_four: string;
+  holder_name: string;
+  brand: string;
+  expiry_month: number;
+  expiry_year: number;
+  created_at: string;
+}
+
+export interface CreditInstallment {
+  id: string;
+  order_id: string;
+  number: number;
+  total: number;
+  amount: number;
+  status: string;
+  due_date: string;
+  paid_at?: string;
+  paid_amount?: number;
+  created_at: string;
+}
+
+export interface CreditHistory {
+  amount: number;
+  type: string;
+  admin_user_id?: string;
+  created_at: string;
 }
 
 export interface AdminCreditUser {
@@ -21,6 +55,12 @@ export interface AdminCreditUser {
   phone?: string;
   created_at: string;
   credit: CreditColore;
+}
+
+export interface AdminCreditInstallment extends CreditInstallment {
+  user_id: string;
+  user_name: string;
+  user_email: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -44,6 +84,24 @@ export class CreditColoreService {
     return this.http.patch<CreditColore>(
       `${this.apiUrl}/credit-colore/admin/users/${encodeURIComponent(userId)}`,
       { amount },
+      { headers: this.headers() }
+    );
+  }
+
+  getAdminInstallments(filters: Record<string, string> = {}): Observable<AdminCreditInstallment[]> {
+    let params = new HttpParams();
+    Object.entries(filters).forEach(([key, value]) => { if (value) params = params.set(key, value); });
+    return this.http.get<{ installments: AdminCreditInstallment[] }>(
+      `${this.apiUrl}/credit-colore/admin/installments`,
+      { headers: this.headers(), params }
+    ).pipe(map(response => response.installments || []));
+  }
+
+  payInstallment(installmentId: string, paidAmount?: number): Observable<CreditColore> {
+    const body = paidAmount && paidAmount > 0 ? { paid_amount: paidAmount } : {};
+    return this.http.patch<CreditColore>(
+      `${this.apiUrl}/credit-colore/admin/installments/${encodeURIComponent(installmentId)}/pay`,
+      body,
       { headers: this.headers() }
     );
   }
