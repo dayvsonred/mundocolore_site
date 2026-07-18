@@ -11,6 +11,8 @@ import { ProductRegistrationComponent } from './product-registration/product-reg
 import { AdminUsersComponent } from './admin-users/admin-users.component';
 import { AdminOrdersComponent } from './admin-orders/admin-orders.component';
 import { AdminOrderPaymentsComponent } from './admin-order-payments/admin-order-payments.component';
+import { ChangePasswordComponent } from './change-password/change-password.component';
+import { AdminAnalyticsComponent } from './admin-analytics/admin-analytics.component';
 
 const routes: Routes = [
   {
@@ -22,6 +24,7 @@ const routes: Routes = [
       { path: 'meus-dados', loadChildren: () => import('./profile/profile.module').then(m => m.ProfileModule) },
       { path: 'meus-enderecos', loadChildren: () => import('./addresses/addresses.module').then(m => m.AddressesModule) },
       { path: 'meus-cartoes', loadChildren: () => import('./cards/cards.module').then(m => m.CardsModule) },
+      { path: 'alterar-senha', component: ChangePasswordComponent },
       { path: 'cadastro-marcas', component: BrandRegistrationComponent, canActivate: [AdminGuard] },
       { path: 'cadastro-colecoes', component: CollectionRegistrationComponent, canActivate: [AdminGuard] },
       { path: 'cadastro-produtos', component: ProductRegistrationComponent, canActivate: [AdminGuard] },
@@ -30,6 +33,7 @@ const routes: Routes = [
       { path: 'lista-usuarios', component: AdminUsersComponent, canActivate: [AdminGuard] },
       { path: 'lista-pedidos', component: AdminOrdersComponent, canActivate: [AdminGuard] },
       { path: 'pedidos-pagamentos', component: AdminOrderPaymentsComponent, canActivate: [AdminGuard] },
+      { path: 'analytics-acessos', component: AdminAnalyticsComponent, canActivate: [AdminGuard] },
     ]
   }
 ];

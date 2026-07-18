@@ -1,7 +1,6 @@
 import { UntypedFormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
 //import { NGXLogger } from 'ngx-logger';
-import { AuthenticationService } from 'src/app/core/services/auth.service';
 import { NotificationService } from 'src/app/core/services/notification.service';
 import { SpinnerService } from 'src/app/core/services/spinner.service';
 import { GlobalService } from 'src/app/core/services/global.service';
@@ -22,8 +21,7 @@ export class ChangePasswordComponent implements OnInit {
   newPasswordConfirm!: string;
   disableSubmit!: boolean;
 
-  constructor(private authService: AuthenticationService,
-    //private logger: NGXLogger,
+  constructor(
     private spinnerService: SpinnerService,
     private notificationService: NotificationService,
     private globalService: GlobalService) {
@@ -56,7 +54,7 @@ export class ChangePasswordComponent implements OnInit {
   changePassword() {
 
     if (this.newPassword !== this.newPasswordConfirm) {
-      this.notificationService.openSnackBar('New passwords do not match.');
+      this.notificationService.openSnackBar('As senhas nao conferem.');
       return;
     }
 
@@ -67,11 +65,11 @@ export class ChangePasswordComponent implements OnInit {
         next: (response) => {
           console.log('Senha alterada com sucesso!', response);
           this.form.reset();
-          this.notificationService.openSnackBar('Your password has been changed.');
+          this.notificationService.openSnackBar('Senha alterada com sucesso.');
         },
         error: (error) => {
           console.error('Erro ao alterar senha:', error);
-          this.notificationService.openSnackBar(error.error);
+          this.notificationService.openSnackBar(error?.error?.message || error?.message || error || 'Nao foi possivel alterar a senha.');
         }
       });
   }

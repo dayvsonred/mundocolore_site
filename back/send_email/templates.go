@@ -29,6 +29,22 @@ Data do envio: {{data_atual}} as {{hora_atual}}
 Atenciosamente,
 Equipe Mundo Colore Store`,
 	},
+	"reset-senha-usuario": {
+		Subject: "Reset de senha Mundo Colore Store",
+		Body: `Ola {{nome_do_cliente}},
+
+Recebemos uma solicitacao para resetar sua senha.
+
+Para cadastrar uma nova senha, acesse:
+{{link_reset}}
+
+Esse link pode ser usado apenas uma vez.
+
+Data do envio: {{data_atual}} as {{hora_atual}}
+
+Atenciosamente,
+Equipe Mundo Colore Store`,
+	},
 	"notificacao-pedido-criado": {
 		Subject: "Recebemos seu pedido {{numero_do_pedido}}",
 		Body: `Ola {{nome_do_cliente}},

@@ -246,6 +246,72 @@ resource "aws_api_gateway_integration" "resend_email_confirmation_integration" {
   uri                     = aws_lambda_function.users_lambda.invoke_arn
 }
 
+resource "aws_api_gateway_resource" "password_change_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.users_resource.id
+  path_part   = "passwordChange"
+}
+
+resource "aws_api_gateway_method" "password_change_post" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.password_change_resource.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "password_change_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.password_change_resource.id
+  http_method             = aws_api_gateway_method.password_change_post.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.users_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_resource" "password_recover_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.users_resource.id
+  path_part   = "passwordRecover"
+}
+
+resource "aws_api_gateway_method" "password_recover_post" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.password_recover_resource.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "password_recover_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.password_recover_resource.id
+  http_method             = aws_api_gateway_method.password_recover_post.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.users_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_resource" "password_confirm_token_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.users_resource.id
+  path_part   = "passwordConfirmToken"
+}
+
+resource "aws_api_gateway_method" "password_confirm_token_post" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.password_confirm_token_resource.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "password_confirm_token_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.password_confirm_token_resource.id
+  http_method             = aws_api_gateway_method.password_confirm_token_post.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.users_lambda.invoke_arn
+}
+
 resource "aws_api_gateway_integration" "profile_integration" {
   rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
   resource_id             = aws_api_gateway_resource.profile_resource.id
@@ -283,6 +349,12 @@ resource "aws_api_gateway_resource" "admin_check_resource" {
   path_part   = "check"
 }
 
+resource "aws_api_gateway_resource" "admin_password_reset_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.admin_resource.id
+  path_part   = "password-reset"
+}
+
 resource "aws_api_gateway_method" "admin_check_get" {
   rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
   resource_id   = aws_api_gateway_resource.admin_check_resource.id
@@ -294,6 +366,22 @@ resource "aws_api_gateway_integration" "admin_check_integration" {
   rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
   resource_id             = aws_api_gateway_resource.admin_check_resource.id
   http_method             = aws_api_gateway_method.admin_check_get.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.users_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_method" "admin_password_reset_post" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.admin_password_reset_resource.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "admin_password_reset_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.admin_password_reset_resource.id
+  http_method             = aws_api_gateway_method.admin_password_reset_post.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.users_lambda.invoke_arn
@@ -379,17 +467,21 @@ resource "aws_api_gateway_integration" "health_data_integration" {
 
 locals {
   users_cors_resources = {
-    users               = aws_api_gateway_resource.users_resource.id
-    users_register      = aws_api_gateway_resource.register_resource.id
-    users_login         = aws_api_gateway_resource.login_resource.id
-    users_profile       = aws_api_gateway_resource.profile_resource.id
-    users_confirm_email = aws_api_gateway_resource.confirm_email_resource.id
-    users_resend_email  = aws_api_gateway_resource.resend_email_confirmation_resource.id
-    users_admin         = aws_api_gateway_resource.admin_resource.id
-    users_admin_check   = aws_api_gateway_resource.admin_check_resource.id
-    users_show_id       = aws_api_gateway_resource.show_id_resource.id
-    users_health_online = aws_api_gateway_resource.health_online_resource.id
-    users_health_data   = aws_api_gateway_resource.health_data_resource.id
+    users                        = aws_api_gateway_resource.users_resource.id
+    users_register               = aws_api_gateway_resource.register_resource.id
+    users_login                  = aws_api_gateway_resource.login_resource.id
+    users_profile                = aws_api_gateway_resource.profile_resource.id
+    users_confirm_email          = aws_api_gateway_resource.confirm_email_resource.id
+    users_resend_email           = aws_api_gateway_resource.resend_email_confirmation_resource.id
+    users_password_change        = aws_api_gateway_resource.password_change_resource.id
+    users_password_recover       = aws_api_gateway_resource.password_recover_resource.id
+    users_password_confirm_token = aws_api_gateway_resource.password_confirm_token_resource.id
+    users_admin                  = aws_api_gateway_resource.admin_resource.id
+    users_admin_check            = aws_api_gateway_resource.admin_check_resource.id
+    users_admin_password_reset   = aws_api_gateway_resource.admin_password_reset_resource.id
+    users_show_id                = aws_api_gateway_resource.show_id_resource.id
+    users_health_online          = aws_api_gateway_resource.health_online_resource.id
+    users_health_data            = aws_api_gateway_resource.health_data_resource.id
   }
 }
 

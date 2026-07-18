@@ -22,13 +22,14 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 )
 
-const brevoEndpoint = "https://api.brevo.com/v3/smtp/email"
+const mailjetEndpoint = "https://api.mailjet.com/v3.1/send"
 
 type Config struct {
-	BrevoAPIKey   string
-	EmailFrom     string
-	EmailFromName string
-	TableName     string
+	MailjetAPIKey    string
+	MailjetSecretKey string
+	EmailFrom        string
+	EmailFromName    string
+	TableName        string
 }
 
 type EmailRequest struct {
@@ -49,21 +50,20 @@ type TemplateFile struct {
 	Templates map[string]EmailTemplate `json:"templates"`
 }
 
-type BrevoSendEmailRequest struct {
-	Sender      BrevoSender    `json:"sender"`
-	To          []BrevoContact `json:"to"`
-	Subject     string         `json:"subject"`
-	TextContent string         `json:"textContent"`
+type MailjetSendEmailRequest struct {
+	Messages []MailjetMessage `json:"Messages"`
 }
 
-type BrevoContact struct {
-	Email string `json:"email"`
-	Name  string `json:"name,omitempty"`
+type MailjetMessage struct {
+	From     MailjetContact   `json:"From"`
+	To       []MailjetContact `json:"To"`
+	Subject  string           `json:"Subject"`
+	TextPart string           `json:"TextPart"`
 }
 
-type BrevoSender struct {
-	Email string `json:"email"`
-	Name  string `json:"name,omitempty"`
+type MailjetContact struct {
+	Email string `json:"Email"`
+	Name  string `json:"Name,omitempty"`
 }
 
 type SQSEvent struct {
@@ -74,20 +74,21 @@ type SQSEvent struct {
 }
 
 type EmailLog struct {
-	ID              string                 `dynamodbav:"id"`
-	UUID            string                 `dynamodbav:"uuid,omitempty"`
-	Type            string                 `dynamodbav:"type"`
-	ToEmail         string                 `dynamodbav:"to_email"`
-	ToName          string                 `dynamodbav:"to_name,omitempty"`
-	Status          string                 `dynamodbav:"status"`
-	ReceivedAt      string                 `dynamodbav:"received_at"`
-	ProcessedAt     string                 `dynamodbav:"processed_at,omitempty"`
-	RawPayload      map[string]interface{} `dynamodbav:"raw_payload"`
-	RenderedSubject string                 `dynamodbav:"rendered_subject,omitempty"`
-	RenderedBody    string                 `dynamodbav:"rendered_body,omitempty"`
-	BrevoStatusCode int                    `dynamodbav:"brevo_status_code,omitempty"`
-	BrevoResponse   string                 `dynamodbav:"brevo_response,omitempty"`
-	ErrorMessage    string                 `dynamodbav:"error_message,omitempty"`
+	ID                 string                 `dynamodbav:"id"`
+	UUID               string                 `dynamodbav:"uuid,omitempty"`
+	Type               string                 `dynamodbav:"type"`
+	ToEmail            string                 `dynamodbav:"to_email"`
+	ToName             string                 `dynamodbav:"to_name,omitempty"`
+	Status             string                 `dynamodbav:"status"`
+	ReceivedAt         string                 `dynamodbav:"received_at"`
+	ProcessedAt        string                 `dynamodbav:"processed_at,omitempty"`
+	RawPayload         map[string]interface{} `dynamodbav:"raw_payload"`
+	RenderedSubject    string                 `dynamodbav:"rendered_subject,omitempty"`
+	RenderedBody       string                 `dynamodbav:"rendered_body,omitempty"`
+	Provider           string                 `dynamodbav:"provider,omitempty"`
+	ProviderStatusCode int                    `dynamodbav:"provider_status_code,omitempty"`
+	ProviderResponse   string                 `dynamodbav:"provider_response,omitempty"`
+	ErrorMessage       string                 `dynamodbav:"error_message,omitempty"`
 }
 
 var (
@@ -148,7 +149,7 @@ func processRawEmail(ctx context.Context, raw json.RawMessage) error {
 	subject := renderTemplate(template.Subject, variables)
 	body := renderTemplate(template.Body, variables)
 
-	statusCode, responseBody, err := sendEmailBrevo(ctx, req, subject, body)
+	statusCode, responseBody, err := sendEmailMailjet(ctx, req, subject, body)
 	if err != nil {
 		_ = saveFailedEmail(req, err.Error())
 		return err
@@ -184,8 +185,11 @@ func parseEmailRequest(raw json.RawMessage) (EmailRequest, error) {
 	if req.ToEmail == "" {
 		return EmailRequest{}, errors.New("to_email is required")
 	}
-	if config.BrevoAPIKey == "" {
-		return EmailRequest{}, errors.New("BREVO_API_KEY is not configured")
+	if config.MailjetAPIKey == "" {
+		return EmailRequest{}, errors.New("MAILJET_API_KEY is not configured")
+	}
+	if config.MailjetSecretKey == "" {
+		return EmailRequest{}, errors.New("MAILJET_SECRET_KEY is not configured")
 	}
 	if config.EmailFrom == "" {
 		return EmailRequest{}, errors.New("EMAIL_FROM is not configured")
@@ -218,12 +222,16 @@ func buildVariables(req EmailRequest) map[string]string {
 	return variables
 }
 
-func sendEmailBrevo(ctx context.Context, req EmailRequest, subject string, body string) (int, string, error) {
-	payload := BrevoSendEmailRequest{
-		Sender:      BrevoSender{Email: config.EmailFrom, Name: config.EmailFromName},
-		To:          []BrevoContact{{Email: req.ToEmail, Name: req.ToName}},
-		Subject:     subject,
-		TextContent: body,
+func sendEmailMailjet(ctx context.Context, req EmailRequest, subject string, body string) (int, string, error) {
+	payload := MailjetSendEmailRequest{
+		Messages: []MailjetMessage{
+			{
+				From:     MailjetContact{Email: config.EmailFrom, Name: config.EmailFromName},
+				To:       []MailjetContact{{Email: req.ToEmail, Name: req.ToName}},
+				Subject:  subject,
+				TextPart: body,
+			},
+		},
 	}
 
 	bodyBytes, err := json.Marshal(payload)
@@ -231,12 +239,12 @@ func sendEmailBrevo(ctx context.Context, req EmailRequest, subject string, body 
 		return 0, "", err
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, brevoEndpoint, bytes.NewReader(bodyBytes))
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, mailjetEndpoint, bytes.NewReader(bodyBytes))
 	if err != nil {
 		return 0, "", err
 	}
 	httpReq.Header.Set("Content-Type", "application/json")
-	httpReq.Header.Set("api-key", config.BrevoAPIKey)
+	httpReq.SetBasicAuth(config.MailjetAPIKey, config.MailjetSecretKey)
 
 	resp, err := httpClient.Do(httpReq)
 	if err != nil {
@@ -247,7 +255,7 @@ func sendEmailBrevo(ctx context.Context, req EmailRequest, subject string, body 
 	respBody, _ := io.ReadAll(resp.Body)
 	respText := string(respBody)
 	if resp.StatusCode < 200 || resp.StatusCode > 299 {
-		return resp.StatusCode, respText, fmt.Errorf("brevo returned status %d: %s", resp.StatusCode, respText)
+		return resp.StatusCode, respText, fmt.Errorf("mailjet returned status %d: %s", resp.StatusCode, respText)
 	}
 
 	log.Printf("email sent type=%s to=%s status=%d", req.Type, req.ToEmail, resp.StatusCode)
@@ -260,10 +268,11 @@ func loadConfig() Config {
 		_ = os.Setenv("AWS_REGION", "sa-east-1")
 	}
 	return Config{
-		BrevoAPIKey:   strings.TrimSpace(os.Getenv("BREVO_API_KEY")),
-		EmailFrom:     strings.TrimSpace(os.Getenv("EMAIL_FROM")),
-		EmailFromName: strings.TrimSpace(os.Getenv("EMAIL_FROM_NAME")),
-		TableName:     envOrDefault("TABLE_NAME", "mundocolore-emails"),
+		MailjetAPIKey:    strings.TrimSpace(os.Getenv("MAILJET_API_KEY")),
+		MailjetSecretKey: strings.TrimSpace(os.Getenv("MAILJET_SECRET_KEY")),
+		EmailFrom:        strings.TrimSpace(os.Getenv("EMAIL_FROM")),
+		EmailFromName:    strings.TrimSpace(os.Getenv("EMAIL_FROM_NAME")),
+		TableName:        envOrDefault("TABLE_NAME", "mundocolore-emails"),
 	}
 }
 
@@ -290,11 +299,11 @@ func saveReceivedPayload(req EmailRequest, raw map[string]interface{}) error {
 	return err
 }
 
-func saveSentEmail(req EmailRequest, subject, body string, statusCode int, brevoResponse string) error {
+func saveSentEmail(req EmailRequest, subject, body string, statusCode int, providerResponse string) error {
 	_, err := dynamoClient.UpdateItem(&dynamodb.UpdateItemInput{
 		TableName:        aws.String(config.TableName),
 		Key:              map[string]*dynamodb.AttributeValue{"id": {S: aws.String(req.ID)}},
-		UpdateExpression: aws.String("SET #status = :status, processed_at = :processed_at, rendered_subject = :subject, rendered_body = :body, brevo_status_code = :code, brevo_response = :response"),
+		UpdateExpression: aws.String("SET #status = :status, processed_at = :processed_at, rendered_subject = :subject, rendered_body = :body, provider = :provider, provider_status_code = :code, provider_response = :response"),
 		ExpressionAttributeNames: map[string]*string{
 			"#status": aws.String("status"),
 		},
@@ -303,8 +312,9 @@ func saveSentEmail(req EmailRequest, subject, body string, statusCode int, brevo
 			":processed_at": {S: aws.String(time.Now().UTC().Format(time.RFC3339))},
 			":subject":      {S: aws.String(subject)},
 			":body":         {S: aws.String(body)},
+			":provider":     {S: aws.String("mailjet")},
 			":code":         {N: aws.String(fmt.Sprintf("%d", statusCode))},
-			":response":     {S: aws.String(brevoResponse)},
+			":response":     {S: aws.String(providerResponse)},
 		},
 	})
 	return err

@@ -16,6 +16,7 @@ import { ProductRegistrationComponent } from './product-registration/product-reg
 import { AdminUsersComponent } from './admin-users/admin-users.component';
 import { AdminOrdersComponent } from './admin-orders/admin-orders.component';
 import { AdminOrderPaymentsComponent } from './admin-order-payments/admin-order-payments.component';
+import { AdminAnalyticsComponent } from './admin-analytics/admin-analytics.component';
 
 @NgModule({
   imports: [
@@ -36,7 +37,8 @@ import { AdminOrderPaymentsComponent } from './admin-order-payments/admin-order-
     ProductRegistrationComponent,
     AdminUsersComponent,
     AdminOrdersComponent,
-    AdminOrderPaymentsComponent
+    AdminOrderPaymentsComponent,
+    AdminAnalyticsComponent
   ],
   exports: [AccountPageComponent]
 })

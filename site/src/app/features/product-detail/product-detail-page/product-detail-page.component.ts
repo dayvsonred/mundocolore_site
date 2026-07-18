@@ -4,6 +4,7 @@ import { Product, CartItem } from '../../../core/models/product.model';
 import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { AnalyticsService } from '../../../core/services/analytics.service';
 
 @Component({
   selector: 'app-product-detail-page',
@@ -24,7 +25,8 @@ export class ProductDetailPageComponent implements OnInit {
     private router: Router,
     private productService: ProductService,
     private cartService: CartService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private analyticsService: AnalyticsService
   ) { }
 
   ngOnInit(): void {
@@ -34,6 +36,9 @@ export class ProductDetailPageComponent implements OnInit {
       this.selectedSize = this.productSizes.includes(this.defaultSize) ? this.defaultSize : '';
       this.selectedColor = this.productColors.includes(this.defaultColor) ? this.defaultColor : '';
       this.validationMessage = '';
+      if (product) {
+        this.analyticsService.trackProductView(this.router.url, product).subscribe();
+      }
     });
   }
 

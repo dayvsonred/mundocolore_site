@@ -14,7 +14,7 @@
     <article *ngFor="let user of users">
       <div><h3>{{ user.name }}</h3><p>{{ user.email }} | {{ user.phone || '-' }} | CPF {{ user.cpf || '-' }}</p><small>Criado em {{ user.created_at | date:'dd/MM/yyyy HH:mm' }}</small></div>
       <div class="credit"><span>Limite: R$ {{ user.credit.credit_limit | number:'1.2-2' }}</span><span>Disponivel: R$ {{ user.credit.available_credit | number:'1.2-2' }}</span></div>
-      <div class="add-credit"><input type="number" min="0.01" step="0.01" [(ngModel)]="creditAmounts[user.id]" [ngModelOptions]="{standalone:true}" placeholder="Valor"><button mat-raised-button color="primary" (click)="addCredit(user)">Adicionar credito</button></div>
+      <div class="add-credit"><input type="number" min="0.01" step="0.01" [(ngModel)]="creditAmounts[user.id]" [ngModelOptions]="{standalone:true}" placeholder="Valor"><button mat-raised-button color="primary" (click)="addCredit(user)">Adicionar credito</button><button mat-stroked-button color="warn" [disabled]="resettingPasswords[user.id]" (click)="resetPassword(user)">Resetar senha</button></div>
     </article>
   </div>
 </section>

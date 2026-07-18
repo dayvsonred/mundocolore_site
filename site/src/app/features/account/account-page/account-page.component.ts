@@ -86,7 +86,7 @@ export class AccountPageComponent implements OnInit {
   }
 
   changePassword(): void {
-    console.log('Change password');
+    this.router.navigate(['/minha-conta/alterar-senha']);
   }
 
   resendEmailConfirmation(): void {

@@ -46,5 +46,21 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 		return HandleResendEmailConfirmation(ctx, request)
 	}
 
+	if request.HTTPMethod == "POST" && strings.HasSuffix(request.Path, "/passwordChange") {
+		return HandleChangePassword(ctx, request)
+	}
+
+	if request.HTTPMethod == "POST" && strings.HasSuffix(request.Path, "/passwordRecover") {
+		return HandlePasswordRecover(ctx, request)
+	}
+
+	if request.HTTPMethod == "POST" && strings.HasSuffix(request.Path, "/passwordConfirmToken") {
+		return HandlePasswordConfirmToken(ctx, request)
+	}
+
+	if request.HTTPMethod == "POST" && strings.HasSuffix(request.Path, "/admin/password-reset") {
+		return HandleAdminPasswordReset(ctx, request)
+	}
+
 	return notFoundResponse(), nil
 }

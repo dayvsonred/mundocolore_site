@@ -65,6 +65,20 @@ mundocolorestore-imagems/UP-BABY/2026/inverno-verao-a/A_00e06a69-e8ce-4553-8ea4-
 - Uso: validacao server-side de administradores.
 - Seeds: `user-ficticio-admin-001` e `user-ficticio-admin-002`.
 
+### Analytics (`mundocolore-analytics`)
+
+- Chave primaria: `server_day` (String) + `server_at_event_id` (String).
+- Uso: eventos de acesso e interacao do site registrados pela Lambda `analytics_control`.
+- Data oficial do relatorio: `server_day`, gerado no backend com fuso `America/Sao_Paulo`.
+- Data informada pelo navegador: `client_at` e `client_day`, mantida apenas como referencia.
+
+GSIs usados para relatorios:
+
+- `day-route-index`: consulta uma rota especifica dentro de um dia.
+- `day-event-type-index`: separa `page_view`, `product_view`, `filter`, `product_code_search` e `brand_search`.
+- `day-product-code-index`: consulta acessos ou buscas por codigo de produto em um dia.
+- `day-brand-index`: consulta buscas e acessos relacionados a marca em um dia.
+
 ## Requisitos
 
 - Terraform >= 1.5

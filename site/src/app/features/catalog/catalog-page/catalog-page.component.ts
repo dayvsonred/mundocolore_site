@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { Product } from '../../../core/models/product.model';
 import { CatalogPageSnapshot, ProductService } from '../../../core/services/product.service';
+import { AnalyticsService } from '../../../core/services/analytics.service';
 
 type FilterSection = 'code' | 'category' | 'size' | 'brand' | 'color' | 'price' | 'promotions';
 type PromotionFilter = 'promotion' | 'new';
@@ -16,7 +17,7 @@ interface BasicCategoryRule {
   templateUrl: './catalog-page.component.html',
   styleUrls: ['./catalog-page.component.scss']
 })
-export class CatalogPageComponent implements OnInit {
+export class CatalogPageComponent implements OnInit, OnDestroy {
   products: Product[] = [];
   filteredProducts: Product[] = [];
 
@@ -71,13 +72,28 @@ export class CatalogPageComponent implements OnInit {
     { label: 'Saias', terms: ['saia'] },
     { label: 'Casacos', terms: ['casaco', 'jaqueta', 'moletom'] }
   ];
+  private filterTrackingTimer: ReturnType<typeof setTimeout> | undefined;
+  private brandSearchTrackingTimer: ReturnType<typeof setTimeout> | undefined;
+  private lastFilterAnalyticsSignature = '';
+  private lastProductCodeSearch = '';
+  private lastBrandSearch = '';
 
   constructor(
-    private productService: ProductService
+    private productService: ProductService,
+    private analyticsService: AnalyticsService
   ) { }
 
   ngOnInit(): void {
     this.loadProducts(true);
+  }
+
+  ngOnDestroy(): void {
+    if (this.filterTrackingTimer) {
+      clearTimeout(this.filterTrackingTimer);
+    }
+    if (this.brandSearchTrackingTimer) {
+      clearTimeout(this.brandSearchTrackingTimer);
+    }
   }
 
   get visibleBrandOptions(): string[] {
@@ -197,6 +213,7 @@ export class CatalogPageComponent implements OnInit {
     }
 
     this.saveCatalogState();
+    this.scheduleFilterAnalytics();
 
     if (ensureMinimum && this.hasActiveFilters && this.filteredProducts.length < this.minimumFilteredPageSize) {
       this.ensureMinimumFilteredProducts();
@@ -258,6 +275,22 @@ export class CatalogPageComponent implements OnInit {
 
   closeFilterDrawer(): void {
     this.isFilterDrawerOpen = false;
+  }
+
+  trackBrandSearch(): void {
+    if (this.brandSearchTrackingTimer) {
+      clearTimeout(this.brandSearchTrackingTimer);
+    }
+
+    this.brandSearchTrackingTimer = setTimeout(() => {
+      const search = this.brandSearch.trim();
+      if (!search || search === this.lastBrandSearch) {
+        return;
+      }
+
+      this.lastBrandSearch = search;
+      this.analyticsService.trackBrandSearch('/catalog', search, this.visibleBrandOptions.length).subscribe();
+    }, 800);
   }
 
   getColorSwatch(color: string): string {
@@ -356,6 +389,50 @@ export class CatalogPageComponent implements OnInit {
       minimumPrice: this.minimumPrice,
       maximumPrice: this.maximumPrice
     });
+  }
+
+  private scheduleFilterAnalytics(): void {
+    if (!this.hasActiveFilters) {
+      return;
+    }
+
+    if (this.filterTrackingTimer) {
+      clearTimeout(this.filterTrackingTimer);
+    }
+
+    this.filterTrackingTimer = setTimeout(() => {
+      const filters = this.currentAnalyticsFilters();
+      const signature = JSON.stringify(filters);
+      if (signature !== this.lastFilterAnalyticsSignature) {
+        this.lastFilterAnalyticsSignature = signature;
+        this.analyticsService.trackCatalogFilters({
+          route: '/catalog',
+          filters,
+          results_count: this.filteredProducts.length,
+          loaded_count: this.products.length
+        }).subscribe();
+      }
+
+      const productCode = this.productCodeSearch.trim();
+      if (productCode && productCode !== this.lastProductCodeSearch) {
+        this.lastProductCodeSearch = productCode;
+        this.analyticsService.trackProductCodeSearch('/catalog', productCode, this.filteredProducts.length).subscribe();
+      }
+    }, 800);
+  }
+
+  private currentAnalyticsFilters(): Record<string, unknown> {
+    return {
+      product_code: this.productCodeSearch.trim(),
+      brand_search: this.brandSearch.trim(),
+      categories: [...this.selectedCategories],
+      brands: [...this.selectedBrands],
+      sizes: [...this.selectedSizes],
+      colors: [...this.selectedColors],
+      promotions: [...this.selectedPromotions],
+      minimum_price: this.minimumPrice,
+      maximum_price: this.maximumPrice
+    };
   }
 
   private buildOptions(products: Product[]): void {

@@ -80,6 +80,7 @@ Por padrao, o script interrompe no primeiro erro. Para continuar tentando as
 outras Lambdas:
 
 ```powershell
+cd "C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\back\"
 python .\deploy_lambdas.py --continue-on-error
 ```
 

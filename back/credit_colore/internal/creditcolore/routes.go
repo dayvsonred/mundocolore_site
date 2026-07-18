@@ -29,7 +29,13 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 			if strings.HasSuffix(request.Path, "/credit-colore/admin/users") {
 				return HandleListUsers(ctx, request)
 			}
+			if strings.HasSuffix(request.Path, "/credit-colore/admin/installments") {
+				return HandleListInstallments(ctx, request)
+			}
 		case "PATCH", "PUT":
+			if strings.Contains(request.Path, "/credit-colore/admin/installments/") && strings.HasSuffix(request.Path, "/pay") {
+				return HandlePayInstallment(ctx, request)
+			}
 			if strings.Contains(request.Path, "/credit-colore/admin/users/") {
 				return HandleAddCredit(ctx, request, userID)
 			}

@@ -39,6 +39,7 @@ export class PasswordResetRequestComponent implements OnInit {
   }
 
   resetPassword() {
+    this.email = String(this.form.get('email')?.value || '').trim().toLowerCase();
     this.loading = true;
     this.authService.passwordResetRequest(this.email)
       .subscribe(
@@ -67,7 +68,7 @@ export class PasswordResetRequestComponent implements OnInit {
   }
 
   cancel() {
-    this.router.navigate(['/']);
+    this.router.navigate(['/auth/login']);
   }
 }
 

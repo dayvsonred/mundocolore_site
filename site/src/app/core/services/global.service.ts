@@ -137,7 +137,8 @@ export class GlobalService {
 
             }),
             catchError((e) => {
-                if (e.error.message) return throwError(() => e.error.message);
+                if (e.error?.message) return throwError(() => e.error.message);
+                if (e.error?.error) return throwError(() => e.error.error);
                 return throwError(
                     () =>
                         'No momento não estamos conseguindo validar este dados, tente novamente mais tarde!'

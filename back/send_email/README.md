@@ -1,6 +1,6 @@
 # lb_mundocolore-send-email
 
-Lambda Go para envio assincrono de e-mails pela Brevo. Ela recebe JSON direto ou mensagens SQS, salva o payload recebido em `mundocolore-emails`, renderiza o template pelo campo `type`, envia pela Brevo e atualiza o mesmo item no DynamoDB com assunto, corpo e resposta do provider.
+Lambda Go para envio assincrono de e-mails pela Mailjet. Ela recebe JSON direto ou mensagens SQS, salva o payload recebido em `mundocolore-emails`, renderiza o template pelo campo `type`, envia pela Mailjet e atualiza o mesmo item no DynamoDB com assunto, corpo e resposta do provider.
 
 ## Tipos de e-mail
 
@@ -32,13 +32,23 @@ Os templates ficam em `templates.go` para facilitar edicao e inclusao de novos m
 ## Variaveis de ambiente
 
 ```powershell
-$env:BREVO_API_KEY="sua-chave-brevo"
+$env:MAILJET_API_KEY="sua-api-key-mailjet"
+$env:MAILJET_SECRET_KEY="sua-secret-key-mailjet"
 $env:EMAIL_FROM="contato@mundocolorestore.com"
 $env:EMAIL_FROM_NAME="Mundo Colore Store"
 $env:TABLE_NAME="mundocolore-emails"
 ```
 
-Para deploy via `back/deploy_lambdas.py`, crie `back/send_email/.chave_brevo_api_key` contendo somente a chave. Esse arquivo e ignorado pelo Git.
+Para deploy via `back/deploy_lambdas.py`, crie `back/send_email/.mailjet_api_key` com o JSON:
+
+```json
+{
+  "api_key": "XXXXXXXXXXX",
+  "secret_key": "XXXXXXXXXXXXX"
+}
+```
+
+Esse arquivo e ignorado pelo Git.
 
 ## Build local no Windows PowerShell
 
@@ -49,7 +59,7 @@ $env:GOOS="linux"; $env:GOARCH="amd64"; $env:CGO_ENABLED="0"; go build -o bootst
 ## Deploy
 
 1. Crie/atualize a tabela DynamoDB em `back/dynamoDB`.
-2. Crie `back/send_email/.chave_brevo_api_key`.
+2. Crie `back/send_email/.mailjet_api_key`.
 3. Ajuste `version_local` para uma versao maior que `version_update`.
 4. Execute:
 

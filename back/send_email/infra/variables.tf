@@ -1,5 +1,11 @@
-variable "brevo_api_key" {
-  description = "Brevo API key loaded from back/send_email/.chave_brevo_api_key by deploy_lambdas.py"
+variable "mailjet_api_key" {
+  description = "Mailjet API key loaded from back/send_email/.mailjet_api_key by deploy_lambdas.py"
+  type        = string
+  sensitive   = true
+}
+
+variable "mailjet_secret_key" {
+  description = "Mailjet secret key loaded from back/send_email/.mailjet_api_key by deploy_lambdas.py"
   type        = string
   sensitive   = true
 }

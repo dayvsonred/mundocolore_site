@@ -48,7 +48,7 @@
                 <button mat-raised-button id="login" color="primary" [disabled]="loginForm.invalid || loading"
                     (click)="login()">Login</button>
                 <button mat-button id="criar" (click)="createUser()" type="button" [disabled]="!loginForm.get('acceptTerms')?.value">Criar  Conta</button>    
-                <button mat-button id="resetPassword" (click)="resetPassword()" type="button">Reset Password</button>
+                <button mat-button id="resetPassword" (click)="resetPassword()" type="button">Resetar Senha</button>
             </mat-card-actions>
 
         </mat-card>

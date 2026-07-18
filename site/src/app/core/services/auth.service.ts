@@ -141,12 +141,7 @@ export class AuthenticationService {
 
   passwordResetRequest(email: string): Observable<{ message: string }> {
     const body = { email };
-    let headers = new HttpHeaders().set('Content-Type', 'application/json');
-    const token = this.localStorage.getItem('token');
-
-    if (token) {
-      headers = headers.set('Authorization', token);
-    }
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
 
     return this.http
       .post<{ message: string }>(`${environment.urlBase}/users/passwordRecover`, body, { headers })
@@ -155,7 +150,36 @@ export class AuthenticationService {
           throwError(
             () =>
               error?.error?.message ||
+              error?.error?.error ||
               'Nao foi possivel enviar o link de recuperacao.'
+          )
+        )
+      );
+  }
+
+  adminPasswordReset(userId: string): Observable<{ message: string; user_id: string; email: string }> {
+    const token = this.getToken();
+    if (!token) {
+      return throwError(() => 'No token');
+    }
+
+    const headers = new HttpHeaders()
+      .set('Authorization', `Bearer ${token}`)
+      .set('Content-Type', 'application/json');
+
+    return this.http
+      .post<{ message: string; user_id: string; email: string }>(
+        `${this.apiUrl}/users/admin/password-reset`,
+        { user_id: userId },
+        { headers }
+      )
+      .pipe(
+        catchError((error) =>
+          throwError(
+            () =>
+              error?.error?.message ||
+              error?.error?.error ||
+              'Nao foi possivel enviar o reset de senha.'
           )
         )
       );
@@ -172,6 +196,7 @@ export class AuthenticationService {
           throwError(
             () =>
               error?.error?.message ||
+              error?.error?.error ||
               'Nao foi possivel alterar a senha. Tente novamente mais tarde.'
           )
         )

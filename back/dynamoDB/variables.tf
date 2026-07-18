@@ -250,5 +250,57 @@ variable "dynamodb_tables" {
         }
       ]
     }
+    analytics = {
+      name           = "mundocolore-analytics"
+      billing_mode   = "PAY_PER_REQUEST"
+      hash_key       = "server_day"
+      hash_key_type  = "S"
+      range_key      = "server_at_event_id"
+      range_key_type = "S"
+      attributes = [
+        {
+          name = "day_route"
+          type = "S"
+        },
+        {
+          name = "day_event_type"
+          type = "S"
+        },
+        {
+          name = "day_product_code"
+          type = "S"
+        },
+        {
+          name = "day_brand_key"
+          type = "S"
+        }
+      ]
+      global_secondary_indexes = [
+        {
+          name            = "day-route-index"
+          hash_key        = "day_route"
+          range_key       = "server_at_event_id"
+          projection_type = "ALL"
+        },
+        {
+          name            = "day-event-type-index"
+          hash_key        = "day_event_type"
+          range_key       = "server_at_event_id"
+          projection_type = "ALL"
+        },
+        {
+          name            = "day-product-code-index"
+          hash_key        = "day_product_code"
+          range_key       = "server_at_event_id"
+          projection_type = "ALL"
+        },
+        {
+          name            = "day-brand-index"
+          hash_key        = "day_brand_key"
+          range_key       = "server_at_event_id"
+          projection_type = "ALL"
+        }
+      ]
+    }
   }
 }

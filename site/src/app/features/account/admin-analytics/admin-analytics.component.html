@@ -1,0 +1,61 @@
+<section class="admin-page analytics-page">
+  <header>
+    <h1>Acessos por dia</h1>
+    <p>Telas acessadas no site por data.</p>
+  </header>
+
+  <form class="filters" (ngSubmit)="loadReport()">
+    <mat-form-field appearance="outline">
+      <mat-label>Dia</mat-label>
+      <input matInput type="date" name="day" [(ngModel)]="selectedDay">
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" type="submit" [disabled]="loading || !selectedDay">
+      Buscar
+    </button>
+  </form>
+
+  <mat-spinner *ngIf="loading" diameter="34"></mat-spinner>
+
+  <p class="error" *ngIf="errorMessage && !loading">{{ errorMessage }}</p>
+
+  <div class="summary" *ngIf="report && !loading">
+    <article>
+      <span>Dia</span>
+      <strong>{{ report.server_day | date:'dd/MM/yyyy':'UTC' }}</strong>
+    </article>
+    <article>
+      <span>Acessos</span>
+      <strong>{{ report.total_access }}</strong>
+    </article>
+    <article>
+      <span>Telas</span>
+      <strong>{{ pages.length }}</strong>
+    </article>
+  </div>
+
+  <div class="table-wrapper" *ngIf="pages.length && !loading">
+    <table>
+      <thead>
+        <tr>
+          <th>Pagina</th>
+          <th>Rota</th>
+          <th>Acessos</th>
+          <th>Ultimo acesso</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let page of pages">
+          <td>{{ page.page || '-' }}</td>
+          <td>{{ page.route || '-' }}</td>
+          <td>{{ page.accesses }}</td>
+          <td>{{ page.last_access | date:'dd/MM/yyyy HH:mm' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section class="empty-state" *ngIf="report && !pages.length && !loading">
+    Nenhum acesso registrado para o dia.
+  </section>
+</section>

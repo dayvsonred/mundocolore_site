@@ -3,7 +3,7 @@ import { Routes, RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
 import { AuthGuard } from './core/guards/auth.guard';
-import { GlobalService } from './core/services/global.service';
+import { AnalyticsService } from './core/services/analytics.service';
 
 const appRoutes: Routes = [
   {
@@ -60,7 +60,6 @@ const appRoutes: Routes = [
     path: '**',
     redirectTo: 'home'
   }
-  
 ];
 
 @NgModule({
@@ -71,17 +70,13 @@ const appRoutes: Routes = [
   providers: []
 })
 export class AppRoutingModule {
-  constructor(private router: Router, private globalService: GlobalService) {
+  constructor(private router: Router, private analyticsService: AnalyticsService) {
     this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event) => {
         const url = event.urlAfterRedirects || event.url;
-        const page = url.split('?')[0].split('#')[0] || '/home';
-        this.globalService.sendPageVisualization({ page }).subscribe({
-          error: () => {
-            // Evita quebrar a navegação caso o endpoint falhe
-          }
-        });
+        const route = url.split('?')[0].split('#')[0] || '/home';
+        this.analyticsService.trackPageView(route).subscribe();
       });
   }
 }

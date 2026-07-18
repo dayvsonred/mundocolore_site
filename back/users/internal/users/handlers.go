@@ -37,6 +37,9 @@ type User struct {
 	EmailConfirmedAt             string `json:"email_confirmed_at,omitempty" dynamodbav:"email_confirmed_at,omitempty"`
 	EmailConfirmationToken       string `json:"-" dynamodbav:"email_confirmation_token,omitempty"`
 	EmailConfirmationRequestedAt string `json:"email_confirmation_requested_at,omitempty" dynamodbav:"email_confirmation_requested_at,omitempty"`
+	PasswordResetToken           string `json:"-" dynamodbav:"password_reset_token,omitempty"`
+	PasswordResetRequestedAt     string `json:"password_reset_requested_at,omitempty" dynamodbav:"password_reset_requested_at,omitempty"`
+	PasswordResetExpiresAt       string `json:"password_reset_expires_at,omitempty" dynamodbav:"password_reset_expires_at,omitempty"`
 }
 
 type UserRole struct {
@@ -70,6 +73,30 @@ type UpdateProfileRequest struct {
 type LoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+}
+
+type ChangePasswordRequest struct {
+	Email       string `json:"email"`
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
+}
+
+type PasswordRecoverRequest struct {
+	Email string `json:"email"`
+}
+
+type PasswordConfirmTokenRequest struct {
+	Email           string `json:"email"`
+	Token           string `json:"token"`
+	Password        string `json:"password"`
+	ConfirmPassword string `json:"confirm_password"`
+	Senha           string `json:"senha"`
+	ConfirmarSenha  string `json:"confirmar_senha"`
+}
+
+type AdminPasswordResetRequest struct {
+	UserID string `json:"user_id"`
+	Email  string `json:"email"`
 }
 
 type UserResponse struct {
@@ -297,6 +324,91 @@ func HandleResendEmailConfirmation(_ context.Context, request events.APIGatewayP
 	}
 
 	return successJSONResponse(200, `{"message":"confirmation email sent"}`), nil
+}
+
+func HandleChangePassword(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	token := extractBearerToken(request.Headers)
+	if token == "" {
+		return unauthorizedResponse("no token"), nil
+	}
+
+	userID, err := validateJWT(token)
+	if err != nil {
+		return unauthorizedResponse("invalid token"), nil
+	}
+
+	var req ChangePasswordRequest
+	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
+		return badRequestResponse("invalid request"), nil
+	}
+
+	if err := changeUserPassword(userID, req); err != nil {
+		return badRequestResponse(err.Error()), nil
+	}
+
+	return successJSONResponse(200, `{"message":"password changed"}`), nil
+}
+
+func HandlePasswordRecover(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	var req PasswordRecoverRequest
+	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
+		return badRequestResponse("invalid request"), nil
+	}
+
+	user, err := findUserByEmail(strings.ToLower(strings.TrimSpace(req.Email)))
+	if err != nil {
+		return notFoundWithMessage("email not found"), nil
+	}
+
+	if err := createPasswordResetTokenAndSendEmail(user); err != nil {
+		return serverErrorResponse(err), nil
+	}
+
+	return successJSONResponse(200, `{"message":"Email de reset de senha enviado."}`), nil
+}
+
+func HandlePasswordConfirmToken(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	var req PasswordConfirmTokenRequest
+	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
+		return badRequestResponse("invalid request"), nil
+	}
+
+	if err := resetPasswordWithToken(req); err != nil {
+		return badRequestResponse(err.Error()), nil
+	}
+
+	return successJSONResponse(200, `{"message":"password changed"}`), nil
+}
+
+func HandleAdminPasswordReset(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	adminUserID, err := authenticatedAdminID(request)
+	if err != nil {
+		return unauthorizedResponse(err.Error()), nil
+	}
+	if adminUserID == "" {
+		return forbiddenResponse("admin access required"), nil
+	}
+
+	var req AdminPasswordResetRequest
+	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
+		return badRequestResponse("invalid request"), nil
+	}
+
+	user, err := resolvePasswordResetUser(req)
+	if err != nil {
+		return notFoundWithMessage(err.Error()), nil
+	}
+
+	if err := createPasswordResetTokenAndSendEmail(user); err != nil {
+		return serverErrorResponse(err), nil
+	}
+
+	body, _ := json.Marshal(map[string]string{
+		"message": "Email de reset de senha enviado.",
+		"user_id": user.ID,
+		"email":   user.Email,
+	})
+	return successJSONResponse(200, string(body)), nil
 }
 
 func HandleGetUserByID(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -618,6 +730,149 @@ func updateUserProfile(userID string, req UpdateProfileRequest) (UserResponse, e
 	return toUserResponse(user, ""), nil
 }
 
+func changeUserPassword(userID string, req ChangePasswordRequest) error {
+	oldPassword := strings.TrimSpace(req.OldPassword)
+	newPassword := strings.TrimSpace(req.NewPassword)
+	if oldPassword == "" || newPassword == "" {
+		return fmt.Errorf("old_password and new_password are required")
+	}
+	if len(newPassword) < 6 {
+		return fmt.Errorf("new password must have at least 6 characters")
+	}
+
+	user, err := getUserEntity(userID)
+	if err != nil {
+		return err
+	}
+	if email := strings.ToLower(strings.TrimSpace(req.Email)); email != "" && email != user.Email {
+		return fmt.Errorf("invalid user")
+	}
+	if err := checkPassword(user.Password, oldPassword); err != nil {
+		return fmt.Errorf("invalid current password")
+	}
+
+	hashedPassword, err := hashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
+	_, err = dynamoClient.UpdateItem(&dynamodb.UpdateItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {S: aws.String(user.ID)},
+		},
+		UpdateExpression: aws.String("SET password = :password REMOVE password_reset_token, password_reset_requested_at, password_reset_expires_at"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":password": {S: aws.String(hashedPassword)},
+		},
+	})
+	return err
+}
+
+func resetPasswordWithToken(req PasswordConfirmTokenRequest) error {
+	email := strings.ToLower(strings.TrimSpace(req.Email))
+	token := strings.TrimSpace(req.Token)
+	password := strings.TrimSpace(firstNonEmpty(req.Password, req.Senha))
+	confirmPassword := strings.TrimSpace(firstNonEmpty(req.ConfirmPassword, req.ConfirmarSenha))
+
+	if email == "" || token == "" || password == "" || confirmPassword == "" {
+		return fmt.Errorf("email, token and password are required")
+	}
+	if password != confirmPassword {
+		return fmt.Errorf("password confirmation does not match")
+	}
+	if len(password) < 6 {
+		return fmt.Errorf("password must have at least 6 characters")
+	}
+
+	user, err := findUserByEmail(email)
+	if err != nil {
+		return fmt.Errorf("invalid password reset link")
+	}
+	if user.PasswordResetToken == "" || user.PasswordResetToken != token {
+		return fmt.Errorf("invalid password reset link")
+	}
+	if user.PasswordResetExpiresAt == "" {
+		return fmt.Errorf("invalid password reset link")
+	}
+	expiresAt, err := time.Parse(time.RFC3339, user.PasswordResetExpiresAt)
+	if err != nil || time.Now().UTC().After(expiresAt) {
+		return fmt.Errorf("password reset link expired")
+	}
+
+	hashedPassword, err := hashPassword(password)
+	if err != nil {
+		return err
+	}
+
+	_, err = dynamoClient.UpdateItem(&dynamodb.UpdateItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {S: aws.String(user.ID)},
+		},
+		UpdateExpression: aws.String("SET password = :password REMOVE password_reset_token, password_reset_requested_at, password_reset_expires_at"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":password": {S: aws.String(hashedPassword)},
+		},
+	})
+	return err
+}
+
+func createPasswordResetTokenAndSendEmail(user User) error {
+	resetToken := generateID()
+	now := time.Now().UTC()
+	expiresAt := now.Add(2 * time.Hour)
+	_, err := dynamoClient.UpdateItem(&dynamodb.UpdateItemInput{
+		TableName: aws.String(tableName),
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {S: aws.String(user.ID)},
+		},
+		UpdateExpression: aws.String("SET password_reset_token = :token, password_reset_requested_at = :requested_at, password_reset_expires_at = :expires_at"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":token":        {S: aws.String(resetToken)},
+			":requested_at": {S: aws.String(now.Format(time.RFC3339))},
+			":expires_at":   {S: aws.String(expiresAt.Format(time.RFC3339))},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	user.PasswordResetToken = resetToken
+	user.PasswordResetRequestedAt = now.Format(time.RFC3339)
+	user.PasswordResetExpiresAt = expiresAt.Format(time.RFC3339)
+	return enqueuePasswordResetEmail(user)
+}
+
+func resolvePasswordResetUser(req AdminPasswordResetRequest) (User, error) {
+	if userID := strings.TrimSpace(req.UserID); userID != "" {
+		return getUserEntity(userID)
+	}
+	if email := strings.ToLower(strings.TrimSpace(req.Email)); email != "" {
+		return findUserByEmail(email)
+	}
+	return User{}, fmt.Errorf("user_id or email is required")
+}
+
+func authenticatedAdminID(request events.APIGatewayProxyRequest) (string, error) {
+	token := extractBearerToken(request.Headers)
+	if token == "" {
+		return "", fmt.Errorf("no token")
+	}
+	userID, err := validateJWT(token)
+	if err != nil {
+		return "", fmt.Errorf("invalid token")
+	}
+	user, err := getUserEntity(userID)
+	if err != nil {
+		return "", err
+	}
+	if !isUserAdmin(user) {
+		return "", fmt.Errorf("admin access required")
+	}
+	return userID, nil
+}
+
 func isUserAdmin(user User) bool {
 	if !user.Role {
 		return false
@@ -681,6 +936,40 @@ func enqueueEmailConfirmation(user User) error {
 		Data: map[string]string{
 			"nome_do_cliente":  user.Name,
 			"link_confirmacao": confirmationLink,
+		},
+	}
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+	_, err = sqsClient.SendMessage(&sqs.SendMessageInput{
+		QueueUrl:    aws.String(emailQueueURL),
+		MessageBody: aws.String(string(body)),
+	})
+	return err
+}
+
+func enqueuePasswordResetEmail(user User) error {
+	if strings.TrimSpace(emailQueueURL) == "" {
+		return nil
+	}
+
+	resetLink := fmt.Sprintf(
+		"%s/auth/password-reset?email=%s&token=%s",
+		siteBaseURL,
+		url.QueryEscape(user.Email),
+		url.QueryEscape(user.PasswordResetToken),
+	)
+	emailID := generateID()
+	payload := EmailQueuePayload{
+		ID:      emailID,
+		UUID:    emailID,
+		Type:    "reset-senha-usuario",
+		ToEmail: user.Email,
+		ToName:  user.Name,
+		Data: map[string]string{
+			"nome_do_cliente": user.Name,
+			"link_reset":      resetLink,
 		},
 	}
 	body, err := json.Marshal(payload)
@@ -841,6 +1130,15 @@ func extractUserIDFromShowPath(path string) string {
 	}
 
 	return strings.Split(userID, "/")[0]
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return strings.TrimSpace(value)
+		}
+	}
+	return ""
 }
 
 func onlyDigits(value string) string {

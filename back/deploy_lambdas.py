@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import shutil
@@ -18,7 +19,10 @@ from typing import Iterable
 
 BACKEND_DIR = Path(__file__).resolve().parent
 JWT_FILE_PATH = BACKEND_DIR / ".jwt"
-BREVO_API_KEY_FILE_PATH = BACKEND_DIR / "send_email" / ".chave_brevo_api_key"
+MAILJET_CREDENTIAL_PATHS = {
+    "send_email": BACKEND_DIR / "send_email" / ".mailjet_api_key",
+    "email_inbound": BACKEND_DIR / "email_inbound" / ".mailjet_api_key",
+}
 VERSION_PATTERN = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 PLAN_FILE_NAME = ".deploy.tfplan"
 CONTACT_TERRAFORM_ARGS = (
@@ -117,15 +121,21 @@ def load_jwt_secret(path: Path = JWT_FILE_PATH) -> str:
     return secret
 
 
-def load_brevo_api_key(path: Path = BREVO_API_KEY_FILE_PATH) -> str:
+def load_mailjet_credentials(path: Path) -> tuple[str, str]:
     if not path.is_file():
         raise FileNotFoundError(
-            f"Arquivo Brevo nao encontrado: {path}. Crie o arquivo com a chave da API."
+            f"Arquivo Mailjet nao encontrado: {path}. Crie o arquivo JSON com api_key e secret_key."
         )
-    api_key = path.read_text(encoding="utf-8").strip()
-    if not api_key:
-        raise ValueError(f"{path} deve conter a chave da API Brevo.")
-    return api_key
+    try:
+        credentials = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as error:
+        raise ValueError(f"{path} deve conter um JSON valido.") from error
+
+    api_key = str(credentials.get("api_key", "")).strip()
+    secret_key = str(credentials.get("secret_key", "")).strip()
+    if not api_key or not secret_key:
+        raise ValueError(f"{path} deve conter api_key e secret_key.")
+    return api_key, secret_key
 
 
 def terraform_args(module: LambdaModule) -> list[str]:
@@ -139,7 +149,7 @@ def build_lambda(module: LambdaModule, *, env: dict[str, str], dry_run: bool) ->
     build_env = env.copy()
     build_env.update({"GOOS": "linux", "GOARCH": "amd64", "CGO_ENABLED": "0"})
     run_command(
-        ["go", "build", "-o", "bootstrap", "main.go"],
+        ["go", "build", "-o", "bootstrap", "."],
         module.root,
         env=build_env,
         dry_run=dry_run,
@@ -274,8 +284,6 @@ def main() -> int:
         env = os.environ.copy()
         env["AWS_PROFILE"] = args.profile
         env["TF_VAR_jwt_secret"] = load_jwt_secret()
-        if any(module.name == "send_email" for module in pending):
-            env["TF_VAR_brevo_api_key"] = load_brevo_api_key()
         failures: list[str] = []
         print(
             f"\nLambdas pendentes: {', '.join(module.name for module in pending)}"
@@ -286,7 +294,15 @@ def main() -> int:
         successful: list[str] = []
         for module in pending:
             try:
-                deploy_module(module, env=env, dry_run=args.dry_run)
+                module_env = env.copy()
+                credentials_path = MAILJET_CREDENTIAL_PATHS.get(module.name)
+                if credentials_path is not None:
+                    mailjet_api_key, mailjet_secret_key = load_mailjet_credentials(
+                        credentials_path
+                    )
+                    module_env["TF_VAR_mailjet_api_key"] = mailjet_api_key
+                    module_env["TF_VAR_mailjet_secret_key"] = mailjet_secret_key
+                deploy_module(module, env=module_env, dry_run=args.dry_run)
                 successful.append(module.name)
             except (OSError, subprocess.CalledProcessError) as error:
                 failures.append(module.name)

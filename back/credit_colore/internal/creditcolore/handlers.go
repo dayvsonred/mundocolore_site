@@ -3,6 +3,7 @@ package creditcolore
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -28,13 +29,39 @@ type CreditHistory struct {
 	CreatedAt   string  `json:"created_at" dynamodbav:"created_at"`
 }
 
+type ColoreCard struct {
+	ID          string `json:"id" dynamodbav:"id"`
+	Number      string `json:"number" dynamodbav:"number"`
+	LastFour    string `json:"last_four" dynamodbav:"last_four"`
+	HolderName  string `json:"holder_name" dynamodbav:"holder_name"`
+	Brand       string `json:"brand" dynamodbav:"brand"`
+	CreatedAt   string `json:"created_at" dynamodbav:"created_at"`
+	ExpiryMonth int    `json:"expiry_month" dynamodbav:"expiry_month"`
+	ExpiryYear  int    `json:"expiry_year" dynamodbav:"expiry_year"`
+}
+
+type CreditInstallment struct {
+	ID         string  `json:"id" dynamodbav:"id"`
+	OrderID    string  `json:"order_id" dynamodbav:"order_id"`
+	Number     int     `json:"number" dynamodbav:"number"`
+	Total      int     `json:"total" dynamodbav:"total"`
+	Amount     float64 `json:"amount" dynamodbav:"amount"`
+	Status     string  `json:"status" dynamodbav:"status"`
+	DueDate    string  `json:"due_date" dynamodbav:"due_date"`
+	PaidAt     string  `json:"paid_at,omitempty" dynamodbav:"paid_at,omitempty"`
+	PaidAmount float64 `json:"paid_amount,omitempty" dynamodbav:"paid_amount,omitempty"`
+	CreatedAt  string  `json:"created_at" dynamodbav:"created_at"`
+}
+
 type Credit struct {
-	UserID      string          `json:"user_id" dynamodbav:"user_id"`
-	CreditLimit float64         `json:"credit_limit" dynamodbav:"credit_limit"`
-	UsedCredit  float64         `json:"used_credit" dynamodbav:"used_credit"`
-	History     []CreditHistory `json:"history,omitempty" dynamodbav:"history,omitempty"`
-	CreatedAt   string          `json:"created_at" dynamodbav:"created_at"`
-	UpdatedAt   string          `json:"updated_at" dynamodbav:"updated_at"`
+	UserID       string              `json:"user_id" dynamodbav:"user_id"`
+	CreditLimit  float64             `json:"credit_limit" dynamodbav:"credit_limit"`
+	UsedCredit   float64             `json:"used_credit" dynamodbav:"used_credit"`
+	Card         ColoreCard          `json:"card" dynamodbav:"card"`
+	Installments []CreditInstallment `json:"installments,omitempty" dynamodbav:"installments,omitempty"`
+	History      []CreditHistory     `json:"history,omitempty" dynamodbav:"history,omitempty"`
+	CreatedAt    string              `json:"created_at" dynamodbav:"created_at"`
+	UpdatedAt    string              `json:"updated_at" dynamodbav:"updated_at"`
 }
 
 type CreditResponse struct {
@@ -56,6 +83,13 @@ type UserCredit struct {
 	Credit CreditResponse `json:"credit"`
 }
 
+type AdminCreditInstallment struct {
+	CreditInstallment
+	UserID    string `json:"user_id"`
+	UserName  string `json:"user_name"`
+	UserEmail string `json:"user_email"`
+}
+
 type UserRole struct {
 	Active        bool   `dynamodbav:"active"`
 	DeactivatedAt string `dynamodbav:"deactivated_at,omitempty"`
@@ -63,6 +97,11 @@ type UserRole struct {
 
 type AddCreditRequest struct {
 	Amount float64 `json:"amount"`
+}
+
+type PayInstallmentRequest struct {
+	PaidAmount float64 `json:"paid_amount"`
+	PaidAt     string  `json:"paid_at"`
 }
 
 type EmailQueuePayload struct {
@@ -208,6 +247,92 @@ func HandleListUsers(_ context.Context, request events.APIGatewayProxyRequest) (
 	return marshalResponse(200, map[string]interface{}{"users": users}), nil
 }
 
+func HandleListInstallments(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	statusFilter := strings.ToLower(strings.TrimSpace(request.QueryStringParameters["status"]))
+	userQuery := strings.ToLower(strings.TrimSpace(request.QueryStringParameters["user"]))
+
+	creditItems, err := scanAllCredits()
+	if err != nil {
+		return errorResponse(500, err.Error()), nil
+	}
+
+	installments := make([]AdminCreditInstallment, 0)
+	for _, item := range creditItems {
+		var credit Credit
+		if dynamodbattribute.UnmarshalMap(item, &credit) != nil || credit.UserID == "" {
+			continue
+		}
+		user, _ := getUserByID(credit.UserID)
+		searchText := strings.ToLower(credit.UserID + " " + user.Name + " " + user.Email)
+		if userQuery != "" && !strings.Contains(searchText, userQuery) {
+			continue
+		}
+		for _, installment := range credit.Installments {
+			if statusFilter != "" && statusFilter != "todas" && normalizeInstallmentStatus(installment.Status) != normalizeInstallmentStatus(statusFilter) {
+				continue
+			}
+			installments = append(installments, AdminCreditInstallment{
+				CreditInstallment: installment,
+				UserID:            credit.UserID,
+				UserName:          user.Name,
+				UserEmail:         user.Email,
+			})
+		}
+	}
+	return marshalResponse(200, map[string]interface{}{"installments": installments}), nil
+}
+
+func HandlePayInstallment(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	installmentID := pathID(request.Path, "/credit-colore/admin/installments/")
+	if installmentID == "" {
+		return errorResponse(400, "invalid installment id"), nil
+	}
+
+	var req PayInstallmentRequest
+	_ = json.Unmarshal([]byte(request.Body), &req)
+
+	credit, installmentIndex, err := findCreditByInstallmentID(installmentID)
+	if err != nil {
+		return errorResponse(404, err.Error()), nil
+	}
+	if installmentIndex < 0 || installmentIndex >= len(credit.Installments) {
+		return errorResponse(404, "installment not found"), nil
+	}
+
+	installment := credit.Installments[installmentIndex]
+	if normalizeInstallmentStatus(installment.Status) == "paga" {
+		return marshalResponse(200, toCreditResponse(credit)), nil
+	}
+
+	paidAmount := roundMoney(req.PaidAmount)
+	if paidAmount <= 0 {
+		paidAmount = roundMoney(installment.Amount)
+	}
+	paidAt := strings.TrimSpace(req.PaidAt)
+	if paidAt == "" {
+		paidAt = time.Now().UTC().Format(time.RFC3339)
+	}
+
+	credit.Installments[installmentIndex].Status = "paga"
+	credit.Installments[installmentIndex].PaidAmount = paidAmount
+	credit.Installments[installmentIndex].PaidAt = paidAt
+	credit.UsedCredit = roundMoney(credit.UsedCredit - paidAmount)
+	if credit.UsedCredit < 0 {
+		credit.UsedCredit = 0
+	}
+	credit.UpdatedAt = time.Now().UTC().Format(time.RFC3339)
+
+	item, err := dynamodbattribute.MarshalMap(credit)
+	if err != nil {
+		return errorResponse(500, err.Error()), nil
+	}
+	if _, err := dynamoClient.PutItem(&dynamodb.PutItemInput{TableName: aws.String(tableName), Item: item}); err != nil {
+		return errorResponse(500, err.Error()), nil
+	}
+
+	return marshalResponse(200, toCreditResponse(credit)), nil
+}
+
 func scanAllUsers() ([]map[string]*dynamodb.AttributeValue, error) {
 	items := []map[string]*dynamodb.AttributeValue{}
 	var startKey map[string]*dynamodb.AttributeValue
@@ -222,6 +347,41 @@ func scanAllUsers() ([]map[string]*dynamodb.AttributeValue, error) {
 		}
 		startKey = result.LastEvaluatedKey
 	}
+}
+
+func scanAllCredits() ([]map[string]*dynamodb.AttributeValue, error) {
+	items := []map[string]*dynamodb.AttributeValue{}
+	var startKey map[string]*dynamodb.AttributeValue
+	for {
+		result, err := dynamoClient.Scan(&dynamodb.ScanInput{TableName: aws.String(tableName), ExclusiveStartKey: startKey})
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, result.Items...)
+		if len(result.LastEvaluatedKey) == 0 {
+			return items, nil
+		}
+		startKey = result.LastEvaluatedKey
+	}
+}
+
+func findCreditByInstallmentID(installmentID string) (Credit, int, error) {
+	items, err := scanAllCredits()
+	if err != nil {
+		return Credit{}, -1, err
+	}
+	for _, item := range items {
+		var credit Credit
+		if dynamodbattribute.UnmarshalMap(item, &credit) != nil {
+			continue
+		}
+		for index, installment := range credit.Installments {
+			if installment.ID == installmentID {
+				return credit, index, nil
+			}
+		}
+	}
+	return Credit{}, -1, fmt.Errorf("installment not found")
 }
 
 func HandleAddCredit(_ context.Context, request events.APIGatewayProxyRequest, adminUserID string) (events.APIGatewayProxyResponse, error) {
@@ -284,10 +444,17 @@ func getOrCreateCredit(userID string) (Credit, error) {
 		if err := dynamodbattribute.UnmarshalMap(result.Item, &credit); err != nil {
 			return Credit{}, err
 		}
-		return credit, nil
+		return ensureCreditCard(credit)
 	}
 	now := time.Now().UTC().Format(time.RFC3339)
-	credit := Credit{UserID: userID, CreditLimit: 0, UsedCredit: 0, CreatedAt: now, UpdatedAt: now}
+	credit := Credit{
+		UserID:      userID,
+		CreditLimit: 0,
+		UsedCredit:  0,
+		Card:        buildColoreCard(userID, now),
+		CreatedAt:   now,
+		UpdatedAt:   now,
+	}
 	item, err := dynamodbattribute.MarshalMap(credit)
 	if err != nil {
 		return Credit{}, err
@@ -310,11 +477,76 @@ func getOrCreateCredit(userID string) (Credit, error) {
 	if unmarshalErr := dynamodbattribute.UnmarshalMap(result.Item, &credit); unmarshalErr != nil {
 		return Credit{}, unmarshalErr
 	}
-	return credit, nil
+	return ensureCreditCard(credit)
+}
+
+func ensureCreditCard(credit Credit) (Credit, error) {
+	if strings.TrimSpace(credit.Card.Number) != "" {
+		return credit, nil
+	}
+	now := time.Now().UTC().Format(time.RFC3339)
+	credit.Card = buildColoreCard(credit.UserID, now)
+	credit.UpdatedAt = now
+	cardAV, err := dynamodbattribute.MarshalMap(credit.Card)
+	if err != nil {
+		return Credit{}, err
+	}
+	_, err = dynamoClient.UpdateItem(&dynamodb.UpdateItemInput{
+		TableName:        aws.String(tableName),
+		Key:              map[string]*dynamodb.AttributeValue{"user_id": {S: aws.String(credit.UserID)}},
+		UpdateExpression: aws.String("SET card = :card, updated_at = :updated_at"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":card":       {M: cardAV},
+			":updated_at": {S: aws.String(now)},
+		},
+	})
+	return credit, err
+}
+
+func buildColoreCard(userID string, createdAt string) ColoreCard {
+	number := buildColoreCardNumber(userID)
+	now := time.Now().UTC()
+	return ColoreCard{
+		ID:          "COLORE-CARD-" + userID,
+		Number:      number,
+		LastFour:    number[len(number)-4:],
+		HolderName:  "MUNDO COLORE STORE",
+		Brand:       "Colore",
+		CreatedAt:   createdAt,
+		ExpiryMonth: 12,
+		ExpiryYear:  now.Year() + 5,
+	}
+}
+
+func buildColoreCardNumber(userID string) string {
+	sum := sha256.Sum256([]byte(userID))
+	var builder strings.Builder
+	builder.WriteString("7777")
+	for _, value := range sum {
+		if builder.Len() >= 16 {
+			break
+		}
+		builder.WriteByte('0' + value%10)
+	}
+	for builder.Len() < 16 {
+		builder.WriteByte('0')
+	}
+	return builder.String()
 }
 
 func toCreditResponse(credit Credit) CreditResponse {
 	return CreditResponse{Credit: credit, AvailableCredit: roundMoney(credit.CreditLimit - credit.UsedCredit)}
+}
+
+func normalizeInstallmentStatus(status string) string {
+	status = strings.ToLower(strings.TrimSpace(status))
+	if status == "paga" || status == "paid" {
+		return "paga"
+	}
+	if status == "todas" {
+		return "todas"
+	}
+	return "a_pagar"
 }
 
 func authenticatedUserID(request events.APIGatewayProxyRequest) (string, error) {

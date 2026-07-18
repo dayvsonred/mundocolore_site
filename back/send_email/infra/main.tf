@@ -63,10 +63,11 @@ resource "aws_lambda_function" "send_email_lambda" {
 
   environment {
     variables = {
-      BREVO_API_KEY   = var.brevo_api_key
-      EMAIL_FROM      = var.email_from
-      EMAIL_FROM_NAME = var.email_from_name
-      TABLE_NAME      = "mundocolore-emails"
+      MAILJET_API_KEY    = var.mailjet_api_key
+      MAILJET_SECRET_KEY = var.mailjet_secret_key
+      EMAIL_FROM         = var.email_from
+      EMAIL_FROM_NAME    = var.email_from_name
+      TABLE_NAME         = "mundocolore-emails"
     }
   }
 }

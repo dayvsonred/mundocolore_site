@@ -145,9 +145,23 @@ type CollectionPricing struct {
 }
 
 type Credit struct {
-	UserID      string  `dynamodbav:"user_id"`
-	CreditLimit float64 `dynamodbav:"credit_limit"`
-	UsedCredit  float64 `dynamodbav:"used_credit"`
+	UserID       string              `dynamodbav:"user_id"`
+	CreditLimit  float64             `dynamodbav:"credit_limit"`
+	UsedCredit   float64             `dynamodbav:"used_credit"`
+	Installments []CreditInstallment `dynamodbav:"installments,omitempty"`
+}
+
+type CreditInstallment struct {
+	ID         string  `json:"id" dynamodbav:"id"`
+	OrderID    string  `json:"order_id" dynamodbav:"order_id"`
+	Number     int     `json:"number" dynamodbav:"number"`
+	Total      int     `json:"total" dynamodbav:"total"`
+	Amount     float64 `json:"amount" dynamodbav:"amount"`
+	Status     string  `json:"status" dynamodbav:"status"`
+	DueDate    string  `json:"due_date" dynamodbav:"due_date"`
+	PaidAt     string  `json:"paid_at,omitempty" dynamodbav:"paid_at,omitempty"`
+	PaidAmount float64 `json:"paid_amount,omitempty" dynamodbav:"paid_amount,omitempty"`
+	CreatedAt  string  `json:"created_at" dynamodbav:"created_at"`
 }
 
 type UserRole struct {
@@ -594,6 +608,60 @@ func getCredit(userID string) (Credit, error) {
 	return credit, nil
 }
 
+func createCreditInstallments(order Order) error {
+	credit, err := getCredit(order.UserID)
+	if err != nil {
+		return err
+	}
+	for _, installment := range credit.Installments {
+		if installment.OrderID == order.ID {
+			return nil
+		}
+	}
+
+	totalInstallments := order.Payment.Installments
+	if totalInstallments <= 0 {
+		totalInstallments = 1
+	}
+	baseAmount := roundMoney(order.Total / float64(totalInstallments))
+	createdAt := time.Now().UTC()
+	installments := make([]*dynamodb.AttributeValue, 0, totalInstallments)
+	accumulated := 0.0
+	for number := 1; number <= totalInstallments; number++ {
+		amount := baseAmount
+		if number == totalInstallments {
+			amount = roundMoney(order.Total - accumulated)
+		}
+		accumulated = roundMoney(accumulated + amount)
+		item, err := dynamodbattribute.MarshalMap(CreditInstallment{
+			ID:        fmt.Sprintf("%s-%02d", order.ID, number),
+			OrderID:   order.ID,
+			Number:    number,
+			Total:     totalInstallments,
+			Amount:    amount,
+			Status:    "a_pagar",
+			DueDate:   createdAt.AddDate(0, number, 0).Format("2006-01-02"),
+			CreatedAt: createdAt.Format(time.RFC3339),
+		})
+		if err != nil {
+			return err
+		}
+		installments = append(installments, &dynamodb.AttributeValue{M: item})
+	}
+
+	_, err = dynamoClient.UpdateItem(&dynamodb.UpdateItemInput{
+		TableName:        aws.String(creditTableName),
+		Key:              map[string]*dynamodb.AttributeValue{"user_id": {S: aws.String(order.UserID)}},
+		UpdateExpression: aws.String("SET installments = list_append(if_not_exists(installments, :empty), :installments), updated_at = :updated_at"),
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":empty":        {L: []*dynamodb.AttributeValue{}},
+			":installments": {L: installments},
+			":updated_at":   {S: aws.String(createdAt.Format(time.RFC3339))},
+		},
+	})
+	return err
+}
+
 func getAdminOrders(filters map[string]string) ([]OrderResponse, error) {
 	items, err := scanAll(tableName)
 	if err != nil {
@@ -675,6 +743,7 @@ func updateOrderStatus(orderID, status, adminUserID string) (OrderResponse, erro
 	if err != nil {
 		return OrderResponse{}, err
 	}
+	previousStatus := order.Status
 	if order.Status == "cancelled" && status != "cancelled" {
 		return OrderResponse{}, fmt.Errorf("cancelled order cannot change status")
 	}
@@ -702,6 +771,11 @@ func updateOrderStatus(orderID, status, adminUserID string) (OrderResponse, erro
 		_ = reserveCredit(order.UserID, order.Total)
 	}
 	if err == nil {
+		if status == "approved" && previousStatus != "approved" && order.Payment.Method == "credit_colore" {
+			if installmentErr := createCreditInstallments(order); installmentErr != nil {
+				return OrderResponse{}, installmentErr
+			}
+		}
 		emailType := "notificacao-status-pedido"
 		if status == "pending_approval" {
 			emailType = "notificacao-pedido-em-analize"
