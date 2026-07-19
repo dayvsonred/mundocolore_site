@@ -77,8 +77,8 @@ export class AccountPageComponent implements OnInit {
     this.router.navigate(['/minha-conta/meus-pedidos']);
   }
 
-  reorder(): void {
-    this.router.navigate(['/catalog']);
+  viewAllOrders(): void {
+    this.router.navigate(['/minha-conta/meus-pedidos']);
   }
 
   editProfile(): void {

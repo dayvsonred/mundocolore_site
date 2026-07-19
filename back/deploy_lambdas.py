@@ -20,8 +20,8 @@ from typing import Iterable
 BACKEND_DIR = Path(__file__).resolve().parent
 JWT_FILE_PATH = BACKEND_DIR / ".jwt"
 MAILJET_CREDENTIAL_PATHS = {
-    "send_email": BACKEND_DIR / "send_email" / ".mailjet_api_key",
-    "email_inbound": BACKEND_DIR / "email_inbound" / ".mailjet_api_key",
+    "send_email": BACKEND_DIR / ".mailjet_api_key",
+    "email_inbound": BACKEND_DIR / ".mailjet_api_key",
 }
 VERSION_PATTERN = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 PLAN_FILE_NAME = ".deploy.tfplan"

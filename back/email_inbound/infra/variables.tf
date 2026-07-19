@@ -34,6 +34,12 @@ variable "raw_prefix" {
   default     = "ses-raw"
 }
 
+variable "email_table_name" {
+  description = "DynamoDB table used to index inbound email metadata"
+  type        = string
+  default     = "mundocolore-emails"
+}
+
 variable "forward_to" {
   description = "Address that receives a copy of every inbound message"
   type        = string
@@ -53,13 +59,13 @@ variable "forward_from_name" {
 }
 
 variable "mailjet_api_key" {
-  description = "Mailjet API key loaded from back/email_inbound/.mailjet_api_key"
+  description = "Mailjet API key loaded from back/.mailjet_api_key"
   type        = string
   sensitive   = true
 }
 
 variable "mailjet_secret_key" {
-  description = "Mailjet secret key loaded from back/email_inbound/.mailjet_api_key"
+  description = "Mailjet secret key loaded from back/.mailjet_api_key"
   type        = string
   sensitive   = true
 }

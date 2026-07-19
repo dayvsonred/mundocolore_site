@@ -17,6 +17,7 @@ temp/
 .env.*
 !.env.example
 back/.jwt
+back/.mailjet_api_key
 back/send_email/.chave_brevo_api_key
 back/send_email/.mailjet_api_key
 back/email_inbound/.mailjet_api_key

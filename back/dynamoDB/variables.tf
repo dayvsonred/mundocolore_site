@@ -233,6 +233,14 @@ variable "dynamodb_tables" {
         {
           name = "received_at"
           type = "S"
+        },
+        {
+          name = "mailbox"
+          type = "S"
+        },
+        {
+          name = "received_sort"
+          type = "S"
         }
       ]
       global_secondary_indexes = [
@@ -246,6 +254,12 @@ variable "dynamodb_tables" {
           name            = "to-email-received-index"
           hash_key        = "to_email"
           range_key       = "received_at"
+          projection_type = "ALL"
+        },
+        {
+          name            = "mailbox-received-index"
+          hash_key        = "mailbox"
+          range_key       = "received_sort"
           projection_type = "ALL"
         }
       ]

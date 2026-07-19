@@ -19,6 +19,8 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/s3"
 )
 
@@ -39,6 +41,25 @@ type config struct {
 	ForwardFromName  string
 	MailjetAPIKey    string
 	MailjetSecretKey string
+	TableName        string
+}
+
+type inboundEmailLog struct {
+	ID           string   `dynamodbav:"id"`
+	Type         string   `dynamodbav:"type"`
+	Direction    string   `dynamodbav:"direction"`
+	Mailbox      string   `dynamodbav:"mailbox"`
+	ReceivedAt   string   `dynamodbav:"received_at"`
+	ReceivedSort string   `dynamodbav:"received_sort"`
+	FromEmail    string   `dynamodbav:"from_email"`
+	ToEmail      string   `dynamodbav:"to_email"`
+	Recipients   []string `dynamodbav:"recipients"`
+	Subject      string   `dynamodbav:"subject"`
+	SearchText   string   `dynamodbav:"search_text"`
+	S3Key        string   `dynamodbav:"s3_key"`
+	ArchiveKeys  []string `dynamodbav:"archive_keys"`
+	Status       string   `dynamodbav:"status"`
+	RawSize      int      `dynamodbav:"raw_size"`
 }
 
 type sesEvent struct {
@@ -85,15 +106,17 @@ type mailjetAttachment struct {
 }
 
 var (
-	appConfig  config
-	s3Client   *s3.S3
-	httpClient = &http.Client{Timeout: 45 * time.Second}
+	appConfig    config
+	s3Client     *s3.S3
+	dynamoClient *dynamodb.DynamoDB
+	httpClient   = &http.Client{Timeout: 45 * time.Second}
 )
 
 func init() {
 	appConfig = loadConfig()
 	sess := session.Must(session.NewSession(&aws.Config{Region: aws.String(os.Getenv("AWS_REGION"))}))
 	s3Client = s3.New(sess)
+	dynamoClient = dynamodb.New(sess)
 }
 
 func main() {
@@ -131,6 +154,10 @@ func handler(ctx context.Context, event sesEvent) error {
 			return fmt.Errorf("save mailbox copies for %s: %w", messageID, err)
 		}
 
+		if err := saveInboundMetadata(ctx, record, accounts, savedKeys, rawEmail); err != nil {
+			return fmt.Errorf("save inbound metadata for %s: %w", messageID, err)
+		}
+
 		if err := forwardEmail(ctx, record.SES.Mail.Source, record.SES.Mail.CommonHeaders.Subject, record.SES.Receipt.Recipients, savedKeys, rawMessageID, messageID, rawEmail); err != nil {
 			return fmt.Errorf("forward email %s: %w", messageID, err)
 		}
@@ -151,6 +178,7 @@ func loadConfig() config {
 		ForwardFromName:  strings.TrimSpace(os.Getenv("FORWARD_FROM_NAME")),
 		MailjetAPIKey:    strings.TrimSpace(os.Getenv("MAILJET_API_KEY")),
 		MailjetSecretKey: strings.TrimSpace(os.Getenv("MAILJET_SECRET_KEY")),
+		TableName:        strings.TrimSpace(os.Getenv("TABLE_NAME")),
 	}
 }
 
@@ -163,6 +191,7 @@ func validateConfig() error {
 		"FORWARD_FROM":       appConfig.ForwardFrom,
 		"MAILJET_API_KEY":    appConfig.MailjetAPIKey,
 		"MAILJET_SECRET_KEY": appConfig.MailjetSecretKey,
+		"TABLE_NAME":         appConfig.TableName,
 	}
 	for name, value := range required {
 		if value == "" {
@@ -170,6 +199,83 @@ func validateConfig() error {
 		}
 	}
 	return nil
+}
+
+func saveInboundMetadata(ctx context.Context, record struct {
+	SES struct {
+		Mail struct {
+			Timestamp     string `json:"timestamp"`
+			MessageID     string `json:"messageId"`
+			Source        string `json:"source"`
+			CommonHeaders struct {
+				From    []string `json:"from"`
+				To      []string `json:"to"`
+				Subject string   `json:"subject"`
+			} `json:"commonHeaders"`
+		} `json:"mail"`
+		Receipt struct {
+			Recipients []string `json:"recipients"`
+		} `json:"receipt"`
+	} `json:"ses"`
+}, accounts, savedKeys []string, rawEmail []byte) error {
+	messageID := sanitizeKeySegment(record.SES.Mail.MessageID)
+	receivedAt := normalizedReceivedAt(record.SES.Mail.Timestamp)
+	subject := strings.TrimSpace(record.SES.Mail.CommonHeaders.Subject)
+	if subject == "" {
+		subject = "Sem assunto"
+	}
+	fromEmail := strings.ToLower(strings.TrimSpace(record.SES.Mail.Source))
+
+	for _, account := range accounts {
+		mailbox := account + "@" + appConfig.DomainName
+		item := inboundEmailLog{
+			ID:           "inbound:" + account + ":" + messageID,
+			Type:         "inbound",
+			Direction:    "inbound",
+			Mailbox:      mailbox,
+			ReceivedAt:   receivedAt,
+			ReceivedSort: receivedAt + "#" + messageID,
+			FromEmail:    fromEmail,
+			ToEmail:      mailbox,
+			Recipients:   record.SES.Receipt.Recipients,
+			Subject:      subject,
+			SearchText:   strings.ToLower(strings.Join([]string{fromEmail, mailbox, subject}, " ")),
+			S3Key:        appConfig.RawPrefix + "/" + strings.TrimSpace(record.SES.Mail.MessageID),
+			ArchiveKeys:  savedKeysForAccount(savedKeys, account),
+			Status:       "unread",
+			RawSize:      len(rawEmail),
+		}
+		attributes, err := dynamodbattribute.MarshalMap(item)
+		if err != nil {
+			return err
+		}
+		if _, err := dynamoClient.PutItemWithContext(ctx, &dynamodb.PutItemInput{
+			TableName: aws.String(appConfig.TableName),
+			Item:      attributes,
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func normalizedReceivedAt(value string) string {
+	parsed, err := time.Parse(time.RFC3339Nano, strings.TrimSpace(value))
+	if err != nil {
+		parsed = time.Now().UTC()
+	}
+	return parsed.UTC().Format(time.RFC3339Nano)
+}
+
+func savedKeysForAccount(keys []string, account string) []string {
+	prefix := sanitizeKeySegment(account) + "/"
+	result := make([]string, 0, 2)
+	for _, key := range keys {
+		if strings.HasPrefix(key, prefix) {
+			result = append(result, key)
+		}
+	}
+	return result
 }
 
 func getRawEmail(ctx context.Context, messageID string) ([]byte, error) {

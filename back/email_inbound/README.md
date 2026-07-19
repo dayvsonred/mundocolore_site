@@ -13,6 +13,11 @@ box-email-mundocolorestore-v1/contato/CAIXA-ENTRDA/<message-id>.eml
 
 O SES tambem mantem a copia tecnica original em `ses-raw/<message-id>`.
 
+Cada mensagem recebida tambem gera um registro de metadados na tabela
+`mundocolore-emails`. O item contem caixa, remetente, assunto, data, status e a
+chave do original no S3. O corpo e os anexos continuam armazenados somente no
+S3; as copias por data e `CAIXA-ENTRDA` foram mantidas.
+
 Mensagens de ate 10 MB sao encaminhadas com o arquivo `.eml` anexado. Para
 mensagens maiores, o encaminhamento inclui um link privado do S3 valido por sete
 dias, evitando o limite de 15 MB de anexos da API do Mailjet.
@@ -22,7 +27,7 @@ verificado na conta Mailjet.
 
 ## Publicacao
 
-As credenciais sao lidas de `back/email_inbound/.mailjet_api_key` pelo script de
+As credenciais sao lidas de `back/.mailjet_api_key` pelo script de
 deploy e nao sao salvas no Terraform:
 
 ```powershell

@@ -112,6 +112,11 @@ resource "aws_iam_role_policy" "lambda_s3" {
         Effect   = "Allow"
         Action   = ["s3:PutObject"]
         Resource = "${aws_s3_bucket.email_box.arn}/*"
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["dynamodb:PutItem"]
+        Resource = "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${var.email_table_name}"
       }
     ]
   })
@@ -142,6 +147,7 @@ resource "aws_lambda_function" "email_inbound" {
       FORWARD_FROM_NAME  = var.forward_from_name
       MAILJET_API_KEY    = var.mailjet_api_key
       MAILJET_SECRET_KEY = var.mailjet_secret_key
+      TABLE_NAME         = var.email_table_name
     }
   }
 }
@@ -211,4 +217,3 @@ resource "aws_ses_active_receipt_rule_set" "email_box" {
   rule_set_name = aws_ses_receipt_rule_set.email_box.rule_set_name
   depends_on    = [aws_ses_receipt_rule.email_domain]
 }
-

@@ -13,6 +13,7 @@ import { AdminOrdersComponent } from './admin-orders/admin-orders.component';
 import { AdminOrderPaymentsComponent } from './admin-order-payments/admin-order-payments.component';
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { AdminAnalyticsComponent } from './admin-analytics/admin-analytics.component';
+import { AdminEmailsComponent } from './admin-emails/admin-emails.component';
 
 const routes: Routes = [
   {
@@ -34,6 +35,7 @@ const routes: Routes = [
       { path: 'lista-pedidos', component: AdminOrdersComponent, canActivate: [AdminGuard] },
       { path: 'pedidos-pagamentos', component: AdminOrderPaymentsComponent, canActivate: [AdminGuard] },
       { path: 'analytics-acessos', component: AdminAnalyticsComponent, canActivate: [AdminGuard] },
+      { path: 'emails', component: AdminEmailsComponent, canActivate: [AdminGuard] },
     ]
   }
 ];

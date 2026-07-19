@@ -1,0 +1,196 @@
+<section class="admin-page email-page">
+  <header class="page-title">
+    <div>
+      <h1>E-mails</h1>
+      <p>Leia, pesquise e envie mensagens das caixas da Mundo Colore Store.</p>
+    </div>
+    <button mat-raised-button color="primary" type="button" (click)="startCompose()">
+      <mat-icon>edit</mat-icon>
+      Novo e-mail
+    </button>
+  </header>
+
+  <form class="toolbar" (ngSubmit)="loadEmails()">
+    <mat-form-field appearance="outline">
+      <mat-label>Caixa de e-mail</mat-label>
+      <mat-select name="mailbox" [(ngModel)]="selectedMailbox" (selectionChange)="onMailboxChange()">
+        <mat-option *ngFor="let mailbox of mailboxes" [value]="mailbox">{{ mailbox }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar por remetente ou assunto</mat-label>
+      <input matInput name="search" [(ngModel)]="searchQuery" autocomplete="off">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="day-field">
+      <mat-label>Dia de recebimento</mat-label>
+      <input matInput type="date" name="receivedDay" [(ngModel)]="selectedDay">
+      <button
+        *ngIf="selectedDay"
+        mat-icon-button
+        matSuffix
+        type="button"
+        aria-label="Limpar filtro de dia"
+        (click)="clearDayFilter()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="refresh-field">
+      <mat-label>Atualização automática</mat-label>
+      <mat-select
+        name="refreshInterval"
+        [(ngModel)]="refreshIntervalSeconds"
+        (selectionChange)="onRefreshIntervalChange()">
+        <mat-option *ngFor="let option of refreshIntervalOptions" [value]="option.value">
+          {{ option.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <div class="toolbar-actions">
+      <button mat-stroked-button color="primary" type="submit" [disabled]="loadingList || !selectedMailbox">
+        Buscar
+      </button>
+      <button
+        mat-raised-button
+        color="primary"
+        type="button"
+        [disabled]="loadingList || !selectedMailbox"
+        (click)="refreshEmails()">
+        <mat-icon>refresh</mat-icon>
+        Atualizar
+      </button>
+    </div>
+  </form>
+
+  <p class="last-update" *ngIf="lastUpdatedAt">
+    Última atualização: {{ lastUpdatedAt | date:'dd/MM/yyyy HH:mm:ss' }}
+  </p>
+
+  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+
+  <section class="mail-layout" *ngIf="!composing">
+    <aside class="message-list">
+      <div class="loading" *ngIf="loadingList"><mat-spinner diameter="32"></mat-spinner></div>
+
+      <button
+        type="button"
+        class="message-item"
+        *ngFor="let email of emails; trackBy: trackByEmailId"
+        [class.unread]="email.status === 'unread'"
+        [class.selected]="selectedEmail?.id === email.id"
+        (click)="openEmail(email)">
+        <span class="sender">{{ email.from_email || 'Remetente desconhecido' }}</span>
+        <strong>{{ email.subject || 'Sem assunto' }}</strong>
+        <span class="preview-date">{{ email.received_at | date:'dd/MM/yyyy HH:mm' }}</span>
+      </button>
+
+      <div class="empty-state" *ngIf="!loadingList && !emails.length">
+        Nenhum e-mail encontrado nesta caixa.
+      </div>
+
+      <button
+        mat-button
+        color="primary"
+        type="button"
+        class="load-more"
+        *ngIf="nextCursor"
+        [disabled]="loadingList"
+        (click)="loadEmails(true)">
+        Carregar mais
+      </button>
+    </aside>
+
+    <article class="message-content">
+      <div class="loading" *ngIf="loadingEmail"><mat-spinner diameter="36"></mat-spinner></div>
+
+      <ng-container *ngIf="selectedEmail && !loadingEmail">
+        <header class="message-header">
+          <div>
+            <h2>{{ selectedEmail.subject || 'Sem assunto' }}</h2>
+            <p><strong>De:</strong> {{ selectedEmail.from_name || selectedEmail.from_email }} &lt;{{ selectedEmail.from_email }}&gt;</p>
+            <p><strong>Para:</strong> {{ selectedEmail.to_email }}</p>
+            <p>{{ selectedEmail.received_at | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+          </div>
+          <button mat-stroked-button type="button" (click)="toggleUnread()">
+            <mat-icon>{{ selectedEmail.status === 'unread' ? 'drafts' : 'mark_email_unread' }}</mat-icon>
+            {{ selectedEmail.status === 'unread' ? 'Marcar como lido' : 'Marcar como nao lido' }}
+          </button>
+        </header>
+
+        <div class="email-body html-body" *ngIf="!selectedEmail.body_text && selectedEmail.body_html; else plainBody" [innerHTML]="selectedEmail.body_html"></div>
+        <ng-template #plainBody>
+          <pre class="email-body">{{ selectedEmail.body_text || 'Este e-mail nao possui conteudo de texto.' }}</pre>
+        </ng-template>
+
+        <section class="attachments" *ngIf="selectedEmail.attachments?.length">
+          <h3>Anexos</h3>
+          <div class="attachment" *ngFor="let attachment of selectedEmail.attachments">
+            <mat-icon>attach_file</mat-icon>
+            <span>{{ attachment.filename || 'Anexo sem nome' }}</span>
+            <small>{{ attachment.content_type }} - {{ attachment.size | number }} bytes</small>
+          </div>
+        </section>
+      </ng-container>
+
+      <div class="empty-content" *ngIf="!selectedEmail && !loadingEmail">
+        <mat-icon>mail_outline</mat-icon>
+        <p>Selecione um e-mail para ler o conteúdo.</p>
+      </div>
+    </article>
+  </section>
+
+  <section class="compose-card" *ngIf="composing">
+    <header>
+      <div>
+        <h2>Novo e-mail</h2>
+        <p>A mensagem será processada pela fila de envio do sistema.</p>
+      </div>
+      <button mat-icon-button type="button" aria-label="Fechar" (click)="cancelCompose()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </header>
+
+    <form (ngSubmit)="sendEmail()">
+      <mat-form-field appearance="outline">
+        <mat-label>De</mat-label>
+        <mat-select name="fromEmail" [(ngModel)]="compose.from_email" required>
+          <mat-option *ngFor="let mailbox of mailboxes" [value]="mailbox">{{ mailbox }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <div class="recipient-fields">
+        <mat-form-field appearance="outline">
+          <mat-label>Para</mat-label>
+          <input matInput type="email" name="toEmail" [(ngModel)]="compose.to_email" required>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Nome do destinatário</mat-label>
+          <input matInput name="toName" [(ngModel)]="compose.to_name">
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Assunto</mat-label>
+        <input matInput name="subject" maxlength="300" [(ngModel)]="compose.subject" required>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Mensagem</mat-label>
+        <textarea matInput name="body" rows="12" maxlength="100000" [(ngModel)]="compose.body" required></textarea>
+      </mat-form-field>
+
+      <div class="compose-actions">
+        <button mat-button type="button" (click)="cancelCompose()" [disabled]="sending">Cancelar</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="sending">
+          <mat-spinner *ngIf="sending" diameter="20"></mat-spinner>
+          <mat-icon *ngIf="!sending">send</mat-icon>
+          {{ sending ? 'Enviando...' : 'Enviar' }}
+        </button>
+      </div>
+    </form>
+  </section>
+</section>

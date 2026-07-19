@@ -25,20 +25,24 @@ import (
 const mailjetEndpoint = "https://api.mailjet.com/v3.1/send"
 
 type Config struct {
-	MailjetAPIKey    string
-	MailjetSecretKey string
-	EmailFrom        string
-	EmailFromName    string
-	TableName        string
+	MailjetAPIKey     string
+	MailjetSecretKey  string
+	EmailFrom         string
+	EmailFromName     string
+	AllowedFromEmails map[string]struct{}
+	TableName         string
 }
 
 type EmailRequest struct {
-	ID      string            `json:"id,omitempty" dynamodbav:"id"`
-	UUID    string            `json:"uuid,omitempty" dynamodbav:"uuid,omitempty"`
-	Type    string            `json:"type" dynamodbav:"type"`
-	ToEmail string            `json:"to_email" dynamodbav:"to_email"`
-	ToName  string            `json:"to_name,omitempty" dynamodbav:"to_name,omitempty"`
-	Data    map[string]string `json:"data,omitempty" dynamodbav:"data,omitempty"`
+	ID        string            `json:"id,omitempty" dynamodbav:"id"`
+	UUID      string            `json:"uuid,omitempty" dynamodbav:"uuid,omitempty"`
+	Type      string            `json:"type" dynamodbav:"type"`
+	ToEmail   string            `json:"to_email" dynamodbav:"to_email"`
+	ToName    string            `json:"to_name,omitempty" dynamodbav:"to_name,omitempty"`
+	FromEmail string            `json:"from_email,omitempty" dynamodbav:"from_email,omitempty"`
+	Subject   string            `json:"subject,omitempty" dynamodbav:"subject,omitempty"`
+	Body      string            `json:"body,omitempty" dynamodbav:"body,omitempty"`
+	Data      map[string]string `json:"data,omitempty" dynamodbav:"data,omitempty"`
 }
 
 type EmailTemplate struct {
@@ -79,6 +83,7 @@ type EmailLog struct {
 	Type               string                 `dynamodbav:"type"`
 	ToEmail            string                 `dynamodbav:"to_email"`
 	ToName             string                 `dynamodbav:"to_name,omitempty"`
+	FromEmail          string                 `dynamodbav:"from_email,omitempty"`
 	Status             string                 `dynamodbav:"status"`
 	ReceivedAt         string                 `dynamodbav:"received_at"`
 	ProcessedAt        string                 `dynamodbav:"processed_at,omitempty"`
@@ -139,15 +144,21 @@ func processRawEmail(ctx context.Context, raw json.RawMessage) error {
 		return err
 	}
 
-	template, ok := templates[req.Type]
-	if !ok {
-		_ = saveFailedEmail(req, fmt.Sprintf("template not found: %s", req.Type))
-		return fmt.Errorf("template not found: %s", req.Type)
-	}
+	var subject, body string
+	if req.Type == "email-admin-manual" {
+		subject = req.Subject
+		body = req.Body
+	} else {
+		template, ok := templates[req.Type]
+		if !ok {
+			_ = saveFailedEmail(req, fmt.Sprintf("template not found: %s", req.Type))
+			return fmt.Errorf("template not found: %s", req.Type)
+		}
 
-	variables := buildVariables(req)
-	subject := renderTemplate(template.Subject, variables)
-	body := renderTemplate(template.Body, variables)
+		variables := buildVariables(req)
+		subject = renderTemplate(template.Subject, variables)
+		body = renderTemplate(template.Body, variables)
+	}
 
 	statusCode, responseBody, err := sendEmailMailjet(ctx, req, subject, body)
 	if err != nil {
@@ -169,6 +180,9 @@ func parseEmailRequest(raw json.RawMessage) (EmailRequest, error) {
 	req.Type = strings.TrimSpace(req.Type)
 	req.ToEmail = strings.ToLower(strings.TrimSpace(req.ToEmail))
 	req.ToName = strings.TrimSpace(req.ToName)
+	req.FromEmail = strings.ToLower(strings.TrimSpace(req.FromEmail))
+	req.Subject = strings.TrimSpace(req.Subject)
+	req.Body = strings.TrimSpace(req.Body)
 
 	if req.ID == "" {
 		req.ID = req.UUID
@@ -193,6 +207,20 @@ func parseEmailRequest(raw json.RawMessage) (EmailRequest, error) {
 	}
 	if config.EmailFrom == "" {
 		return EmailRequest{}, errors.New("EMAIL_FROM is not configured")
+	}
+	if req.FromEmail == "" {
+		req.FromEmail = strings.ToLower(config.EmailFrom)
+	}
+	if _, allowed := config.AllowedFromEmails[req.FromEmail]; !allowed {
+		return EmailRequest{}, errors.New("from_email is not allowed")
+	}
+	if req.Type == "email-admin-manual" {
+		if req.Subject == "" {
+			return EmailRequest{}, errors.New("subject is required")
+		}
+		if req.Body == "" {
+			return EmailRequest{}, errors.New("body is required")
+		}
 	}
 	if req.Data == nil {
 		req.Data = map[string]string{}
@@ -226,7 +254,7 @@ func sendEmailMailjet(ctx context.Context, req EmailRequest, subject string, bod
 	payload := MailjetSendEmailRequest{
 		Messages: []MailjetMessage{
 			{
-				From:     MailjetContact{Email: config.EmailFrom, Name: config.EmailFromName},
+				From:     MailjetContact{Email: req.FromEmail, Name: config.EmailFromName},
 				To:       []MailjetContact{{Email: req.ToEmail, Name: req.ToName}},
 				Subject:  subject,
 				TextPart: body,
@@ -268,11 +296,12 @@ func loadConfig() Config {
 		_ = os.Setenv("AWS_REGION", "sa-east-1")
 	}
 	return Config{
-		MailjetAPIKey:    strings.TrimSpace(os.Getenv("MAILJET_API_KEY")),
-		MailjetSecretKey: strings.TrimSpace(os.Getenv("MAILJET_SECRET_KEY")),
-		EmailFrom:        strings.TrimSpace(os.Getenv("EMAIL_FROM")),
-		EmailFromName:    strings.TrimSpace(os.Getenv("EMAIL_FROM_NAME")),
-		TableName:        envOrDefault("TABLE_NAME", "mundocolore-emails"),
+		MailjetAPIKey:     strings.TrimSpace(os.Getenv("MAILJET_API_KEY")),
+		MailjetSecretKey:  strings.TrimSpace(os.Getenv("MAILJET_SECRET_KEY")),
+		EmailFrom:         strings.TrimSpace(os.Getenv("EMAIL_FROM")),
+		EmailFromName:     strings.TrimSpace(os.Getenv("EMAIL_FROM_NAME")),
+		AllowedFromEmails: parseAllowedEmails(os.Getenv("ALLOWED_FROM_EMAILS"), os.Getenv("EMAIL_FROM")),
+		TableName:         envOrDefault("TABLE_NAME", "mundocolore-emails"),
 	}
 }
 
@@ -284,6 +313,7 @@ func saveReceivedPayload(req EmailRequest, raw map[string]interface{}) error {
 		Type:       req.Type,
 		ToEmail:    req.ToEmail,
 		ToName:     req.ToName,
+		FromEmail:  req.FromEmail,
 		Status:     "received",
 		ReceivedAt: now,
 		RawPayload: raw,
@@ -343,6 +373,21 @@ func envOrDefault(key, fallback string) string {
 		return fallback
 	}
 	return value
+}
+
+func parseAllowedEmails(value, fallback string) map[string]struct{} {
+	allowed := make(map[string]struct{})
+	for _, candidate := range strings.Split(value, ",") {
+		candidate = strings.ToLower(strings.TrimSpace(candidate))
+		if candidate != "" {
+			allowed[candidate] = struct{}{}
+		}
+	}
+	fallback = strings.ToLower(strings.TrimSpace(fallback))
+	if fallback != "" {
+		allowed[fallback] = struct{}{}
+	}
+	return allowed
 }
 
 func generateID() string {

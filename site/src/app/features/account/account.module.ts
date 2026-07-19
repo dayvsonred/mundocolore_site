@@ -17,6 +17,7 @@ import { AdminUsersComponent } from './admin-users/admin-users.component';
 import { AdminOrdersComponent } from './admin-orders/admin-orders.component';
 import { AdminOrderPaymentsComponent } from './admin-order-payments/admin-order-payments.component';
 import { AdminAnalyticsComponent } from './admin-analytics/admin-analytics.component';
+import { AdminEmailsComponent } from './admin-emails/admin-emails.component';
 
 @NgModule({
   imports: [
@@ -38,7 +39,8 @@ import { AdminAnalyticsComponent } from './admin-analytics/admin-analytics.compo
     AdminUsersComponent,
     AdminOrdersComponent,
     AdminOrderPaymentsComponent,
-    AdminAnalyticsComponent
+    AdminAnalyticsComponent,
+    AdminEmailsComponent
   ],
   exports: [AccountPageComponent]
 })

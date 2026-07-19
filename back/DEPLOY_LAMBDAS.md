@@ -1,6 +1,6 @@
 # Build e deploy das Lambdas Go
 
-Este backend possui sete Lambdas Go publicaveis:
+Este backend possui Lambdas Go publicaveis descobertas automaticamente pelo script, incluindo:
 
 - `addresses`
 - `contact`
@@ -9,6 +9,9 @@ Este backend possui sete Lambdas Go publicaveis:
 - `payments`
 - `products`
 - `users`
+- `email_inbound`
+- `email_mailbox`
+- `send_email`
 
 As pastas `buckets`, `dynamoDB` e `lambdas_gateway_externo` contem outras
 infraestruturas e nao fazem parte do build automatico das Lambdas Go.
@@ -50,6 +53,17 @@ C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\back\.jwt
 Esse arquivo deve conter somente o segredo JWT, possui no minimo 32 caracteres
 e esta ignorado pelo Git. O script disponibiliza o valor como
 `TF_VAR_jwt_secret` para o Terraform de todas as Lambdas.
+
+As Lambdas `send_email` e `email_inbound` compartilham as credenciais Mailjet
+do arquivo local:
+
+```text
+C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\back\.mailjet_api_key
+```
+
+O arquivo deve conter `api_key` e `secret_key` em JSON, e tambem esta ignorado
+pelo Git. A Lambda `email_mailbox` nao recebe essas credenciais: ela publica a
+mensagem na SQS, e somente `send_email` realiza o envio pelo Mailjet.
 
 Na raiz da pasta `back`, confira primeiro quais Lambdas seriam publicadas:
 

@@ -9,6 +9,8 @@ Lambda Go para envio assincrono de e-mails pela Mailjet. Ela recebe JSON direto 
 - `notificacao-pedido-em-analize`: pedido em analise.
 - `notificacao-status-pedido`: atualizacao de status do pedido.
 - `notificacao-credito-colore-adicionado`: credito Mundo Colore Store adicionado.
+- `email-admin-manual`: mensagem livre validada pela API administrativa
+  `email_mailbox` e publicada na mesma fila SQS.
 
 Os templates ficam em `templates.go` para facilitar edicao e inclusao de novos modelos.
 
@@ -39,7 +41,7 @@ $env:EMAIL_FROM_NAME="Mundo Colore Store"
 $env:TABLE_NAME="mundocolore-emails"
 ```
 
-Para deploy via `back/deploy_lambdas.py`, crie `back/send_email/.mailjet_api_key` com o JSON:
+Para deploy via `back/deploy_lambdas.py`, crie `back/.mailjet_api_key` com o JSON:
 
 ```json
 {
@@ -59,7 +61,7 @@ $env:GOOS="linux"; $env:GOARCH="amd64"; $env:CGO_ENABLED="0"; go build -o bootst
 ## Deploy
 
 1. Crie/atualize a tabela DynamoDB em `back/dynamoDB`.
-2. Crie `back/send_email/.mailjet_api_key`.
+2. Crie `back/.mailjet_api_key`.
 3. Ajuste `version_local` para uma versao maior que `version_update`.
 4. Execute:
 

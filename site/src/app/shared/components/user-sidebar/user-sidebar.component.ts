@@ -23,6 +23,7 @@ export class UserSidebarComponent implements OnInit {
     { label: 'Pedidos', route: '/minha-conta/lista-pedidos', icon: 'receipt_long' },
     { label: 'Pedidos pagamentos', route: '/minha-conta/pedidos-pagamentos', icon: 'payments' },
     { label: 'Acessos por dia', route: '/minha-conta/analytics-acessos', icon: 'analytics' },
+    { label: 'E-mails', route: '/minha-conta/emails', icon: 'mail' },
     {
       label: 'Cadastro de marcas',
       route: '/minha-conta/cadastro-marcas',
