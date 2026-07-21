@@ -1,0 +1,140 @@
+package main
+
+import (
+	"context"
+	"encoding/json"
+	"testing"
+
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/request"
+	"github.com/aws/aws-sdk-go/service/dynamodb"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+)
+
+type dynamoMock struct {
+	dynamodbiface.DynamoDBAPI
+	input  *dynamodb.UpdateItemInput
+	output *dynamodb.UpdateItemOutput
+	err    error
+}
+
+func (mock *dynamoMock) UpdateItemWithContext(
+	_ aws.Context,
+	input *dynamodb.UpdateItemInput,
+	_ ...request.Option,
+) (*dynamodb.UpdateItemOutput, error) {
+	mock.input = input
+	return mock.output, mock.err
+}
+
+func TestNormalizeNewsletterEmail(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+		valid bool
+	}{
+		{name: "normalizes", input: " Cliente@Example.com ", want: "cliente@example.com", valid: true},
+		{name: "rejects missing domain suffix", input: "cliente@example", valid: false},
+		{name: "rejects display name", input: "Cliente <cliente@example.com>", valid: false},
+		{name: "rejects empty", input: "", valid: false},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			got, err := normalizeNewsletterEmail(test.input)
+			if test.valid && err != nil {
+				t.Fatalf("expected valid email, got %v", err)
+			}
+			if !test.valid && err == nil {
+				t.Fatal("expected invalid email")
+			}
+			if got != test.want {
+				t.Fatalf("got %q, want %q", got, test.want)
+			}
+		})
+	}
+}
+
+func TestNewsletterAPIStoresSubscriber(t *testing.T) {
+	previousClient := dynamoClient
+	previousConfig := config
+	t.Cleanup(func() {
+		dynamoClient = previousClient
+		config = previousConfig
+	})
+
+	mock := &dynamoMock{output: &dynamodb.UpdateItemOutput{}}
+	dynamoClient = mock
+	config.TableName = "mundocolore-emails"
+
+	event := events.APIGatewayProxyRequest{
+		HTTPMethod: "POST",
+		Path:       "/newsletter",
+		Body:       `{"email":" Cliente@Example.com "}`,
+	}
+	raw, err := json.Marshal(event)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := handler(context.Background(), raw)
+	if err != nil {
+		t.Fatalf("handler returned error: %v", err)
+	}
+	response, ok := result.(events.APIGatewayProxyResponse)
+	if !ok {
+		t.Fatalf("unexpected response type %T", result)
+	}
+	if response.StatusCode != 200 {
+		t.Fatalf("got status %d, body %s", response.StatusCode, response.Body)
+	}
+	if mock.input == nil {
+		t.Fatal("expected DynamoDB update")
+	}
+	if got := aws.StringValue(mock.input.Key["id"].S); got != "newsletter#cliente@example.com" {
+		t.Fatalf("got id %q", got)
+	}
+	if got := aws.StringValue(mock.input.ExpressionAttributeValues[":type"].S); got != "newsletter-subscriber" {
+		t.Fatalf("got type %q", got)
+	}
+
+	var body APIMessage
+	if err := json.Unmarshal([]byte(response.Body), &body); err != nil {
+		t.Fatal(err)
+	}
+	if !body.Created || body.Email != "cliente@example.com" {
+		t.Fatalf("unexpected body: %+v", body)
+	}
+}
+
+func TestNewsletterAPIReturnsAlreadyRegistered(t *testing.T) {
+	previousClient := dynamoClient
+	previousConfig := config
+	t.Cleanup(func() {
+		dynamoClient = previousClient
+		config = previousConfig
+	})
+
+	dynamoClient = &dynamoMock{output: &dynamodb.UpdateItemOutput{
+		Attributes: map[string]*dynamodb.AttributeValue{"id": {S: aws.String("existing")}},
+	}}
+	config.TableName = "mundocolore-emails"
+
+	event := events.APIGatewayProxyRequest{HTTPMethod: "POST", Body: `{"email":"cliente@example.com"}`}
+	raw, _ := json.Marshal(event)
+	result, err := handler(context.Background(), raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response := result.(events.APIGatewayProxyResponse)
+
+	var body APIMessage
+	if err := json.Unmarshal([]byte(response.Body), &body); err != nil {
+		t.Fatal(err)
+	}
+	if body.Created {
+		t.Fatal("expected existing subscription")
+	}
+}

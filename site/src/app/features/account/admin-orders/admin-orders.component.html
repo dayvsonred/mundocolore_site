@@ -2,6 +2,9 @@
   <header><h1>Lista de pedidos</h1><p>Consulte, aprove e acompanhe todos os pedidos.</p></header>
   <form class="filters" (ngSubmit)="loadOrders()">
     <mat-form-field appearance="outline"><mat-label>Usuario</mat-label><input matInput name="user" [(ngModel)]="filters['user']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Produto ou codigo</mat-label><input matInput name="product" [(ngModel)]="filters['product']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Codigo do cupom</mat-label><input matInput name="coupon" [(ngModel)]="filters['coupon']"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Uso de cupom</mat-label><mat-select name="has_coupon" [(ngModel)]="filters['has_coupon']"><mat-option value="">Todos</mat-option><mat-option value="true">Com cupom</mat-option><mat-option value="false">Sem cupom</mat-option></mat-select></mat-form-field>
     <mat-form-field appearance="outline">
       <mat-label>Marca</mat-label>
       <mat-select name="brand" [(ngModel)]="filters['brand']" (selectionChange)="onBrandFilterChange()" [disabled]="loadingOptions">
@@ -24,9 +27,16 @@
     <mat-form-field appearance="outline"><mat-label>Valor minimo</mat-label><input matInput type="number" name="min_value" [(ngModel)]="filters['min_value']"></mat-form-field>
     <mat-form-field appearance="outline"><mat-label>Valor maximo</mat-label><input matInput type="number" name="max_value" [(ngModel)]="filters['max_value']"></mat-form-field>
     <mat-form-field appearance="outline"><mat-label>Ordenar</mat-label><mat-select name="sort" [(ngModel)]="filters['sort']"><mat-option value="date_desc">Mais recentes</mat-option><mat-option value="date_asc">Mais antigos</mat-option><mat-option value="value_desc">Maior valor</mat-option><mat-option value="value_asc">Menor valor</mat-option></mat-select></mat-form-field>
-    <button mat-raised-button color="primary" type="submit">Filtrar</button><button mat-stroked-button type="button" (click)="pendingApproval()">Pendentes de aprovacao</button><button mat-stroked-button type="button" (click)="clearFilters()">Limpar</button>
+    <button mat-raised-button color="primary" type="submit">Filtrar</button><button mat-stroked-button type="button" (click)="pendingApproval()">Pendentes de aprovacao</button><button mat-stroked-button type="button" (click)="clearFilters()">Limpar</button><button mat-stroked-button type="button" (click)="exportCsv()" [disabled]="!orders.length"><mat-icon>download</mat-icon> Exportar CSV</button>
   </form>
   <mat-spinner *ngIf="loading" diameter="34"></mat-spinner>
+  <section class="filtered-totals" *ngIf="!loading && orders.length">
+    <div><span>Custo dos produtos</span><strong>R$ {{ filteredCostSubtotal | number:'1.2-2' }}</strong></div>
+    <div><span>Venda sem cupom</span><strong>R$ {{ filteredBaseSubtotal | number:'1.2-2' }}</strong></div>
+    <div><span>Descontos</span><strong>R$ {{ filteredDiscountAmount | number:'1.2-2' }}</strong></div>
+    <div><span>Venda efetiva</span><strong>R$ {{ filteredSoldSubtotal | number:'1.2-2' }}</strong></div>
+    <div [class.negative-margin]="filteredGrossProfitAmount < 0"><span>Margem bruta</span><strong>R$ {{ filteredGrossProfitAmount | number:'1.2-2' }} ({{ filteredGrossMarginPercent | number:'1.1-1' }}%)</strong></div>
+  </section>
   <div class="pagination-bar" *ngIf="!loading && orders.length > 0">
     <div class="page-size">
       <span>Itens por pagina</span>
@@ -88,6 +98,16 @@
         </mat-form-field>
       </div>
 
+      <section class="financial-summary">
+        <div><span>Custo dos produtos</span><strong>R$ {{ (order.cost_subtotal || 0) | number:'1.2-2' }}</strong></div>
+        <div><span>Venda sem cupom</span><strong>R$ {{ (order.subtotal || 0) | number:'1.2-2' }}</strong></div>
+        <div><span>Desconto</span><strong>R$ {{ (order.discount_amount || 0) | number:'1.2-2' }}</strong><small *ngIf="order.coupon_code">Cupom {{ order.coupon_code }}</small><small *ngIf="!order.coupon_code">Sem cupom</small></div>
+        <div><span>Venda efetiva</span><strong>R$ {{ orderSoldSubtotal(order) | number:'1.2-2' }}</strong></div>
+        <div><span>Frete</span><strong>R$ {{ (order.shipping_amount || 0) | number:'1.2-2' }}</strong></div>
+        <div><span>Total do pedido</span><strong>R$ {{ order.total | number:'1.2-2' }}</strong></div>
+        <div [class.negative-margin]="orderGrossProfit(order) < 0"><span>Margem bruta dos produtos</span><strong>R$ {{ orderGrossProfit(order) | number:'1.2-2' }} ({{ (order.gross_margin_percent || 0) | number:'1.1-1' }}%)</strong></div>
+      </section>
+
       <section class="items-section">
         <h3>Itens do pedido</h3>
         <div class="items-list">
@@ -99,9 +119,15 @@
               <span>Tamanho {{ item.size || '-' }} | Cor {{ item.color || '-' }}</span>
             </div>
             <div class="item-values">
-              <span>{{ item.quantity }} un.</span>
-              <span>R$ {{ (item.unit_price || item.price) | number:'1.2-2' }}</span>
-              <strong>R$ {{ (item.subtotal || ((item.unit_price || item.price) * item.quantity)) | number:'1.2-2' }}</strong>
+              <div><small>Quantidade</small><strong>{{ item.quantity }} un.</strong></div>
+              <div><small>Custo unitario</small><strong>R$ {{ (item.cost_unit_price || 0) | number:'1.2-2' }}</strong></div>
+              <div><small>Preco cheio</small><strong>R$ {{ (item.base_unit_price || 0) | number:'1.2-2' }}</strong><small>Spread {{ (item.spread_percent_at_purchase || 0) | number:'1.0-2' }}%</small></div>
+              <div><small>Cupom</small><strong>{{ item.coupon_code || (item.coupon_reduction_percent ? order.coupon_code : '-') }}</strong><small *ngIf="item.coupon_reduction_percent">Reducao {{ item.coupon_reduction_percent | number:'1.0-2' }} p.p.</small></div>
+              <div><small>Preco vendido</small><strong>R$ {{ (item.unit_price || item.price) | number:'1.2-2' }}</strong></div>
+              <div><small>Custo total</small><strong>R$ {{ itemCostSubtotal(item) | number:'1.2-2' }}</strong></div>
+              <div><small>Venda sem cupom</small><strong>R$ {{ itemBaseSubtotal(item) | number:'1.2-2' }}</strong></div>
+              <div><small>Venda efetiva</small><strong>R$ {{ itemSoldSubtotal(item) | number:'1.2-2' }}</strong></div>
+              <div [class.negative-margin]="itemGrossProfit(item) < 0"><small>Margem bruta</small><strong>R$ {{ itemGrossProfit(item) | number:'1.2-2' }} ({{ (item.gross_margin_percent || 0) | number:'1.1-1' }}%)</strong></div>
             </div>
           </div>
         </div>

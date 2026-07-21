@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"mime"
+	"net/url"
 	"os"
 	"path"
 	"strconv"
@@ -2109,7 +2110,7 @@ func extractCollectionIDFromPath(pathValue string) string {
 	if len(parts) < 3 || parts[len(parts)-2] != "collections" {
 		return ""
 	}
-	return parts[len(parts)-1]
+	return decodePathSegment(parts[len(parts)-1])
 }
 
 func extractCollectionIDFromRecalculatePath(pathValue string) string {
@@ -2117,7 +2118,15 @@ func extractCollectionIDFromRecalculatePath(pathValue string) string {
 	if len(parts) < 4 || parts[len(parts)-3] != "collections" || parts[len(parts)-1] != "recalculate-spread" {
 		return ""
 	}
-	return parts[len(parts)-2]
+	return decodePathSegment(parts[len(parts)-2])
+}
+
+func decodePathSegment(value string) string {
+	decoded, err := url.PathUnescape(value)
+	if err != nil {
+		return ""
+	}
+	return decoded
 }
 
 func generateID() string {

@@ -103,6 +103,112 @@ export class AdminOrdersComponent implements OnInit {
     this.page = Math.min(this.totalPages, this.page + 1);
   }
 
+  get filteredCostSubtotal(): number {
+    return this.orders.reduce((total, order) => total + Number(order.cost_subtotal || 0), 0);
+  }
+
+  get filteredBaseSubtotal(): number {
+    return this.orders.reduce((total, order) => total + Number(order.subtotal || 0), 0);
+  }
+
+  get filteredSoldSubtotal(): number {
+    return this.orders.reduce((total, order) => total + this.orderSoldSubtotal(order), 0);
+  }
+
+  get filteredDiscountAmount(): number {
+    return this.orders.reduce((total, order) => total + Number(order.discount_amount || 0), 0);
+  }
+
+  get filteredGrossProfitAmount(): number {
+    return this.orders.reduce((total, order) => total + this.orderGrossProfit(order), 0);
+  }
+
+  get filteredGrossMarginPercent(): number {
+    return this.filteredSoldSubtotal > 0
+      ? (this.filteredGrossProfitAmount / this.filteredSoldSubtotal) * 100
+      : 0;
+  }
+
+  orderSoldSubtotal(order: Order): number {
+    if (order.sold_subtotal !== undefined) return Number(order.sold_subtotal);
+    return Number(order.subtotal || 0) - Number(order.discount_amount || 0);
+  }
+
+  orderGrossProfit(order: Order): number {
+    if (order.gross_profit_amount !== undefined) return Number(order.gross_profit_amount);
+    return this.orderSoldSubtotal(order) - Number(order.cost_subtotal || 0);
+  }
+
+  itemBaseSubtotal(item: Order['items'][number]): number {
+    if (item.base_subtotal !== undefined) return Number(item.base_subtotal);
+    return Number(item.base_unit_price || item.unit_price || item.price || 0) * item.quantity;
+  }
+
+  itemSoldSubtotal(item: Order['items'][number]): number {
+    if (item.sold_subtotal !== undefined) return Number(item.sold_subtotal);
+    return Number(item.subtotal || (Number(item.unit_price || item.price || 0) * item.quantity));
+  }
+
+  itemCostSubtotal(item: Order['items'][number]): number {
+    if (item.cost_subtotal !== undefined) return Number(item.cost_subtotal);
+    return Number(item.cost_unit_price || 0) * item.quantity;
+  }
+
+  itemGrossProfit(item: Order['items'][number]): number {
+    if (item.gross_profit_amount !== undefined) return Number(item.gross_profit_amount);
+    return this.itemSoldSubtotal(item) - this.itemCostSubtotal(item);
+  }
+
+  exportCsv(): void {
+    if (!this.orders.length) return;
+    const rows: Array<Array<string | number>> = [[
+      'Pedido', 'Data', 'Status', 'Cliente', 'Produto', 'Descricao', 'Quantidade',
+      'Custo unitario', 'Preco cheio unitario', 'Spread original (%)', 'Cupom',
+      'Reducao do spread (p.p.)', 'Preco vendido unitario', 'Custo total',
+      'Venda sem cupom', 'Desconto', 'Venda efetiva', 'Margem bruta'
+    ]];
+    for (const order of this.orders) {
+      for (const item of order.items || []) {
+        rows.push([
+          order.id,
+          order.created_at,
+          this.statusLabel(order.status),
+          order.customer?.name || '',
+          item.product_code || item.product_id,
+          item.product_name || '',
+          item.quantity,
+          this.csvMoney(item.cost_unit_price),
+          this.csvMoney(item.base_unit_price),
+          this.csvMoney(item.spread_percent_at_purchase),
+          item.coupon_code || (item.coupon_reduction_percent ? order.coupon_code || '' : ''),
+          this.csvMoney(item.coupon_reduction_percent),
+          this.csvMoney(item.unit_price || item.price),
+          this.csvMoney(this.itemCostSubtotal(item)),
+          this.csvMoney(this.itemBaseSubtotal(item)),
+          this.csvMoney(item.discount_amount),
+          this.csvMoney(this.itemSoldSubtotal(item)),
+          this.csvMoney(this.itemGrossProfit(item))
+        ]);
+      }
+    }
+    const csv = rows.map(row => row.map(value => this.csvCell(value)).join(';')).join('\r\n');
+    const blob = new Blob([`\uFEFF${csv}`], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `pedidos-${new Date().toISOString().slice(0, 10)}.csv`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private csvMoney(value: number | undefined): string {
+    return Number(value || 0).toFixed(2).replace('.', ',');
+  }
+
+  private csvCell(value: string | number): string {
+    return `"${String(value).replace(/"/g, '""')}"`;
+  }
+
   onBrandFilterChange(): void {
     const selectedCollection = String(this.filters['collection'] || '');
     if (selectedCollection && !this.filteredCollections.some(collection => this.collectionFilterValue(collection) === selectedCollection)) {

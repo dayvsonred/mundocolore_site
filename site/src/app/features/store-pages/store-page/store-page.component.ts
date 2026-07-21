@@ -16,6 +16,8 @@ interface StorePageContent {
   cards: StorePageCard[];
   highlightTitle: string;
   highlightText: string;
+  contactEmail?: string;
+  contactNote?: string;
 }
 
 @Component({
@@ -42,7 +44,7 @@ export class StorePageComponent implements OnInit, OnDestroy {
         { title: 'Essenciais do dia a dia', text: 'Bodies, conjuntos, camisetas e calças para a rotina das crianças.' }
       ],
       highlightTitle: 'Coleções pensadas para comprar com menos esforço',
-      highlightText: 'Use a página de catálogo para filtrar por tamanho, marca, cor e preço enquanto novas coleções são adicionadas ao sistema.'
+      highlightText: 'Use o catálogo para filtrar por tamanho, marca, cor e preço e encontrar a escolha certa para cada criança.'
     },
     promocoes: {
       kicker: 'Promoções',
@@ -55,22 +57,24 @@ export class StorePageComponent implements OnInit, OnDestroy {
         { title: 'Últimas unidades', text: 'Produtos com estoque limitado podem aparecer com preços especiais.' },
         { title: 'Novidades com cupom', text: 'Campanhas sazonais para aproveitar lançamentos com desconto.' }
       ],
-      highlightTitle: 'As promoções acompanham os produtos cadastrados',
-      highlightText: 'Quando um produto estiver marcado como promoção no sistema, ele pode ser encontrado no catálogo usando o filtro Promoções.'
+      highlightTitle: 'Boas oportunidades para deixar a infância ainda mais colorida',
+      highlightText: 'Os produtos em promoção aparecem no catálogo com suas condições atualizadas para uma compra simples e transparente.'
     },
     contato: {
-      kicker: 'Contato',
-      title: 'Fale com a Mundo Colore',
-      subtitle: 'Tire dúvidas sobre produtos, tamanhos, pedidos e novidades da loja.',
-      actionLabel: 'Ir para o catálogo',
+      kicker: 'Vamos conversar?',
+      title: 'Cuidamos de cada detalhe para sua compra ser leve e feliz',
+      subtitle: 'A Mundo Colore é uma loja de roupas infantis feita para acompanhar descobertas, brincadeiras e momentos especiais. Se precisar de ajuda, nossa equipe está pertinho.',
+      actionLabel: 'Conhecer nossos produtos',
       actionRoute: '/catalog',
       cards: [
-        { title: 'Atendimento', text: 'Envie sua dúvida sobre pedidos, entregas ou disponibilidade de produtos.' },
-        { title: 'Tamanhos', text: 'Conte com a gente para escolher a grade mais adequada antes da compra.' },
-        { title: 'Novidades', text: 'Acompanhe lançamentos e coleções especiais da mundocolorestore.' }
+        { title: 'Dúvidas sobre produtos', text: 'Converse com a gente sobre modelos, tecidos, cores e disponibilidade.' },
+        { title: 'Ajuda com tamanhos', text: 'Conte um pouco sobre o que procura e ajudamos a escolher a numeração ideal.' },
+        { title: 'Pedidos e entregas', text: 'Envie os dados do pedido para receber orientações sobre pagamento, envio ou troca.' }
       ],
-      highlightTitle: 'Canal aberto para comprar com confiança',
-      highlightText: 'Enquanto o formulário definitivo não estiver integrado, use os canais oficiais da loja e o catálogo para consultar produtos disponíveis.'
+      highlightTitle: 'Um atendimento atencioso para toda a família',
+      highlightText: 'Queremos que escolher roupas para os pequenos seja uma experiência tranquila. Escreva para nós e responderemos com todo o carinho.',
+      contactEmail: 'contato@mundocolorestore.com',
+      contactNote: 'Este é o nosso canal oficial para dúvidas, sugestões e atendimento sobre pedidos.'
     }
   };
 

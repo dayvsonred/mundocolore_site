@@ -14,6 +14,25 @@ Lambda Go para envio assincrono de e-mails pela Mailjet. Ela recebe JSON direto 
 
 Os templates ficam em `templates.go` para facilitar edicao e inclusao de novos modelos.
 
+## Newsletter
+
+O endpoint publico `POST /newsletter` recebe:
+
+```json
+{
+  "email": "cliente@email.com"
+}
+```
+
+O cadastro e idempotente: o identificador `newsletter#<email-normalizado>` impede duplicatas.
+Os assinantes ficam na mesma tabela `mundocolore-emails` com `type=newsletter-subscriber`,
+`status=active`, `to_email`, `subscribed_at` e os dados de consentimento.
+
+- Para listar assinantes por data, consulte `type-received-index` com
+  `type = newsletter-subscriber`.
+- Para localizar um e-mail especifico, consulte `to-email-received-index` usando o e-mail
+  em letras minusculas.
+
 ## Evento JSON
 
 ```json
@@ -67,4 +86,11 @@ $env:GOOS="linux"; $env:GOARCH="amd64"; $env:CGO_ENABLED="0"; go build -o bootst
 
 ```powershell
 python back/deploy_lambdas.py --lambda send_email
+```
+
+Como o endpoint da newsletter cria uma nova rota no API Gateway, publique uma nova
+implantacao do stage `prod` depois do primeiro deploy desta versao:
+
+```powershell
+aws apigateway create-deployment --rest-api-id b8i4etrh23 --stage-name prod --profile mundocolore --region sa-east-1
 ```

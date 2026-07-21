@@ -18,9 +18,17 @@ export interface OrderItem {
   quantity: number;
   price: number;
   unit_price?: number;
+  cost_unit_price?: number;
   base_unit_price?: number;
+  spread_percent_at_purchase?: number;
+  coupon_code?: string;
   coupon_reduction_percent?: number;
   discount_amount?: number;
+  cost_subtotal?: number;
+  base_subtotal?: number;
+  sold_subtotal?: number;
+  gross_profit_amount?: number;
+  gross_margin_percent?: number;
   subtotal?: number;
   product_snapshot?: any;
 }
@@ -29,10 +37,14 @@ export interface Order {
   id: string;
   user_id: string;
   items: OrderItem[];
+  cost_subtotal?: number;
   subtotal?: number;
+  sold_subtotal?: number;
   shipping_amount?: number;
   discount_amount?: number;
   coupon_code?: string;
+  gross_profit_amount?: number;
+  gross_margin_percent?: number;
   total: number;
   currency?: string;
   status: string;

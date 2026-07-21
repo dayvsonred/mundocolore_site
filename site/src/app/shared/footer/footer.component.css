@@ -21,6 +21,18 @@
   font-size: 0.95rem;
 }
 
+.footer-email {
+  display: inline-block;
+  margin-top: 10px;
+  color: #ffffff;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.footer-email:hover {
+  text-decoration: underline;
+}
+
 .footer-links {
   display: flex;
   flex-wrap: wrap;

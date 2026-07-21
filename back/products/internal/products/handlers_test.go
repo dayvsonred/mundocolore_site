@@ -172,3 +172,19 @@ func TestMoneyValueRoundsAndRejectsNegativeValues(t *testing.T) {
 		t.Fatalf("expected negative value to become zero, got %.2f", got)
 	}
 }
+
+func TestExtractCollectionIDFromPathDecodesEscapedHash(t *testing.T) {
+	want := "COLLECTION#UP-BABY#2025#verao-a"
+	got := extractCollectionIDFromPath("/prod/products/collections/COLLECTION%23UP-BABY%232025%23verao-a")
+	if got != want {
+		t.Fatalf("expected collection id %q, got %q", want, got)
+	}
+}
+
+func TestExtractCollectionIDFromRecalculatePathDecodesEscapedHash(t *testing.T) {
+	want := "COLLECTION#UP-BABY#2025#verao-a"
+	got := extractCollectionIDFromRecalculatePath("/prod/products/collections/COLLECTION%23UP-BABY%232025%23verao-a/recalculate-spread")
+	if got != want {
+		t.Fatalf("expected collection id %q, got %q", want, got)
+	}
+}

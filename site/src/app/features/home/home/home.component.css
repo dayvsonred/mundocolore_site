@@ -541,6 +541,23 @@ p {
   background: linear-gradient(130deg, var(--primary-red), var(--accent-orange));
 }
 
+.newsletter-form button:disabled {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.newsletter-form small {
+  flex-basis: 100%;
+  padding-left: 16px;
+  color: var(--primary-red);
+  font-weight: 700;
+}
+
+.newsletter-form input[aria-invalid='true'] {
+  border-color: var(--primary-red);
+  outline-color: var(--primary-red);
+}
+
 .site-footer {
   padding: 34px clamp(20px, 4vw, 56px) 24px;
   background: #fff;
@@ -574,6 +591,12 @@ p {
 }
 
 .site-footer a:hover {
+  color: var(--accent-blue);
+}
+
+.site-footer .footer-email {
+  display: inline-block;
+  margin-top: 10px;
   color: var(--accent-blue);
 }
 

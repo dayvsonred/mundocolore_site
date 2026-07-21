@@ -13,7 +13,7 @@
   align-items: center;
   gap: clamp(28px, 5vw, 72px);
   min-height: 74vh;
-  padding: 132px clamp(20px, 5vw, 72px) 64px;
+  padding: 72px clamp(20px, 5vw, 72px) 64px;
 }
 
 .store-hero-copy {
@@ -72,6 +72,64 @@
 .store-section {
   padding: 64px clamp(20px, 5vw, 72px) 88px;
   background: #fff;
+}
+
+.contact-panel {
+  display: grid;
+  grid-template-columns: auto minmax(240px, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  max-width: 1120px;
+  margin: 0 auto 64px;
+  padding: 36px clamp(20px, 4vw, 44px);
+  border-radius: 28px;
+  background: linear-gradient(130deg, rgba(110, 193, 228, 0.18), rgba(249, 215, 110, 0.24));
+  box-shadow: 0 22px 40px rgba(90, 74, 66, 0.1);
+
+  h2 {
+    margin: 0 0 8px;
+    color: var(--text-dark);
+    font-family: 'Baloo 2', 'Trebuchet MS', sans-serif;
+    font-size: clamp(1.65rem, 3vw, 2.2rem);
+    line-height: 1.15;
+  }
+
+  p:not(.store-kicker) {
+    max-width: 640px;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  a {
+    max-width: 100%;
+    box-sizing: border-box;
+    border-radius: 999px;
+    padding: 14px 22px;
+    background: #fff;
+    color: var(--text-dark);
+    font-weight: 800;
+    overflow-wrap: anywhere;
+    text-align: center;
+    text-decoration: none;
+    box-shadow: 0 10px 22px rgba(90, 74, 66, 0.1);
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  a:hover {
+    color: var(--accent-blue);
+    transform: translateY(-2px);
+  }
+}
+
+.contact-panel-icon {
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: var(--accent-blue);
+  color: #fff;
+  font: 900 2rem/1 'Baloo 2', 'Trebuchet MS', sans-serif;
 }
 
 .section-head {
@@ -137,7 +195,7 @@
   .store-hero {
     grid-template-columns: 1fr;
     min-height: auto;
-    padding-top: 118px;
+    padding-top: 56px;
     text-align: center;
   }
 
@@ -157,11 +215,26 @@
   .store-grid {
     grid-template-columns: 1fr;
   }
+
+  .contact-panel {
+    grid-template-columns: 1fr;
+    margin-right: 20px;
+    margin-left: 20px;
+    text-align: center;
+
+    .contact-panel-icon {
+      margin: 0 auto;
+    }
+
+    a {
+      justify-self: center;
+    }
+  }
 }
 
 @media (max-width: 520px) {
   .store-hero {
-    padding-top: 104px;
+    padding-top: 40px;
   }
 
   .store-hero-copy h1,

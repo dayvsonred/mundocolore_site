@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { finalize } from 'rxjs';
 
 import { NotificationService } from 'src/app/core/services/notification.service';
+import { NewsletterService } from 'src/app/core/services/newsletter.service';
 import { APP_NAME } from 'src/app/core/constants/branding';
 import { Product } from 'src/app/core/models/product.model';
 import { ProductService } from 'src/app/core/services/product.service';
@@ -84,7 +85,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   ];
 
   readonly socialLinks: ReadonlyArray<SocialLink> = [
-    { label: 'Instagram', href: 'https://instagram.com' },
+    { label: 'Instagram', href: 'https://www.instagram.com/mundocolore123/' },
     { label: 'Facebook', href: 'https://facebook.com' },
     { label: 'Pinterest', href: 'https://pinterest.com' }
   ];
@@ -95,12 +96,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   loadingProducts = false;
   productLoadError = '';
   newsletterForm: FormGroup;
+  newsletterSubmitting = false;
 
   private heroIntervalId?: number;
 
   constructor(
     private readonly fb: FormBuilder,
     private readonly notificationService: NotificationService,
+    private readonly newsletterService: NewsletterService,
     private readonly productService: ProductService,
     private readonly router: Router,
     private readonly titleService: Title,
@@ -151,12 +154,24 @@ export class HomeComponent implements OnInit, OnDestroy {
   onNewsletterSubmit(): void {
     if (this.newsletterForm.invalid) {
       this.newsletterForm.markAllAsTouched();
-      this.notificationService.openSnackBar('Informe um e-mail valido para receber novidades.');
+      this.notificationService.openSnackBar('Informe um e-mail válido para receber novidades.');
       return;
     }
 
-    this.notificationService.openSnackBar('Cadastro realizado! Em breve voce recebera as novidades da Mundo Colore.');
-    this.newsletterForm.reset();
+    const email = String(this.newsletterForm.value.email || '').trim();
+    this.newsletterSubmitting = true;
+    this.newsletterService.subscribe(email)
+      .pipe(finalize(() => this.newsletterSubmitting = false))
+      .subscribe({
+        next: (response) => {
+          this.notificationService.openSnackBar(response.message);
+          this.newsletterForm.reset();
+        },
+        error: (error) => {
+          const message = error?.error?.message || 'Não foi possível concluir o cadastro agora. Tente novamente.';
+          this.notificationService.openSnackBar(message);
+        }
+      });
   }
 
   getProductImage(product: Product): string {

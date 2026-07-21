@@ -12,6 +12,16 @@
     </div>
   </section>
 
+  <section *ngIf="page.contactEmail" class="contact-panel" aria-labelledby="contact-email-title">
+    <div class="contact-panel-icon" aria-hidden="true">&#64;</div>
+    <div>
+      <p class="store-kicker">Canal oficial</p>
+      <h2 id="contact-email-title">Envie um e-mail para a Mundo Colore</h2>
+      <p>{{ page.contactNote }}</p>
+    </div>
+    <a [href]="'mailto:' + page.contactEmail">{{ page.contactEmail }}</a>
+  </section>
+
   <section class="store-section">
     <div class="section-head">
       <p class="store-kicker">Mundo Colore</p>
@@ -28,3 +38,5 @@
     </div>
   </section>
 </main>
+
+<app-footer></app-footer>

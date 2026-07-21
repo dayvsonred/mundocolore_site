@@ -143,8 +143,15 @@
           formControlName="email"
           placeholder="Seu melhor e-mail"
           aria-label="Seu melhor e-mail"
+          autocomplete="email"
+          [attr.aria-invalid]="newsletterForm.get('email')?.invalid && newsletterForm.get('email')?.touched"
         />
-        <button type="submit">Assinar</button>
+        <button type="submit" [disabled]="newsletterSubmitting">
+          {{ newsletterSubmitting ? 'Cadastrando...' : 'Assinar' }}
+        </button>
+        <small *ngIf="newsletterForm.get('email')?.invalid && newsletterForm.get('email')?.touched">
+          Digite um e-mail válido.
+        </small>
       </form>
     </div>
   </section>
@@ -154,6 +161,7 @@
       <div>
         <strong>mundocolorestore</strong>
         <p>Moda infantil alegre, moderna e confortavel para todos os dias.</p>
+        <a class="footer-email" href="mailto:contato@mundocolorestore.com">contato&#64;mundocolorestore.com</a>
       </div>
       <nav>
         <a href="#" *ngFor="let link of footerLinks" (click)="scrollToSection(link.sectionId); $event.preventDefault()">

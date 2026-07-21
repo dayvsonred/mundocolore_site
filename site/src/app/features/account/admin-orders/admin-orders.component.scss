@@ -1,5 +1,5 @@
 .admin-page {
-  max-width: 1180px;
+  max-width: 1480px;
 }
 
 header {
@@ -26,6 +26,49 @@ p {
 .records {
   display: grid;
   gap: 12px;
+}
+
+.filtered-totals,
+.financial-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 10px;
+}
+
+.filtered-totals {
+  margin-bottom: 14px;
+}
+
+.filtered-totals > div,
+.financial-summary > div {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  background: #fff;
+  border: 1px solid #e1e1e1;
+  border-radius: 8px;
+}
+
+.filtered-totals span,
+.financial-summary span,
+.financial-summary small {
+  color: #666;
+  font-size: 12px;
+}
+
+.financial-summary {
+  margin-top: 18px;
+}
+
+.financial-summary > div:last-child {
+  background: #f2faf5;
+  border-color: #b9ddc6;
+}
+
+.negative-margin {
+  color: #b3261e;
+  background: #fff4f2 !important;
+  border-color: #efb5ae !important;
 }
 
 .pagination-bar {
@@ -118,7 +161,7 @@ mat-panel-description {
 
 .item-row {
   display: grid;
-  grid-template-columns: 64px 1fr minmax(120px, auto);
+  grid-template-columns: 64px minmax(190px, 0.8fr) minmax(520px, 2fr);
   gap: 14px;
   align-items: center;
   padding: 12px;
@@ -139,8 +182,21 @@ mat-panel-description {
 }
 
 .item-values {
-  justify-items: end;
-  text-align: right;
+  grid-template-columns: repeat(3, minmax(130px, 1fr));
+  gap: 10px;
+}
+
+.item-values > div {
+  display: grid;
+  gap: 2px;
+  padding: 8px;
+  background: #f7f7f7;
+  border-radius: 6px;
+}
+
+.item-values small {
+  color: #666;
+  font-size: 11px;
 }
 
 .history {
@@ -179,7 +235,14 @@ mat-panel-description {
   }
 
   .item-values {
-    justify-items: start;
-    text-align: left;
+    grid-template-columns: repeat(2, minmax(130px, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .item-values,
+  .filtered-totals,
+  .financial-summary {
+    grid-template-columns: 1fr;
   }
 }

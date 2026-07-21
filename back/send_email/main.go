@@ -11,15 +11,18 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/mail"
 	"os"
 	"strings"
 	"time"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 )
 
 const mailjetEndpoint = "https://api.mailjet.com/v3.1/send"
@@ -77,6 +80,16 @@ type SQSEvent struct {
 	} `json:"Records"`
 }
 
+type NewsletterRequest struct {
+	Email string `json:"email"`
+}
+
+type APIMessage struct {
+	Message string `json:"message"`
+	Email   string `json:"email,omitempty"`
+	Created bool   `json:"created"`
+}
+
 type EmailLog struct {
 	ID                 string                 `dynamodbav:"id"`
 	UUID               string                 `dynamodbav:"uuid,omitempty"`
@@ -98,7 +111,7 @@ type EmailLog struct {
 
 var (
 	config       Config
-	dynamoClient *dynamodb.DynamoDB
+	dynamoClient dynamodbiface.DynamoDBAPI
 	httpClient   = &http.Client{Timeout: 15 * time.Second}
 )
 
@@ -112,9 +125,14 @@ func main() {
 	lambda.Start(handler)
 }
 
-func handler(ctx context.Context, raw json.RawMessage) error {
+func handler(ctx context.Context, raw json.RawMessage) (interface{}, error) {
 	if len(bytes.TrimSpace(raw)) == 0 {
-		return errors.New("empty event")
+		return nil, errors.New("empty event")
+	}
+
+	var apiEvent events.APIGatewayProxyRequest
+	if err := json.Unmarshal(raw, &apiEvent); err == nil && apiEvent.HTTPMethod != "" {
+		return handleAPIRequest(ctx, apiEvent), nil
 	}
 
 	var event SQSEvent
@@ -122,13 +140,106 @@ func handler(ctx context.Context, raw json.RawMessage) error {
 		for _, record := range event.Records {
 			if err := processRawEmail(ctx, json.RawMessage(record.Body)); err != nil {
 				log.Printf("failed to process sqs message %s: %v", record.MessageID, err)
-				return err
+				return nil, err
 			}
 		}
-		return nil
+		return nil, nil
 	}
 
-	return processRawEmail(ctx, raw)
+	return nil, processRawEmail(ctx, raw)
+}
+
+func handleAPIRequest(ctx context.Context, request events.APIGatewayProxyRequest) events.APIGatewayProxyResponse {
+	if request.HTTPMethod == http.MethodOptions {
+		return apiResponse(http.StatusNoContent, APIMessage{})
+	}
+	if request.HTTPMethod != http.MethodPost {
+		return apiResponse(http.StatusMethodNotAllowed, APIMessage{Message: "Método não permitido."})
+	}
+
+	var payload NewsletterRequest
+	if err := json.Unmarshal([]byte(request.Body), &payload); err != nil {
+		return apiResponse(http.StatusBadRequest, APIMessage{Message: "Informe um e-mail válido."})
+	}
+
+	email, err := normalizeNewsletterEmail(payload.Email)
+	if err != nil {
+		return apiResponse(http.StatusBadRequest, APIMessage{Message: "Informe um e-mail válido."})
+	}
+
+	created, err := saveNewsletterSubscriber(ctx, email)
+	if err != nil {
+		log.Printf("failed to save newsletter subscriber: %v", err)
+		return apiResponse(http.StatusInternalServerError, APIMessage{Message: "Não foi possível concluir o cadastro agora. Tente novamente."})
+	}
+
+	message := "Cadastro realizado! Em breve você receberá as novidades da Mundo Colore."
+	if !created {
+		message = "Este e-mail já está cadastrado para receber nossas novidades."
+	}
+
+	return apiResponse(http.StatusOK, APIMessage{Message: message, Email: email, Created: created})
+}
+
+func apiResponse(statusCode int, payload APIMessage) events.APIGatewayProxyResponse {
+	body, _ := json.Marshal(payload)
+	return events.APIGatewayProxyResponse{
+		StatusCode: statusCode,
+		Headers: map[string]string{
+			"Access-Control-Allow-Headers": "Content-Type",
+			"Access-Control-Allow-Methods": "POST,OPTIONS",
+			"Access-Control-Allow-Origin":  "*",
+			"Content-Type":                 "application/json; charset=utf-8",
+		},
+		Body: string(body),
+	}
+}
+
+func normalizeNewsletterEmail(value string) (string, error) {
+	normalized := strings.ToLower(strings.TrimSpace(value))
+	if normalized == "" || len(normalized) > 254 || strings.ContainsAny(normalized, "\r\n\t ") {
+		return "", errors.New("invalid email")
+	}
+	address, err := mail.ParseAddress(normalized)
+	if err != nil || strings.ToLower(address.Address) != normalized {
+		return "", errors.New("invalid email")
+	}
+	parts := strings.Split(normalized, "@")
+	if len(parts) != 2 || parts[0] == "" || !strings.Contains(parts[1], ".") {
+		return "", errors.New("invalid email")
+	}
+	return normalized, nil
+}
+
+func saveNewsletterSubscriber(ctx context.Context, email string) (bool, error) {
+	now := time.Now().UTC().Format(time.RFC3339)
+	id := "newsletter#" + email
+	result, err := dynamoClient.UpdateItemWithContext(ctx, &dynamodb.UpdateItemInput{
+		TableName: aws.String(config.TableName),
+		Key: map[string]*dynamodb.AttributeValue{
+			"id": {S: aws.String(id)},
+		},
+		UpdateExpression: aws.String("SET #type = :type, to_email = :email, #status = :status, #source = :source, received_at = if_not_exists(received_at, :now), subscribed_at = if_not_exists(subscribed_at, :now), updated_at = :now, consent_version = :consent ADD subscription_count :one"),
+		ExpressionAttributeNames: map[string]*string{
+			"#source": aws.String("source"),
+			"#status": aws.String("status"),
+			"#type":   aws.String("type"),
+		},
+		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
+			":consent": {S: aws.String("newsletter-v1")},
+			":email":   {S: aws.String(email)},
+			":now":     {S: aws.String(now)},
+			":one":     {N: aws.String("1")},
+			":source":  {S: aws.String("home-newsletter")},
+			":status":  {S: aws.String("active")},
+			":type":    {S: aws.String("newsletter-subscriber")},
+		},
+		ReturnValues: aws.String(dynamodb.ReturnValueAllOld),
+	})
+	if err != nil {
+		return false, err
+	}
+	return len(result.Attributes) == 0, nil
 }
 
 func processRawEmail(ctx context.Context, raw json.RawMessage) error {
