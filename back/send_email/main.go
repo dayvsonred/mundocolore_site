@@ -107,6 +107,12 @@ type EmailLog struct {
 	ProviderStatusCode int                    `dynamodbav:"provider_status_code,omitempty"`
 	ProviderResponse   string                 `dynamodbav:"provider_response,omitempty"`
 	ErrorMessage       string                 `dynamodbav:"error_message,omitempty"`
+	Direction          string                 `dynamodbav:"direction,omitempty"`
+	Mailbox            string                 `dynamodbav:"mailbox,omitempty"`
+	ReceivedSort       string                 `dynamodbav:"received_sort,omitempty"`
+	Subject            string                 `dynamodbav:"subject,omitempty"`
+	Body               string                 `dynamodbav:"body,omitempty"`
+	SearchText         string                 `dynamodbav:"search_text,omitempty"`
 }
 
 var (
@@ -419,15 +425,21 @@ func loadConfig() Config {
 func saveReceivedPayload(req EmailRequest, raw map[string]interface{}) error {
 	now := time.Now().UTC().Format(time.RFC3339)
 	item := EmailLog{
-		ID:         req.ID,
-		UUID:       req.UUID,
-		Type:       req.Type,
-		ToEmail:    req.ToEmail,
-		ToName:     req.ToName,
-		FromEmail:  req.FromEmail,
-		Status:     "received",
-		ReceivedAt: now,
-		RawPayload: raw,
+		ID:           req.ID,
+		UUID:         req.UUID,
+		Type:         req.Type,
+		ToEmail:      req.ToEmail,
+		ToName:       req.ToName,
+		FromEmail:    req.FromEmail,
+		Status:       "received",
+		ReceivedAt:   now,
+		RawPayload:   raw,
+		Direction:    "outbound",
+		Mailbox:      req.FromEmail,
+		ReceivedSort: now + "#" + req.ID,
+		Subject:      req.Subject,
+		Body:         req.Body,
+		SearchText:   strings.ToLower(strings.Join([]string{req.FromEmail, req.ToEmail, req.Subject}, " ")),
 	}
 	av, err := dynamodbattribute.MarshalMap(item)
 	if err != nil {
@@ -444,9 +456,12 @@ func saveSentEmail(req EmailRequest, subject, body string, statusCode int, provi
 	_, err := dynamoClient.UpdateItem(&dynamodb.UpdateItemInput{
 		TableName:        aws.String(config.TableName),
 		Key:              map[string]*dynamodb.AttributeValue{"id": {S: aws.String(req.ID)}},
-		UpdateExpression: aws.String("SET #status = :status, processed_at = :processed_at, rendered_subject = :subject, rendered_body = :body, provider = :provider, provider_status_code = :code, provider_response = :response"),
+		UpdateExpression: aws.String("SET #status = :status, processed_at = :processed_at, rendered_subject = :subject, rendered_body = :body, #subject = :subject, #body = :body, #search = :search, provider = :provider, provider_status_code = :code, provider_response = :response"),
 		ExpressionAttributeNames: map[string]*string{
-			"#status": aws.String("status"),
+			"#body":    aws.String("body"),
+			"#search":  aws.String("search_text"),
+			"#status":  aws.String("status"),
+			"#subject": aws.String("subject"),
 		},
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":status":       {S: aws.String("sent")},
@@ -456,6 +471,7 @@ func saveSentEmail(req EmailRequest, subject, body string, statusCode int, provi
 			":provider":     {S: aws.String("mailjet")},
 			":code":         {N: aws.String(fmt.Sprintf("%d", statusCode))},
 			":response":     {S: aws.String(providerResponse)},
+			":search":       {S: aws.String(strings.ToLower(strings.Join([]string{req.FromEmail, req.ToEmail, subject}, " ")))},
 		},
 	})
 	return err

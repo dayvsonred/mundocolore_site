@@ -17,6 +17,8 @@ export interface MailboxEmail {
   subject: string;
   status: 'read' | 'unread' | string;
   raw_size: number;
+  processed_at?: string;
+  error_message?: string;
 }
 
 export interface EmailAttachment {
@@ -60,8 +62,18 @@ export class EmailMailboxService {
     });
   }
 
-  listEmails(mailbox: string, query = '', cursor = '', day = ''): Observable<MailboxEmailList> {
-    let params = new HttpParams().set('mailbox', mailbox).set('limit', '30');
+  listEmails(
+    mailbox: string,
+    status: 'read' | 'unread',
+    query = '',
+    cursor = '',
+    day = '',
+    limit = 20
+  ): Observable<MailboxEmailList> {
+    let params = new HttpParams()
+      .set('mailbox', mailbox)
+      .set('status', status)
+      .set('limit', String(limit));
     if (query.trim()) {
       params = params.set('q', query.trim());
     }
@@ -77,8 +89,31 @@ export class EmailMailboxService {
     });
   }
 
+  listSentEmails(mailbox: string, query = '', cursor = '', day = '', limit = 20): Observable<MailboxEmailList> {
+    let params = new HttpParams().set('mailbox', mailbox).set('limit', String(limit));
+    if (query.trim()) {
+      params = params.set('q', query.trim());
+    }
+    if (cursor) {
+      params = params.set('cursor', cursor);
+    }
+    if (day) {
+      params = params.set('day', day);
+    }
+    return this.http.get<MailboxEmailList>(`${this.endpoint}/sent`, {
+      headers: this.authHeaders(),
+      params
+    });
+  }
+
   getEmail(id: string): Observable<MailboxEmailDetail> {
     return this.http.get<MailboxEmailDetail>(`${this.endpoint}/${encodeURIComponent(id)}`, {
+      headers: this.authHeaders()
+    });
+  }
+
+  getSentEmail(id: string): Observable<MailboxEmailDetail> {
+    return this.http.get<MailboxEmailDetail>(`${this.endpoint}/sent/${encodeURIComponent(id)}`, {
       headers: this.authHeaders()
     });
   }

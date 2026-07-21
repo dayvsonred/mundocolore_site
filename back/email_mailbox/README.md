@@ -5,8 +5,11 @@ API administrativa da caixa de e-mails da Mundo Colore Store.
 ## Rotas
 
 - `GET /emails/mailboxes`: lista caixas permitidas.
-- `GET /emails?mailbox=...&day=AAAA-MM-DD&q=...&cursor=...`: lista e
-  pesquisa recebidos, com filtro opcional por dia.
+- `GET /emails?mailbox=...&status=unread|read&day=AAAA-MM-DD&q=...&cursor=...`: lista e
+  pesquisa recebidos por pasta, com paginacao por cursor.
+- `GET /emails/sent?mailbox=...&day=AAAA-MM-DD&q=...&cursor=...`: lista enviados
+  com paginacao por cursor.
+- `GET /emails/sent/{id}`: exibe o conteudo e o estado de processamento de um envio.
 - `GET /emails/{id}`: le o `.eml` privado no S3 e marca como lido.
 - `PATCH /emails/{id}`: altera o status para `read` ou `unread`.
 - `POST /emails/send`: valida a composicao e publica na fila `mundocolore-send-email`.

@@ -1,8 +1,8 @@
 <section class="admin-page email-page">
   <header class="page-title">
     <div>
-      <h1>E-mails</h1>
-      <p>Leia, pesquise e envie mensagens das caixas da Mundo Colore Store.</p>
+      <h1>Caixa de e-mails</h1>
+      <p>Leia mensagens recebidas, consulte os enviados e responda seus clientes em um só lugar.</p>
     </div>
     <button mat-raised-button color="primary" type="button" (click)="startCompose()">
       <mat-icon>edit</mat-icon>
@@ -10,7 +10,19 @@
     </button>
   </header>
 
-  <form class="toolbar" (ngSubmit)="loadEmails()">
+  <nav class="folder-tabs" aria-label="Pastas de e-mail">
+    <button
+      type="button"
+      *ngFor="let folder of folders"
+      [class.active]="activeFolder === folder.id"
+      [attr.aria-current]="activeFolder === folder.id ? 'page' : null"
+      (click)="selectFolder(folder.id)">
+      <mat-icon>{{ folder.icon }}</mat-icon>
+      <span>{{ folder.label }}</span>
+    </button>
+  </nav>
+
+  <form class="toolbar" (ngSubmit)="applyFilters()">
     <mat-form-field appearance="outline">
       <mat-label>Caixa de e-mail</mat-label>
       <mat-select name="mailbox" [(ngModel)]="selectedMailbox" (selectionChange)="onMailboxChange()">
@@ -19,14 +31,14 @@
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="search-field">
-      <mat-label>Buscar por remetente ou assunto</mat-label>
+      <mat-label>{{ isSentFolder ? 'Buscar por destinatário ou assunto' : 'Buscar por remetente ou assunto' }}</mat-label>
       <input matInput name="search" [(ngModel)]="searchQuery" autocomplete="off">
       <mat-icon matSuffix>search</mat-icon>
     </mat-form-field>
 
     <mat-form-field appearance="outline" class="day-field">
-      <mat-label>Dia de recebimento</mat-label>
-      <input matInput type="date" name="receivedDay" [(ngModel)]="selectedDay">
+      <mat-label>{{ isSentFolder ? 'Dia do envio' : 'Dia do recebimento' }}</mat-label>
+      <input matInput type="date" name="emailDay" [(ngModel)]="selectedDay">
       <button
         *ngIf="selectedDay"
         mat-icon-button
@@ -58,10 +70,10 @@
         mat-raised-button
         color="primary"
         type="button"
+        aria-label="Atualizar e-mails"
         [disabled]="loadingList || !selectedMailbox"
         (click)="refreshEmails()">
         <mat-icon>refresh</mat-icon>
-        Atualizar
       </button>
     </div>
   </form>
@@ -74,6 +86,14 @@
 
   <section class="mail-layout" *ngIf="!composing">
     <aside class="message-list">
+      <div class="list-heading">
+        <div>
+          <strong>{{ activeFolder === 'unread' ? 'Não lidos' : (activeFolder === 'read' ? 'Lidos' : 'Enviados') }}</strong>
+          <small>Página {{ currentPage }}</small>
+        </div>
+        <span>{{ emails.length }} nesta página</span>
+      </div>
+
       <div class="loading" *ngIf="loadingList"><mat-spinner diameter="32"></mat-spinner></div>
 
       <button
@@ -83,25 +103,49 @@
         [class.unread]="email.status === 'unread'"
         [class.selected]="selectedEmail?.id === email.id"
         (click)="openEmail(email)">
-        <span class="sender">{{ email.from_email || 'Remetente desconhecido' }}</span>
+        <span class="message-meta">
+          <span class="sender">{{ senderLabel(email) }}</span>
+          <span *ngIf="isSentFolder" class="status-pill" [class.failed]="email.status === 'failed'">
+            {{ sentStatusLabel(email.status) }}
+          </span>
+        </span>
         <strong>{{ email.subject || 'Sem assunto' }}</strong>
         <span class="preview-date">{{ email.received_at | date:'dd/MM/yyyy HH:mm' }}</span>
       </button>
 
       <div class="empty-state" *ngIf="!loadingList && !emails.length">
-        Nenhum e-mail encontrado nesta caixa.
+        <mat-icon>{{ isSentFolder ? 'send' : (activeFolder === 'read' ? 'drafts' : 'mark_email_unread') }}</mat-icon>
+        <span>Nenhum e-mail encontrado nesta pasta.</span>
       </div>
 
-      <button
-        mat-button
-        color="primary"
-        type="button"
-        class="load-more"
-        *ngIf="nextCursor"
-        [disabled]="loadingList"
-        (click)="loadEmails(true)">
-        Carregar mais
-      </button>
+      <nav class="pagination" *ngIf="currentPage > 1 || nextCursor" aria-label="Paginação dos e-mails">
+        <button
+          mat-icon-button
+          type="button"
+          aria-label="Página anterior"
+          [disabled]="currentPage === 1 || loadingList"
+          (click)="goToPage(currentPage - 1)">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <button
+          type="button"
+          *ngFor="let page of pageNumbers"
+          class="page-number"
+          [class.active]="page === currentPage"
+          [attr.aria-current]="page === currentPage ? 'page' : null"
+          [disabled]="loadingList"
+          (click)="goToPage(page)">
+          {{ page }}
+        </button>
+        <button
+          mat-icon-button
+          type="button"
+          aria-label="Próxima página"
+          [disabled]="!nextCursor || loadingList"
+          (click)="goToPage(currentPage + 1)">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </nav>
     </aside>
 
     <article class="message-content">
@@ -110,20 +154,23 @@
       <ng-container *ngIf="selectedEmail && !loadingEmail">
         <header class="message-header">
           <div>
+            <span class="detail-folder">{{ isSentFolder ? 'Enviado' : (selectedEmail.status === 'read' ? 'Lido' : 'Não lido') }}</span>
             <h2>{{ selectedEmail.subject || 'Sem assunto' }}</h2>
             <p><strong>De:</strong> {{ selectedEmail.from_name || selectedEmail.from_email }} &lt;{{ selectedEmail.from_email }}&gt;</p>
             <p><strong>Para:</strong> {{ selectedEmail.to_email }}</p>
             <p>{{ selectedEmail.received_at | date:'dd/MM/yyyy HH:mm:ss' }}</p>
+            <p *ngIf="isSentFolder"><strong>Status:</strong> {{ sentStatusLabel(selectedEmail.status) }}</p>
+            <p class="send-error" *ngIf="isSentFolder && selectedEmail.error_message">{{ selectedEmail.error_message }}</p>
           </div>
-          <button mat-stroked-button type="button" (click)="toggleUnread()">
+          <button *ngIf="!isSentFolder" mat-stroked-button type="button" (click)="toggleUnread()">
             <mat-icon>{{ selectedEmail.status === 'unread' ? 'drafts' : 'mark_email_unread' }}</mat-icon>
-            {{ selectedEmail.status === 'unread' ? 'Marcar como lido' : 'Marcar como nao lido' }}
+            {{ selectedEmail.status === 'unread' ? 'Marcar como lido' : 'Marcar como não lido' }}
           </button>
         </header>
 
         <div class="email-body html-body" *ngIf="!selectedEmail.body_text && selectedEmail.body_html; else plainBody" [innerHTML]="selectedEmail.body_html"></div>
         <ng-template #plainBody>
-          <pre class="email-body">{{ selectedEmail.body_text || 'Este e-mail nao possui conteudo de texto.' }}</pre>
+          <pre class="email-body">{{ selectedEmail.body_text || 'Este e-mail não possui conteúdo de texto.' }}</pre>
         </ng-template>
 
         <section class="attachments" *ngIf="selectedEmail.attachments?.length">
@@ -137,8 +184,8 @@
       </ng-container>
 
       <div class="empty-content" *ngIf="!selectedEmail && !loadingEmail">
-        <mat-icon>mail_outline</mat-icon>
-        <p>Selecione um e-mail para ler o conteúdo.</p>
+        <mat-icon>{{ isSentFolder ? 'outgoing_mail' : 'mail_outline' }}</mat-icon>
+        <p>Selecione um e-mail para visualizar o conteúdo.</p>
       </div>
     </article>
   </section>

@@ -39,6 +39,7 @@ resource "aws_iam_role_policy" "lambda_policy" {
         Resource = [
           "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${var.email_table_name}",
           "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${var.email_table_name}/index/${var.mailbox_index_name}",
+          "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${var.email_table_name}/index/${var.sent_index_name}",
           "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/${var.role_table_name}"
         ]
       },
@@ -75,6 +76,7 @@ resource "aws_lambda_function" "email_mailbox" {
     variables = {
       TABLE_NAME        = var.email_table_name
       MAILBOX_INDEX     = var.mailbox_index_name
+      SENT_INDEX        = var.sent_index_name
       ROLE_TABLE_NAME   = var.role_table_name
       BUCKET_NAME       = var.bucket_name
       EMAIL_QUEUE_URL   = data.aws_sqs_queue.email_queue.url

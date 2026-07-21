@@ -22,14 +22,18 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/aws/aws-sdk-go/service/s3/s3iface"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type config struct {
 	TableName        string
 	MailboxIndex     string
+	SentIndex        string
 	RoleTableName    string
 	BucketName       string
 	QueueURL         string
@@ -53,6 +57,11 @@ type emailRecord struct {
 	ArchiveKeys  []string `json:"archive_keys,omitempty" dynamodbav:"archive_keys,omitempty"`
 	Status       string   `json:"status" dynamodbav:"status"`
 	RawSize      int      `json:"raw_size" dynamodbav:"raw_size"`
+	ProcessedAt  string   `json:"processed_at,omitempty" dynamodbav:"processed_at,omitempty"`
+	Body         string   `json:"-" dynamodbav:"body,omitempty"`
+	RenderedBody string   `json:"-" dynamodbav:"rendered_body,omitempty"`
+	RenderedSubj string   `json:"-" dynamodbav:"rendered_subject,omitempty"`
+	ErrorMessage string   `json:"error_message,omitempty" dynamodbav:"error_message,omitempty"`
 }
 
 type listResponse struct {
@@ -98,9 +107,9 @@ type userRole struct {
 
 var (
 	appConfig    config
-	dynamoClient *dynamodb.DynamoDB
-	s3Client     *s3.S3
-	sqsClient    *sqs.SQS
+	dynamoClient dynamodbiface.DynamoDBAPI
+	s3Client     s3iface.S3API
+	sqsClient    sqsiface.SQSAPI
 )
 
 func init() {
@@ -133,8 +142,14 @@ func handler(ctx context.Context, request events.APIGatewayProxyRequest) (events
 	if request.HTTPMethod == "POST" && strings.HasSuffix(path, "/emails/send") {
 		return handleSend(ctx, request)
 	}
+	if request.HTTPMethod == "GET" && strings.HasSuffix(path, "/emails/sent") {
+		return handleSentList(ctx, request)
+	}
 	if request.HTTPMethod == "GET" && strings.HasSuffix(path, "/emails") {
 		return handleList(ctx, request)
+	}
+	if request.HTTPMethod == "GET" && strings.Contains(path, "/emails/sent/") {
+		return handleGetSent(ctx, sentEmailIDFromPath(path))
 	}
 
 	id := emailIDFromPath(path)
@@ -160,6 +175,10 @@ func handleList(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		limit = parsed
 	}
 	query := strings.ToLower(strings.TrimSpace(request.QueryStringParameters["q"]))
+	status := strings.ToLower(strings.TrimSpace(request.QueryStringParameters["status"]))
+	if status != "" && status != "read" && status != "unread" {
+		return errorResponse(400, "status must be read or unread"), nil
+	}
 	day := strings.TrimSpace(request.QueryStringParameters["day"])
 	dayStart, dayEnd, dayErr := dayBounds(day)
 	if dayErr != nil {
@@ -170,10 +189,10 @@ func handleList(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 		return errorResponse(400, "invalid cursor"), nil
 	}
 
-	items := make([]emailRecord, 0, limit)
+	items := make([]emailRecord, 0, limit+1)
 	lastKey := exclusiveStartKey
 	reachedLimit := false
-	for page := 0; page < 5 && len(items) < limit; page++ {
+	for page := 0; page < 10 && len(items) <= limit; page++ {
 		keyCondition := "mailbox = :mailbox"
 		attributeValues := map[string]*dynamodb.AttributeValue{
 			":mailbox": {S: aws.String(mailbox)},
@@ -189,7 +208,7 @@ func handleList(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 			KeyConditionExpression:    aws.String(keyCondition),
 			ExpressionAttributeValues: attributeValues,
 			ExclusiveStartKey:         lastKey,
-			Limit:                     aws.Int64(int64(limit)),
+			Limit:                     aws.Int64(int64(limit + 1)),
 			ScanIndexForward:          aws.Bool(false),
 		})
 		if queryErr != nil {
@@ -201,10 +220,11 @@ func handleList(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 			return errorResponse(500, "could not decode emails"), nil
 		}
 		for _, item := range pageItems {
-			if query == "" || strings.Contains(strings.ToLower(item.SearchText), query) {
+			matchesStatus := status == "" || item.Status == status
+			if matchesStatus && (query == "" || strings.Contains(strings.ToLower(item.SearchText), query)) {
 				items = append(items, item)
-				if len(items) == limit {
-					lastKey = cursorKeyForEmail(item)
+				if len(items) == limit+1 {
+					lastKey = cursorKeyForEmail(items[limit-1])
 					reachedLimit = true
 					break
 				}
@@ -218,12 +238,112 @@ func handleList(ctx context.Context, request events.APIGatewayProxyRequest) (eve
 			break
 		}
 	}
+	if reachedLimit {
+		items = items[:limit]
+	}
 
 	cursor, err := encodeCursor(lastKey)
 	if err != nil {
 		return errorResponse(500, "could not create cursor"), nil
 	}
 	return jsonResponse(200, listResponse{Items: items, NextCursor: cursor}), nil
+}
+
+func handleSentList(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	mailbox := strings.ToLower(strings.TrimSpace(request.QueryStringParameters["mailbox"]))
+	if !isAllowedMailbox(mailbox) {
+		return errorResponse(400, "mailbox is not allowed"), nil
+	}
+	limit := 30
+	if parsed, err := strconv.Atoi(request.QueryStringParameters["limit"]); err == nil && parsed > 0 && parsed <= 100 {
+		limit = parsed
+	}
+	query := strings.ToLower(strings.TrimSpace(request.QueryStringParameters["q"]))
+	day := strings.TrimSpace(request.QueryStringParameters["day"])
+	dayStart, dayEnd, dayErr := dayBounds(day)
+	if dayErr != nil {
+		return errorResponse(400, "day must use YYYY-MM-DD format"), nil
+	}
+	exclusiveStartKey, err := decodeCursor(request.QueryStringParameters["cursor"])
+	if err != nil {
+		return errorResponse(400, "invalid cursor"), nil
+	}
+
+	items := make([]emailRecord, 0, limit+1)
+	lastKey := exclusiveStartKey
+	reachedLimit := false
+	for page := 0; page < 10 && len(items) <= limit; page++ {
+		keyCondition := "#type = :type"
+		attributeNames := map[string]*string{"#type": aws.String("type")}
+		attributeValues := map[string]*dynamodb.AttributeValue{
+			":type": {S: aws.String("email-admin-manual")},
+		}
+		if day != "" {
+			keyCondition += " AND received_at BETWEEN :day_start AND :day_end"
+			attributeValues[":day_start"] = &dynamodb.AttributeValue{S: aws.String(dayStart)}
+			attributeValues[":day_end"] = &dynamodb.AttributeValue{S: aws.String(dayEnd)}
+		}
+		result, queryErr := dynamoClient.QueryWithContext(ctx, &dynamodb.QueryInput{
+			TableName:                 aws.String(appConfig.TableName),
+			IndexName:                 aws.String(appConfig.SentIndex),
+			KeyConditionExpression:    aws.String(keyCondition),
+			ExpressionAttributeNames:  attributeNames,
+			ExpressionAttributeValues: attributeValues,
+			ExclusiveStartKey:         lastKey,
+			Limit:                     aws.Int64(int64(limit + 1)),
+			ScanIndexForward:          aws.Bool(false),
+		})
+		if queryErr != nil {
+			return errorResponse(500, "could not list sent emails"), nil
+		}
+
+		var pageItems []emailRecord
+		if err := dynamodbattribute.UnmarshalListOfMaps(result.Items, &pageItems); err != nil {
+			return errorResponse(500, "could not decode sent emails"), nil
+		}
+		for _, item := range pageItems {
+			normalizeSentRecord(&item)
+			if !strings.EqualFold(item.FromEmail, mailbox) {
+				continue
+			}
+			searchText := strings.ToLower(strings.Join([]string{item.FromEmail, item.ToEmail, item.Subject}, " "))
+			if query == "" || strings.Contains(searchText, query) {
+				items = append(items, item)
+				if len(items) == limit+1 {
+					lastKey = cursorKeyForSentEmail(items[limit-1])
+					reachedLimit = true
+					break
+				}
+			}
+		}
+		if reachedLimit {
+			break
+		}
+		lastKey = result.LastEvaluatedKey
+		if len(lastKey) == 0 {
+			break
+		}
+	}
+	if reachedLimit {
+		items = items[:limit]
+	}
+
+	cursor, err := encodeCursor(lastKey)
+	if err != nil {
+		return errorResponse(500, "could not create cursor"), nil
+	}
+	return jsonResponse(200, listResponse{Items: items, NextCursor: cursor}), nil
+}
+
+func normalizeSentRecord(record *emailRecord) {
+	record.Direction = "outbound"
+	record.Mailbox = strings.ToLower(strings.TrimSpace(record.FromEmail))
+	if record.Subject == "" {
+		record.Subject = record.RenderedSubj
+	}
+	if record.ReceivedAt == "" {
+		record.ReceivedAt = record.ProcessedAt
+	}
 }
 
 func dayBounds(value string) (string, string, error) {
@@ -246,8 +366,16 @@ func cursorKeyForEmail(item emailRecord) map[string]*dynamodb.AttributeValue {
 	}
 }
 
+func cursorKeyForSentEmail(item emailRecord) map[string]*dynamodb.AttributeValue {
+	return map[string]*dynamodb.AttributeValue{
+		"id":          {S: aws.String(item.ID)},
+		"type":        {S: aws.String(item.Type)},
+		"received_at": {S: aws.String(item.ReceivedAt)},
+	}
+}
+
 func handleGet(ctx context.Context, id string) (events.APIGatewayProxyResponse, error) {
-	record, err := getEmailRecord(ctx, id)
+	record, err := getInboundEmailRecord(ctx, id)
 	if err != nil {
 		if errors.Is(err, errNotFound) {
 			return errorResponse(404, "email not found"), nil
@@ -275,7 +403,11 @@ func handleGet(ctx context.Context, id string) (events.APIGatewayProxyResponse, 
 		return errorResponse(500, "could not parse email content"), nil
 	}
 
-	_ = updateStatus(ctx, id, "read")
+	if record.Status != "read" {
+		if err := updateStatus(ctx, id, "read"); err != nil {
+			return errorResponse(500, "could not mark email as read"), nil
+		}
+	}
 	record.Status = "read"
 	detail := emailDetail{
 		emailRecord: record,
@@ -284,6 +416,29 @@ func handleGet(ctx context.Context, id string) (events.APIGatewayProxyResponse, 
 		BodyHTML:    parsed.BodyHTML,
 		Attachments: parsed.Attachments,
 	}
+	return jsonResponse(200, detail), nil
+}
+
+func handleGetSent(ctx context.Context, id string) (events.APIGatewayProxyResponse, error) {
+	if id == "" {
+		return errorResponse(404, "email not found"), nil
+	}
+	record, err := getEmailRecord(ctx, id)
+	if err != nil {
+		if errors.Is(err, errNotFound) {
+			return errorResponse(404, "email not found"), nil
+		}
+		return errorResponse(500, "could not load sent email"), nil
+	}
+	normalizeSentRecord(&record)
+	if record.Type != "email-admin-manual" || !isAllowedMailbox(record.FromEmail) {
+		return errorResponse(404, "email not found"), nil
+	}
+	body := record.RenderedBody
+	if body == "" {
+		body = record.Body
+	}
+	detail := emailDetail{emailRecord: record, BodyText: body}
 	return jsonResponse(200, detail), nil
 }
 
@@ -296,7 +451,7 @@ func handleStatus(ctx context.Context, id string, request events.APIGatewayProxy
 	if payload.Status != "read" && payload.Status != "unread" {
 		return errorResponse(400, "status must be read or unread"), nil
 	}
-	record, err := getEmailRecord(ctx, id)
+	record, err := getInboundEmailRecord(ctx, id)
 	if err != nil || !isAllowedMailbox(record.Mailbox) {
 		return errorResponse(404, "email not found"), nil
 	}
@@ -360,6 +515,14 @@ func getEmailRecord(ctx context.Context, id string) (emailRecord, error) {
 	}
 	var record emailRecord
 	if err := dynamodbattribute.UnmarshalMap(result.Item, &record); err != nil {
+		return emailRecord{}, err
+	}
+	return record, nil
+}
+
+func getInboundEmailRecord(ctx context.Context, id string) (emailRecord, error) {
+	record, err := getEmailRecord(ctx, id)
+	if err != nil {
 		return emailRecord{}, err
 	}
 	if record.Direction != "inbound" {
@@ -448,6 +611,22 @@ func emailIDFromPath(path string) string {
 	return decoded
 }
 
+func sentEmailIDFromPath(path string) string {
+	position := strings.LastIndex(path, "/emails/sent/")
+	if position < 0 {
+		return ""
+	}
+	value := path[position+len("/emails/sent/"):]
+	if value == "" || strings.Contains(value, "/") {
+		return ""
+	}
+	decoded, err := url.PathUnescape(value)
+	if err != nil {
+		return ""
+	}
+	return decoded
+}
+
 func encodeCursor(key map[string]*dynamodb.AttributeValue) (string, error) {
 	if len(key) == 0 {
 		return "", nil
@@ -505,6 +684,7 @@ func loadConfig() config {
 	return config{
 		TableName:        envOrDefault("TABLE_NAME", "mundocolore-emails"),
 		MailboxIndex:     envOrDefault("MAILBOX_INDEX", "mailbox-received-index"),
+		SentIndex:        envOrDefault("SENT_INDEX", "type-received-index"),
 		RoleTableName:    envOrDefault("ROLE_TABLE_NAME", "mundocolore-role"),
 		BucketName:       strings.TrimSpace(os.Getenv("BUCKET_NAME")),
 		QueueURL:         strings.TrimSpace(os.Getenv("EMAIL_QUEUE_URL")),

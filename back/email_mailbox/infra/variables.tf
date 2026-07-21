@@ -25,6 +25,11 @@ variable "mailbox_index_name" {
   default = "mailbox-received-index"
 }
 
+variable "sent_index_name" {
+  type    = string
+  default = "type-received-index"
+}
+
 variable "bucket_name" {
   type    = string
   default = "box-email-mundocolorestore-v1"
