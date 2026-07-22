@@ -42,11 +42,110 @@
       margin-bottom: 20px;
     }
 
-    .price {
-      font-size: 24px;
-      font-weight: bold;
-      color: #ff69b4;
+    .price-display {
       margin-bottom: 20px;
+
+      .price-label {
+        display: block;
+        color: #6b625c;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      p {
+        margin: 2px 0 8px;
+      }
+
+      .original-price {
+        color: #ff69b4;
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      &.has-promotion .original-price {
+        color: #746b65;
+        font-size: 18px;
+        text-decoration: line-through;
+      }
+
+      .promotional-label {
+        color: #247a3f;
+        margin-top: 8px;
+      }
+
+      .promotional-price {
+        color: #16843a;
+        font-size: 30px;
+        font-weight: 800;
+      }
+
+      small {
+        color: #247a3f;
+        font-weight: 700;
+      }
+    }
+
+    .coupon-box {
+      background: #fff8fc;
+      border: 1px solid #f3c8df;
+      border-radius: 12px;
+      margin-bottom: 22px;
+      padding: 14px;
+
+      label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 8px;
+      }
+
+      div {
+        display: flex;
+        gap: 8px;
+      }
+
+      input {
+        border: 1px solid #d9d3cc;
+        border-radius: 9px;
+        flex: 1;
+        min-width: 0;
+        padding: 10px 12px;
+        text-transform: uppercase;
+      }
+
+      button {
+        background: #ff69b4;
+        border: 0;
+        border-radius: 9px;
+        color: #fff;
+        cursor: pointer;
+        font-weight: 700;
+        padding: 10px 15px;
+
+        &:disabled {
+          cursor: wait;
+          opacity: 0.65;
+        }
+      }
+
+      p {
+        color: #247a3f;
+        font-size: 13px;
+        font-weight: 700;
+        margin: 9px 0 0;
+
+        &.error {
+          color: #9b1c1c;
+        }
+      }
+
+      .remove-coupon {
+        background: transparent;
+        color: #7d315a;
+        font-size: 13px;
+        margin-top: 6px;
+        padding: 4px 0;
+        text-decoration: underline;
+      }
     }
 
     .option-selection,

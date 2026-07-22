@@ -5,6 +5,8 @@ import { ProductService } from '../../../core/services/product.service';
 import { CartService } from '../../../core/services/cart.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { AnalyticsService } from '../../../core/services/analytics.service';
+import { OrderService } from '../../../core/services/order.service';
+import { CouponStorageService } from '../../../core/services/coupon-storage.service';
 
 @Component({
   selector: 'app-product-detail-page',
@@ -19,6 +21,12 @@ export class ProductDetailPageComponent implements OnInit {
   selectedColor = '';
   quantity = 1;
   validationMessage = '';
+  couponCode = '';
+  appliedCouponCode = '';
+  promotionalPrice: number | null = null;
+  applyingCoupon = false;
+  couponMessage = '';
+  couponError = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -26,7 +34,9 @@ export class ProductDetailPageComponent implements OnInit {
     private productService: ProductService,
     private cartService: CartService,
     private notificationService: NotificationService,
-    private analyticsService: AnalyticsService
+    private analyticsService: AnalyticsService,
+    private orderService: OrderService,
+    private couponStorage: CouponStorageService
   ) { }
 
   ngOnInit(): void {
@@ -38,8 +48,81 @@ export class ProductDetailPageComponent implements OnInit {
       this.validationMessage = '';
       if (product) {
         this.analyticsService.trackProductView(this.router.url, product).subscribe();
+        const savedCoupon = this.couponStorage.getCouponCode();
+        if (savedCoupon) {
+          this.couponCode = savedCoupon;
+          this.applyCoupon(true);
+        }
       }
     });
+  }
+
+  applyCoupon(fromSavedCoupon = false): void {
+    const code = this.couponCode.trim();
+    if (!this.product || !code || this.applyingCoupon) {
+      if (!code) {
+        this.couponError = true;
+        this.couponMessage = 'Informe o codigo do cupom.';
+      }
+      return;
+    }
+
+    this.applyingCoupon = true;
+    this.couponMessage = '';
+    this.orderService.validateCoupon(code, [{
+      product_id: this.product.id,
+      quantity: 1,
+      price: Number(this.product.price || 0)
+    }]).subscribe({
+      next: (response) => {
+        const couponItem = response.items.find(item => item.product_id === this.product?.id);
+        const unitPrice = Number(couponItem?.unit_price ?? couponItem?.price ?? this.product?.price ?? 0);
+        this.appliedCouponCode = response.coupon_code;
+        this.couponCode = response.coupon_code;
+        this.promotionalPrice = unitPrice;
+        this.couponError = false;
+        this.couponMessage = `Cupom ${response.coupon_code} aplicado.`;
+        this.couponStorage.saveCouponCode(response.coupon_code);
+        this.applyingCoupon = false;
+      },
+      error: () => {
+        this.appliedCouponCode = '';
+        this.promotionalPrice = null;
+        this.couponError = true;
+        this.couponMessage = fromSavedCoupon
+          ? `O cupom salvo ${code.toUpperCase()} nao e valido para este produto.`
+          : 'Cupom invalido para este produto.';
+        if (!fromSavedCoupon) {
+          this.couponStorage.clearCouponCode();
+        }
+        this.applyingCoupon = false;
+      }
+    });
+  }
+
+  clearCoupon(): void {
+    this.couponCode = '';
+    this.appliedCouponCode = '';
+    this.promotionalPrice = null;
+    this.couponMessage = '';
+    this.couponError = false;
+    this.couponStorage.clearCouponCode();
+  }
+
+  onCouponCodeChange(): void {
+    this.couponMessage = '';
+    this.couponError = false;
+    if (this.couponCode.trim().toUpperCase() !== this.appliedCouponCode) {
+      this.appliedCouponCode = '';
+      this.promotionalPrice = null;
+    }
+  }
+
+  get savingsAmount(): number {
+    if (!this.product || this.promotionalPrice === null) {
+      return 0;
+    }
+    return Math.max(0, Number(this.product.price || 0) - this.promotionalPrice);
   }
 
   addToCart(): void {

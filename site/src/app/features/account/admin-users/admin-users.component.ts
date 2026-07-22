@@ -11,6 +11,11 @@ export class AdminUsersComponent implements OnInit {
   creditAmounts: Record<string, number> = {};
   resettingPasswords: Record<string, boolean> = {};
   loading = false;
+  currentPage = 1;
+  nextCursor = '';
+  readonly pageSize = 10;
+  private pageCursors: string[] = [''];
+  private appliedFilters: Record<string, string> = {};
   constructor(
     private creditService: CreditColoreService,
     private authService: AuthenticationService,
@@ -18,13 +23,41 @@ export class AdminUsersComponent implements OnInit {
   ) {}
   ngOnInit(): void { this.loadUsers(); }
   loadUsers(): void {
+    if (this.loading) return;
     this.loading = true;
-    this.creditService.getUsers(this.filters).pipe(finalize(() => this.loading = false)).subscribe({
-      next: users => this.users = users,
+    this.users = [];
+    this.nextCursor = '';
+    const cursor = this.pageCursors[this.currentPage - 1] || '';
+    this.creditService.getUsers(this.appliedFilters, cursor).pipe(finalize(() => this.loading = false)).subscribe({
+      next: page => {
+        this.users = page.users;
+        this.nextCursor = page.next_cursor;
+      },
       error: () => this.snackBar.open('Nao foi possivel carregar os usuarios.', 'Fechar', { duration: 4000 })
     });
   }
-  clearFilters(): void { this.filters = {}; this.loadUsers(); }
+  applyFilters(): void {
+    if (this.loading) return;
+    this.appliedFilters = { ...this.filters };
+    this.resetPaginationAndLoad();
+  }
+  clearFilters(): void {
+    if (this.loading) return;
+    this.filters = {};
+    this.appliedFilters = {};
+    this.resetPaginationAndLoad();
+  }
+  goToPage(page: number): void {
+    if (page < 1 || page === this.currentPage || this.loading) return;
+    if (page === this.currentPage + 1) {
+      if (!this.nextCursor) return;
+      this.pageCursors[page - 1] = this.nextCursor;
+    } else if (typeof this.pageCursors[page - 1] !== 'string') {
+      return;
+    }
+    this.currentPage = page;
+    this.loadUsers();
+  }
   addCredit(user: AdminCreditUser): void {
     const amount = Number(this.creditAmounts[user.id] || 0);
     if (amount <= 0) return;
@@ -40,5 +73,11 @@ export class AdminUsersComponent implements OnInit {
       next: () => this.snackBar.open(`Email de reset enviado para ${user.email}.`, 'Fechar', { duration: 5000 }),
       error: (error) => this.snackBar.open(error || 'Nao foi possivel enviar o reset de senha.', 'Fechar', { duration: 5000 })
     });
+  }
+  private resetPaginationAndLoad(): void {
+    this.currentPage = 1;
+    this.nextCursor = '';
+    this.pageCursors = [''];
+    this.loadUsers();
   }
 }

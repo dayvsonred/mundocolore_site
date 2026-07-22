@@ -55,6 +55,12 @@ export interface AdminCreditUser {
   phone?: string;
   created_at: string;
   credit: CreditColore;
+  is_admin: boolean;
+}
+
+export interface AdminCreditUsersPage {
+  users: AdminCreditUser[];
+  next_cursor: string;
 }
 
 export interface AdminCreditInstallment extends CreditInstallment {
@@ -72,12 +78,16 @@ export class CreditColoreService {
     return this.http.get<CreditColore>(`${this.apiUrl}/credit-colore`, { headers: this.headers() });
   }
 
-  getUsers(filters: Record<string, string> = {}): Observable<AdminCreditUser[]> {
+  getUsers(filters: Record<string, string> = {}, cursor = ''): Observable<AdminCreditUsersPage> {
     let params = new HttpParams();
     Object.entries(filters).forEach(([key, value]) => { if (value) params = params.set(key, value); });
-    return this.http.get<{ users: AdminCreditUser[] }>(`${this.apiUrl}/credit-colore/admin/users`, {
+    if (cursor) params = params.set('cursor', cursor);
+    return this.http.get<Partial<AdminCreditUsersPage>>(`${this.apiUrl}/credit-colore/admin/users`, {
       headers: this.headers(), params
-    }).pipe(map(response => response.users || []));
+    }).pipe(map(response => ({
+      users: response.users || [],
+      next_cursor: response.next_cursor || ''
+    })));
   }
 
   addCredit(userId: string, amount: number): Observable<CreditColore> {

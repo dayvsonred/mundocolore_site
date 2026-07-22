@@ -8,7 +8,24 @@
       <button type="button" class="btn-back" (click)="goBackToCatalog()">Voltar ao catálogo</button>
     </div>
     <h1>{{ product.name }}</h1>
-    <p class="price">R$ {{ product.price | number:'1.2-2' }}</p>
+    <div class="price-display" [class.has-promotion]="promotionalPrice !== null">
+      <span class="price-label">Preco original</span>
+      <p class="original-price">R$ {{ product.price | number:'1.2-2' }}</p>
+      <ng-container *ngIf="promotionalPrice !== null">
+        <span class="price-label promotional-label">Preco com o cupom {{ appliedCouponCode }}</span>
+        <p class="promotional-price">R$ {{ promotionalPrice | number:'1.2-2' }}</p>
+        <small *ngIf="savingsAmount > 0">Voce economiza R$ {{ savingsAmount | number:'1.2-2' }}</small>
+      </ng-container>
+    </div>
+    <form class="coupon-box" (ngSubmit)="applyCoupon()">
+      <label for="product-coupon">Tem um cupom?</label>
+      <div>
+        <input id="product-coupon" name="productCoupon" [(ngModel)]="couponCode" (ngModelChange)="onCouponCodeChange()" [disabled]="applyingCoupon" autocomplete="off" placeholder="Digite o codigo">
+        <button type="submit" [disabled]="applyingCoupon">{{ applyingCoupon ? 'Aplicando...' : 'Aplicar' }}</button>
+      </div>
+      <p *ngIf="couponMessage" [class.error]="couponError">{{ couponMessage }}</p>
+      <button *ngIf="appliedCouponCode" type="button" class="remove-coupon" (click)="clearCoupon()">Remover cupom</button>
+    </form>
     <p>{{ product.description }}</p>
     <div class="option-selection">
       <label>Tamanho</label>

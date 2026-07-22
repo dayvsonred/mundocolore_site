@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -18,6 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -80,7 +82,8 @@ type User struct {
 
 type UserCredit struct {
 	User
-	Credit CreditResponse `json:"credit"`
+	Credit  CreditResponse `json:"credit"`
+	IsAdmin bool           `json:"is_admin"`
 }
 
 type AdminCreditInstallment struct {
@@ -114,7 +117,7 @@ type EmailQueuePayload struct {
 }
 
 var (
-	dynamoClient  *dynamodb.DynamoDB
+	dynamoClient  dynamodbiface.DynamoDBAPI
 	sqsClient     *sqs.SQS
 	tableName     = "mundocolore-credit"
 	usersTable    = "mundocolore-users"
@@ -203,7 +206,15 @@ func enqueueCreditAddedEmail(userID string, amount float64, credit Credit) error
 }
 
 func HandleListUsers(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	items, err := scanAllUsers()
+	startKey, err := decodeUsersCursor(request.QueryStringParameters["cursor"])
+	if err != nil {
+		return errorResponse(400, "invalid cursor"), nil
+	}
+	result, err := dynamoClient.Scan(&dynamodb.ScanInput{
+		TableName:         aws.String(usersTable),
+		ExclusiveStartKey: startKey,
+		Limit:             aws.Int64(10),
+	})
 	if err != nil {
 		return errorResponse(500, err.Error()), nil
 	}
@@ -215,7 +226,7 @@ func HandleListUsers(_ context.Context, request events.APIGatewayProxyRequest) (
 	createdFrom := strings.TrimSpace(q["created_from"])
 	createdTo := strings.TrimSpace(q["created_to"])
 	users := make([]UserCredit, 0)
-	for _, item := range items {
+	for _, item := range result.Items {
 		var user User
 		if dynamodbattribute.UnmarshalMap(item, &user) != nil || user.ID == "" {
 			continue
@@ -242,9 +253,41 @@ func HandleListUsers(_ context.Context, request events.APIGatewayProxyRequest) (
 		if creditErr != nil {
 			return errorResponse(500, creditErr.Error()), nil
 		}
-		users = append(users, UserCredit{User: user, Credit: toCreditResponse(credit)})
+		users = append(users, UserCredit{
+			User: user, Credit: toCreditResponse(credit), IsAdmin: isActiveAdmin(user.ID),
+		})
 	}
-	return marshalResponse(200, map[string]interface{}{"users": users}), nil
+	nextCursor, err := encodeUsersCursor(result.LastEvaluatedKey)
+	if err != nil {
+		return errorResponse(500, err.Error()), nil
+	}
+	return marshalResponse(200, map[string]interface{}{"users": users, "next_cursor": nextCursor}), nil
+}
+
+func encodeUsersCursor(key map[string]*dynamodb.AttributeValue) (string, error) {
+	if len(key) == 0 {
+		return "", nil
+	}
+	body, err := json.Marshal(key)
+	if err != nil {
+		return "", err
+	}
+	return base64.RawURLEncoding.EncodeToString(body), nil
+}
+
+func decodeUsersCursor(value string) (map[string]*dynamodb.AttributeValue, error) {
+	if strings.TrimSpace(value) == "" {
+		return nil, nil
+	}
+	body, err := base64.RawURLEncoding.DecodeString(value)
+	if err != nil {
+		return nil, err
+	}
+	var key map[string]*dynamodb.AttributeValue
+	if err := json.Unmarshal(body, &key); err != nil || len(key) != 1 || key["id"] == nil || key["id"].S == nil || strings.TrimSpace(*key["id"].S) == "" {
+		return nil, fmt.Errorf("invalid cursor")
+	}
+	return key, nil
 }
 
 func HandleListInstallments(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {

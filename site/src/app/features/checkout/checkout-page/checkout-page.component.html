@@ -123,7 +123,7 @@
 
     <div class="action-row">
       <button type="button" class="secondary-action" (click)="goToAddressStep()">Alterar endereco</button>
-      <button type="button" class="primary-action" (click)="continueFromPayment()">Continuar Compra</button>
+      <button type="button" class="primary-action" [disabled]="applyingCoupon" (click)="continueFromPayment()">Continuar Compra</button>
     </div>
   </section>
 
@@ -209,7 +209,7 @@
         <span>Total</span>
         <strong>R$ {{ total | number:'1.2-2' }}</strong>
       </div>
-      <button type="button" class="primary-action" (click)="confirmOrder()">Confirmar compra</button>
+      <button type="button" class="primary-action" [disabled]="applyingCoupon" (click)="confirmOrder()">Confirmar compra</button>
     </aside>
   </section>
 

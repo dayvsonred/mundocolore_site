@@ -7,6 +7,7 @@ import { CartService } from '../../../core/services/cart.service';
 import { CreateOrderPayload, Order, OrderPayment, OrderService } from '../../../core/services/order.service';
 import { CartItem } from '../../../core/models/product.model';
 import { CreditColore, CreditColoreService } from '../../../core/services/credit-colore.service';
+import { CouponStorageService } from '../../../core/services/coupon-storage.service';
 
 type CheckoutStep = 'address' | 'payment' | 'review' | 'order-payment';
 
@@ -94,6 +95,7 @@ export class CheckoutPageComponent implements OnInit {
     private cartService: CartService,
     private orderService: OrderService,
     private creditColoreService: CreditColoreService,
+    private couponStorage: CouponStorageService,
     private router: Router
   ) {}
 
@@ -104,10 +106,15 @@ export class CheckoutPageComponent implements OnInit {
       return;
     }
 
+    this.couponCode = this.couponStorage.getCouponCode();
+
     this.cartService.cartItems$.subscribe((items) => {
       this.cartItems = items;
       this.clearCoupon(false);
       this.calculateTotals();
+      if (items.length && this.couponCode) {
+        this.applyCoupon(true);
+      }
       if (!items.length && this.currentStep !== 'order-payment') {
         this.router.navigate(['/cart']);
       }
@@ -178,6 +185,10 @@ export class CheckoutPageComponent implements OnInit {
   }
 
   continueFromPayment(): void {
+    if (this.applyingCoupon) {
+      this.errorMessage = 'Aguarde a validacao do cupom para continuar.';
+      return;
+    }
     if (!this.selectedPayment) {
       this.errorMessage = 'Selecione uma forma de pagamento para continuar.';
       return;
@@ -202,6 +213,10 @@ export class CheckoutPageComponent implements OnInit {
   }
 
   confirmOrder(): void {
+    if (this.applyingCoupon) {
+      this.errorMessage = 'Aguarde a validacao do cupom antes de confirmar a compra.';
+      return;
+    }
     if (!this.selectedAddress || !this.selectedPayment || !this.cartItems.length) {
       this.errorMessage = 'Revise endereco, pagamento e produtos antes de confirmar.';
       return;
@@ -223,7 +238,7 @@ export class CheckoutPageComponent implements OnInit {
     });
   }
 
-  applyCoupon(): void {
+  applyCoupon(fromSavedCoupon = false): void {
     const code = this.couponCode.trim();
     if (!code) {
       this.errorMessage = 'Informe o codigo do cupom.';
@@ -247,10 +262,12 @@ export class CheckoutPageComponent implements OnInit {
         this.discountAmount = response.discount_amount;
         this.total = this.subtotal + this.shippingAmount - this.discountAmount;
         this.updateSelectedPaymentAmount();
+        this.couponStorage.saveCouponCode(response.coupon_code);
         this.applyingCoupon = false;
       },
       error: () => {
         this.clearCoupon(false);
+        if (!fromSavedCoupon) this.couponStorage.clearCouponCode();
         this.applyingCoupon = false;
         this.errorMessage = 'Cupom invalido para os produtos selecionados.';
       }
@@ -261,7 +278,10 @@ export class CheckoutPageComponent implements OnInit {
     this.appliedCouponCode = '';
     this.couponUnitPrices = {};
     this.discountAmount = 0;
-    if (clearInput) this.couponCode = '';
+    if (clearInput) {
+      this.couponCode = '';
+      this.couponStorage.clearCouponCode();
+    }
     if (this.cartItems.length) this.calculateTotals();
   }
 
