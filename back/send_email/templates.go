@@ -2,15 +2,21 @@ package main
 
 var templates = map[string]EmailTemplate{
 	"notificacao-pedido-em-analize": {
-		Subject: "Pedido {{numero_do_pedido}} em analise",
-		Body: `Ola {{nome_do_cliente}},
+		Subject: "Pedido {{numero_do_pedido}} em análise",
+		Body: `Olá {{nome_do_cliente}},
 
-Seu pedido {{numero_do_pedido}} esta em analise.
+Seu pedido {{numero_do_pedido}} está em análise.
 
+Status atual: {{status_do_pedido}}
 Valor do pedido: {{valor_do_pedido}}
-Data da atualizacao: {{data_atual}} as {{hora_atual}}
 
-Assim que a analise for concluida, enviaremos uma nova notificacao.
+Itens comprados:
+{{itens_do_pedido}}
+{{parcelas_do_pedido}}
+
+Data da atualização: {{data_atual}} às {{hora_atual}}
+
+Assim que a análise for concluída, enviaremos uma nova notificação.
 
 Atenciosamente,
 Equipe de Atendimento`,
@@ -47,28 +53,38 @@ Equipe Mundo Colore Store`,
 	},
 	"notificacao-pedido-criado": {
 		Subject: "Recebemos seu pedido {{numero_do_pedido}}",
-		Body: `Ola {{nome_do_cliente}},
+		Body: `Olá {{nome_do_cliente}},
 
 Recebemos seu pedido {{numero_do_pedido}}.
 
 Valor do pedido: {{valor_do_pedido}}
 Status atual: {{status_do_pedido}}
-Data do pedido: {{data_atual}} as {{hora_atual}}
 
-Enviaremos novas notificacoes quando o status for atualizado.
+Itens comprados:
+{{itens_do_pedido}}
+{{parcelas_do_pedido}}
+
+Data do pedido: {{data_atual}} às {{hora_atual}}
+
+Enviaremos novas notificações quando o status for atualizado.
 
 Atenciosamente,
 Equipe Mundo Colore Store`,
 	},
 	"notificacao-status-pedido": {
 		Subject: "Pedido {{numero_do_pedido}} atualizado para {{status_do_pedido}}",
-		Body: `Ola {{nome_do_cliente}},
+		Body: `Olá {{nome_do_cliente}},
 
 O status do pedido {{numero_do_pedido}} foi atualizado.
 
 Novo status: {{status_do_pedido}}
 Valor do pedido: {{valor_do_pedido}}
-Data da atualizacao: {{data_atual}} as {{hora_atual}}
+
+Itens comprados:
+{{itens_do_pedido}}
+{{parcelas_do_pedido}}
+
+Data da atualização: {{data_atual}} às {{hora_atual}}
 
 Atenciosamente,
 Equipe Mundo Colore Store`,

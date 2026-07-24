@@ -19,6 +19,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/sqs"
+	"github.com/aws/aws-sdk-go/service/sqs/sqsiface"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -225,7 +226,7 @@ type EmailQueuePayload struct {
 
 var (
 	dynamoClient      *dynamodb.DynamoDB
-	sqsClient         *sqs.SQS
+	sqsClient         sqsiface.SQSAPI
 	tableName         = "mundocolore-orders"
 	productsTableName = "mundocolore-products"
 	creditTableName   = "mundocolore-credit"
@@ -656,35 +657,16 @@ func createCreditInstallments(order Order) error {
 		}
 	}
 
-	totalInstallments := order.Payment.Installments
-	if totalInstallments <= 0 {
-		totalInstallments = 1
-	}
-	baseAmount := roundMoney(order.Total / float64(totalInstallments))
-	createdAt := time.Now().UTC()
-	installments := make([]*dynamodb.AttributeValue, 0, totalInstallments)
-	accumulated := 0.0
-	for number := 1; number <= totalInstallments; number++ {
-		amount := baseAmount
-		if number == totalInstallments {
-			amount = roundMoney(order.Total - accumulated)
-		}
-		accumulated = roundMoney(accumulated + amount)
-		item, err := dynamodbattribute.MarshalMap(CreditInstallment{
-			ID:        fmt.Sprintf("%s-%02d", order.ID, number),
-			OrderID:   order.ID,
-			Number:    number,
-			Total:     totalInstallments,
-			Amount:    amount,
-			Status:    "a_pagar",
-			DueDate:   createdAt.AddDate(0, number, 0).Format("2006-01-02"),
-			CreatedAt: createdAt.Format(time.RFC3339),
-		})
+	schedule := buildInstallmentSchedule(order)
+	installments := make([]*dynamodb.AttributeValue, 0, len(schedule))
+	for _, installment := range schedule {
+		item, err := dynamodbattribute.MarshalMap(installment)
 		if err != nil {
 			return err
 		}
 		installments = append(installments, &dynamodb.AttributeValue{M: item})
 	}
+	updatedAt := time.Now().UTC().Format(time.RFC3339)
 
 	_, err = dynamoClient.UpdateItem(&dynamodb.UpdateItemInput{
 		TableName:        aws.String(creditTableName),
@@ -693,10 +675,68 @@ func createCreditInstallments(order Order) error {
 		ExpressionAttributeValues: map[string]*dynamodb.AttributeValue{
 			":empty":        {L: []*dynamodb.AttributeValue{}},
 			":installments": {L: installments},
-			":updated_at":   {S: aws.String(createdAt.Format(time.RFC3339))},
+			":updated_at":   {S: aws.String(updatedAt)},
 		},
 	})
 	return err
+}
+
+func buildInstallmentSchedule(order Order) []CreditInstallment {
+	totalInstallments := order.Payment.Installments
+	if totalInstallments <= 0 {
+		totalInstallments = 1
+	}
+	referenceTime := installmentReferenceTime(order)
+	createdAt := installmentCreatedAt(order)
+	baseAmount := roundMoney(order.Total / float64(totalInstallments))
+	schedule := make([]CreditInstallment, 0, totalInstallments)
+	accumulated := 0.0
+	for number := 1; number <= totalInstallments; number++ {
+		amount := baseAmount
+		if number == totalInstallments {
+			amount = roundMoney(order.Total - accumulated)
+		}
+		accumulated = roundMoney(accumulated + amount)
+		schedule = append(schedule, CreditInstallment{
+			ID:        fmt.Sprintf("%s-%02d", order.ID, number),
+			OrderID:   order.ID,
+			Number:    number,
+			Total:     totalInstallments,
+			Amount:    amount,
+			Status:    "a_pagar",
+			DueDate:   addMonthsClamped(referenceTime, number).Format("2006-01-02"),
+			CreatedAt: createdAt.Format(time.RFC3339),
+		})
+	}
+	return schedule
+}
+
+func installmentReferenceTime(order Order) time.Time {
+	for _, value := range []string{order.CreatedAt, order.ApprovedAt} {
+		if parsed, err := time.Parse(time.RFC3339, strings.TrimSpace(value)); err == nil {
+			return parsed.UTC()
+		}
+	}
+	return time.Now().UTC()
+}
+
+func installmentCreatedAt(order Order) time.Time {
+	for _, value := range []string{order.ApprovedAt, order.CreatedAt} {
+		if parsed, err := time.Parse(time.RFC3339, strings.TrimSpace(value)); err == nil {
+			return parsed.UTC()
+		}
+	}
+	return time.Now().UTC()
+}
+
+func addMonthsClamped(value time.Time, months int) time.Time {
+	year, month, day := value.Date()
+	targetMonthStart := time.Date(year, month+time.Month(months), 1, value.Hour(), value.Minute(), value.Second(), value.Nanosecond(), value.Location())
+	lastTargetDay := targetMonthStart.AddDate(0, 1, -1).Day()
+	if day > lastTargetDay {
+		day = lastTargetDay
+	}
+	return time.Date(targetMonthStart.Year(), targetMonthStart.Month(), day, value.Hour(), value.Minute(), value.Second(), value.Nanosecond(), value.Location())
 }
 
 func getAdminOrders(filters map[string]string) ([]OrderResponse, error) {
@@ -1214,10 +1254,12 @@ func enqueueOrderEmail(emailType string, order Order) error {
 		ToEmail: order.Customer.Email,
 		ToName:  order.Customer.Name,
 		Data: map[string]string{
-			"nome_do_cliente":  order.Customer.Name,
-			"numero_do_pedido": order.ID,
-			"valor_do_pedido":  formatBRL(order.Total),
-			"status_do_pedido": order.Status,
+			"nome_do_cliente":    order.Customer.Name,
+			"numero_do_pedido":   order.ID,
+			"valor_do_pedido":    formatBRL(order.Total),
+			"status_do_pedido":   orderStatusLabel(order.Status),
+			"itens_do_pedido":    formatOrderItems(order.Items),
+			"parcelas_do_pedido": formatOrderInstallments(order),
 		},
 	}
 	body, err := json.Marshal(payload)
@@ -1232,7 +1274,87 @@ func enqueueOrderEmail(emailType string, order Order) error {
 }
 
 func formatBRL(value float64) string {
-	return fmt.Sprintf("R$ %.2f", roundMoney(value))
+	value = roundMoney(value)
+	formatted := fmt.Sprintf("%.2f", value)
+	parts := strings.SplitN(formatted, ".", 2)
+	integer := parts[0]
+	for index := len(integer) - 3; index > 0; index -= 3 {
+		integer = integer[:index] + "." + integer[index:]
+	}
+	return "R$ " + integer + "," + parts[1]
+}
+
+func orderStatusLabel(status string) string {
+	labels := map[string]string{
+		"pending_payment":  "Aguardando pagamento",
+		"pending_approval": "Aguardando aprovação",
+		"approved":         "Pedido aprovado",
+		"packed":           "Pedido embalado",
+		"shipped":          "Pedido enviado",
+		"delivered":        "Pedido entregue",
+		"finished":         "Pedido finalizado",
+		"cancelled":        "Pedido cancelado",
+	}
+	status = strings.ToLower(strings.TrimSpace(status))
+	if label, exists := labels[status]; exists {
+		return label
+	}
+	if status == "" {
+		return "Status não informado"
+	}
+	return "Status atualizado"
+}
+
+func formatOrderItems(items []OrderItem) string {
+	if len(items) == 0 {
+		return "Nenhum item informado."
+	}
+	lines := make([]string, 0, len(items))
+	for _, item := range items {
+		name := strings.TrimSpace(item.ProductName)
+		if name == "" {
+			name = strings.TrimSpace(item.ProductCode)
+		}
+		if name == "" {
+			name = strings.TrimSpace(item.ProductID)
+		}
+		unitPrice := item.UnitPrice
+		if unitPrice <= 0 {
+			unitPrice = item.Price
+		}
+		soldSubtotal := item.SoldSubtotal
+		if soldSubtotal <= 0 {
+			soldSubtotal = roundMoney(unitPrice * float64(item.Quantity))
+		}
+		details := make([]string, 0, 2)
+		if strings.TrimSpace(item.Size) != "" {
+			details = append(details, "Tamanho: "+strings.TrimSpace(item.Size))
+		}
+		if color := strings.TrimSpace(item.Color); color != "" && color != "9999999" {
+			details = append(details, "Cor: "+color)
+		}
+		line := fmt.Sprintf("- %s\n  Quantidade: %d | Valor unitário: %s | Total: %s", name, item.Quantity, formatBRL(unitPrice), formatBRL(soldSubtotal))
+		if len(details) > 0 {
+			line += "\n  " + strings.Join(details, " | ")
+		}
+		lines = append(lines, line)
+	}
+	return strings.Join(lines, "\n")
+}
+
+func formatOrderInstallments(order Order) string {
+	if order.Payment.Installments <= 1 {
+		return ""
+	}
+	lines := []string{"", "Parcelas:"}
+	for _, installment := range buildInstallmentSchedule(order) {
+		dueDate := installment.DueDate
+		if parsed, err := time.Parse("2006-01-02", installment.DueDate); err == nil {
+			dueDate = parsed.Format("02/01/2006")
+		}
+		lines = append(lines, fmt.Sprintf("- Parcela %d de %d: %s — vencimento em %s", installment.Number, installment.Total, formatBRL(installment.Amount), dueDate))
+	}
+	return strings.Join(lines, "\n")
 }
 
 func findCouponReduction(collection CollectionPricing, couponCode string) float64 {

@@ -27,18 +27,21 @@ Para OCR de PDFs escaneados, tambem e necessario instalar:
 - Tela simples de login antes da tela inicial.
 - Usuario, senha e token ficam salvos localmente pelo `QSettings` para evitar redigitacao.
 - Tela inicial com botoes das marcas carregadas de `GET /products/brands`.
-- Fluxo inicial implementado para UP-BABY.
-- Lista automaticamente as colecoes dentro de `UP_BABY`, ignorando as pastas padrao `1_PRODUTOS_PARA_CADASTRA` e `1_PRODUTOS_ENVIADOS`.
+- Fluxo completo de processamento disponivel para todas as marcas retornadas pela API.
+- Cria a pasta local usando `brand_key`, busca as colecoes cadastradas no sistema, cria uma pasta para cada colecao e exibe seu conteudo.
+- Ao abrir uma colecao vazia, informa o local em que devem ser adicionados o PDF da tabela de valores e o PDF do catalogo de produtos com as imagens.
+- A pasta historica `UP_BABY` continua sendo usada pela marca `UP-BABY`; as demais usam o `brand_key` sem acentos.
 - Lista os PDFs da colecao escolhida.
 - Permite escolher qual PDF e a tabela de valores e qual e o catalogo de produtos.
 - Mostra a quantidade de paginas de cada PDF.
-- Processa a tabela de valores e salva JSON/XLSX em:
-- Gera um JSON final com nomes de imagens, move os arquivos antigos para `UP_BABY\1_PRODUTOS_HISTORICO` e deixa o JSON final na pasta de cadastro.
-- Envia esse JSON para `POST /products/import-file`, move o arquivo para `UP_BABY\1_PRODUTOS_ENVIADOS` e usa esse arquivo para enviar imagens uma a uma.
-- Move cada imagem enviada para `UP_BABY\1_PRODUTOS_ENVIADOS\IMAGEMS`.
+- Processa e valida a tabela de valores e gera o JSON final com imagens e cores.
+- Consulta e exibe os produtos ja cadastrados no backend para a marca e colecao selecionadas.
+- Mostra os defaults atuais da colecao retornados pelo backend.
+- Envia o JSON por `POST /products/import-file` com a marca, ano, nome e slug da colecao retornados pela API.
+- Envia imagens por `POST /products/{id}/images` e mantem arquivos de cadastro, enviados, historico e cores separados por marca.
 
 ```text
-UP_BABY\1_PRODUTOS_PARA_CADASTRA
+{MARCA}\1_PRODUTOS_PARA_CADASTRA
 ```
 
 ## API
@@ -55,7 +58,7 @@ Para apontar para outro ambiente antes de abrir o app:
 $env:MUNDOCOLORE_API_URL = "https://sua-api/prod"
 ```
 
-O login usa `POST /login` com o header Basic esperado pela lambda. O token retornado e enviado no header Bearer ao buscar marcas e ao enviar dados ou imagens para a lambda `products`.
+O login usa `POST /login` com o header Basic esperado pela lambda. O token retornado e enviado no header Bearer ao buscar marcas, colecoes com configuracao de precos, produtos com dados administrativos e ao enviar dados ou imagens para a lambda `products`. Tokens expirados retornam o aplicativo para a tela de login.
 
 
 ```comandos 

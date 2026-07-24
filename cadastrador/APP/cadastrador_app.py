@@ -8,6 +8,7 @@ import re
 import shutil
 import sys
 import traceback
+import unicodedata
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlencode
@@ -49,13 +50,6 @@ except ImportError as exc:
 APP_DIR = Path(__file__).resolve().parent
 DATA_DIR = APP_DIR.parent
 UP_BABY_DIR = DATA_DIR / "UP_BABY"
-UP_BABY_PENDING_DIR = UP_BABY_DIR / "1_PRODUTOS_PARA_CADASTRA"
-UP_BABY_SENT_DIR = UP_BABY_DIR / "1_PRODUTOS_ENVIADOS"
-UP_BABY_HISTORY_DIR = UP_BABY_DIR / "1_PRODUTOS_HISTORICO"
-UP_BABY_PENDING_IMAGES_DIR = UP_BABY_PENDING_DIR / "IMAGEMS"
-UP_BABY_SENT_IMAGES_DIR = UP_BABY_SENT_DIR / "IMAGEMS"
-UP_BABY_COLORS_DIR = UP_BABY_DIR / "CORES"
-SYSTEM_FOLDERS = {"1_PRODUTOS_PARA_CADASTRA", "1_PRODUTOS_ENVIADOS", "1_PRODUTOS_HISTORICO", "CORES"}
 UP_BABY_BRAND = "UP-BABY"
 API_BASE_URL = os.environ.get(
     "MUNDOCOLORE_API_URL",
@@ -148,13 +142,81 @@ def fetch_brands_api(token: str) -> list[dict]:
     return [brand for brand in brands if isinstance(brand, dict)]
 
 
-def import_products_file_api(token: str, product_file: Path, brand: str, year: str, collection: str) -> dict:
+def fetch_collections_api(token: str, brand: str = "") -> list[dict]:
+    query_values = {"include_pricing_config": "true"}
+    if brand:
+        query_values["brand"] = brand
+    query = urlencode(query_values)
+    payload = _request_json(
+        f"/products/collections?{query}",
+        method="GET",
+        headers={
+            "Accept": "application/json",
+            "Authorization": f"Bearer {token}",
+        },
+    )
+    collections = payload.get("collections")
+    if not isinstance(collections, list):
+        raise ApiError("A lista de colecoes veio em formato inesperado.")
+    return [collection for collection in collections if isinstance(collection, dict)]
+
+
+def fetch_products_api(
+    token: str,
+    brand: str,
+    year: str,
+    collection_slug: str,
+) -> list[dict]:
+    products: list[dict] = []
+    last_key = ""
+    seen_keys: set[str] = set()
+    while True:
+        query_values = {
+            "brand": brand,
+            "year": year,
+            "collection": collection_slug,
+            "include_cost": "true",
+            "include_inactive": "true",
+            "limit": "100",
+        }
+        if last_key:
+            query_values["last_key"] = last_key
+        payload = _request_json(
+            f"/products?{urlencode(query_values)}",
+            method="GET",
+            headers={
+                "Accept": "application/json",
+                "Authorization": f"Bearer {token}",
+            },
+        )
+        page_products = payload.get("products")
+        if not isinstance(page_products, list):
+            raise ApiError("A lista de produtos veio em formato inesperado.")
+        products.extend(product for product in page_products if isinstance(product, dict))
+
+        next_key = str(payload.get("last_evaluated_key") or payload.get("last_key") or "").strip()
+        if not next_key or next_key in seen_keys:
+            break
+        seen_keys.add(next_key)
+        last_key = next_key
+    return products
+
+
+def import_products_file_api(
+    token: str,
+    product_file: Path,
+    brand: str,
+    year: str,
+    collection: str,
+    collection_slug: str,
+) -> dict:
     payload = {
         "file_name": product_file.name,
         "content_base64": base64.b64encode(product_file.read_bytes()).decode("ascii"),
         "brand": brand,
         "year": year,
         "collection": collection,
+        "collection_slug": collection_slug,
     }
     return _request_json(
         "/products/import-file",
@@ -288,21 +350,36 @@ class MainWindow(QMainWindow):
     def __init__(self) -> None:
         super().__init__()
         self.setWindowTitle("Cadastrador Mundo Colore")
-        self.resize(1080, 720)
+        self.resize(1180, 860)
         self.settings = QSettings("Mundo Colore", "Cadastrador")
         self.token = self._read_setting("auth/token")
         self.thread: QThread | None = None
         self.worker: QObject | None = None
+        self.brands: list[dict] = []
+        self.collections_by_brand: dict[str, list[dict]] = {}
+        self.active_brand: dict | None = None
+        self.active_brand_label = ""
+        self.active_brand_key = ""
+        self.active_brand_dir: Path | None = None
+        self.active_pending_dir: Path | None = None
+        self.active_sent_dir: Path | None = None
+        self.active_history_dir: Path | None = None
+        self.active_pending_images_dir: Path | None = None
+        self.active_sent_images_dir: Path | None = None
+        self.active_colors_dir: Path | None = None
+        self.active_collection: dict | None = None
+        self.collection_contexts: dict[str, dict] = {}
+        self.suppress_empty_collection_message = False
 
         self.stack = QStackedWidget()
         self.setCentralWidget(self.stack)
 
         self.login_page = self._build_login_page()
         self.home_page = self._build_home_page()
-        self.up_baby_page = self._build_up_baby_page()
+        self.brand_page = self._build_brand_page()
         self.stack.addWidget(self.login_page)
         self.stack.addWidget(self.home_page)
-        self.stack.addWidget(self.up_baby_page)
+        self.stack.addWidget(self.brand_page)
 
         self._load_saved_credentials()
         self._ensure_default_dirs()
@@ -376,7 +453,7 @@ class MainWindow(QMainWindow):
         layout.addStretch(1)
         return page
 
-    def _build_up_baby_page(self) -> QWidget:
+    def _build_brand_page(self) -> QWidget:
         page = QWidget()
         root = QVBoxLayout(page)
         root.setContentsMargins(24, 24, 24, 24)
@@ -384,10 +461,10 @@ class MainWindow(QMainWindow):
         top = QHBoxLayout()
         back = QPushButton("Voltar")
         back.clicked.connect(lambda: self.stack.setCurrentWidget(self.home_page))
-        title = QLabel("UP-BABY")
-        title.setObjectName("Title")
+        self.brand_page_title = QLabel("")
+        self.brand_page_title.setObjectName("Title")
         top.addWidget(back)
-        top.addWidget(title)
+        top.addWidget(self.brand_page_title)
         top.addStretch(1)
         root.addLayout(top)
 
@@ -399,7 +476,7 @@ class MainWindow(QMainWindow):
         collections_layout = QVBoxLayout(collections_box)
         self.collections_list = QListWidget()
         self.collections_list.currentItemChanged.connect(self._collection_changed)
-        refresh_btn = QPushButton("Atualizar lista")
+        refresh_btn = QPushButton("Atualizar colecoes da API")
         refresh_btn.clicked.connect(self.refresh_collections)
         collections_layout.addWidget(self.collections_list, 1)
         collections_layout.addWidget(refresh_btn)
@@ -413,6 +490,11 @@ class MainWindow(QMainWindow):
         self.pdfs_list = QListWidget()
         files_layout.addWidget(self.pdfs_list)
         right.addWidget(files_box, 1)
+
+        self.collection_api_info_label = QLabel("")
+        self.collection_api_info_label.setWordWrap(True)
+        self.collection_api_info_label.setObjectName("Status")
+        right.addWidget(self.collection_api_info_label)
 
         form_box = QGroupBox("PDFs e paginas")
         form = QFormLayout(form_box)
@@ -472,6 +554,20 @@ class MainWindow(QMainWindow):
         site_layout.addLayout(site_actions)
         right.addWidget(site_box)
 
+        products_box = QGroupBox("Produtos cadastrados no site")
+        products_layout = QVBoxLayout(products_box)
+        products_top = QHBoxLayout()
+        self.site_products_status = QLabel("Selecione uma colecao.")
+        self.site_products_status.setWordWrap(True)
+        refresh_products_btn = QPushButton("Atualizar produtos")
+        refresh_products_btn.clicked.connect(self.refresh_site_products)
+        products_top.addWidget(self.site_products_status, 1)
+        products_top.addWidget(refresh_products_btn)
+        self.site_products_list = QListWidget()
+        products_layout.addLayout(products_top)
+        products_layout.addWidget(self.site_products_list)
+        right.addWidget(products_box, 1)
+
         log_box = QGroupBox("Resultado")
         log_layout = QVBoxLayout(log_box)
         self.log = QTextEdit()
@@ -494,12 +590,7 @@ class MainWindow(QMainWindow):
         form.addRow(line)
 
     def _ensure_default_dirs(self) -> None:
-        UP_BABY_PENDING_DIR.mkdir(parents=True, exist_ok=True)
-        UP_BABY_SENT_DIR.mkdir(parents=True, exist_ok=True)
-        UP_BABY_HISTORY_DIR.mkdir(parents=True, exist_ok=True)
-        UP_BABY_PENDING_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
-        UP_BABY_SENT_IMAGES_DIR.mkdir(parents=True, exist_ok=True)
-        UP_BABY_COLORS_DIR.mkdir(parents=True, exist_ok=True)
+        self._ensure_brand_workspace(UP_BABY_DIR)
 
     def _read_setting(self, key: str) -> str:
         value = self.settings.value(key, "")
@@ -561,23 +652,43 @@ class MainWindow(QMainWindow):
             self._show_login()
             return
 
-        self.brands_status.setText("Carregando marcas...")
+        self.brands_status.setText("Carregando marcas e colecoes do sistema...")
         QApplication.processEvents()
         try:
             brands = fetch_brands_api(self.token)
+            collections = fetch_collections_api(self.token)
         except ApiError as exc:
-            self.brands_status.setText(f"Nao foi possivel carregar as marcas: {exc}")
-            self._set_brand_buttons([{"name": UP_BABY_BRAND}])
-            QMessageBox.warning(
-                self,
-                "Marcas",
-                f"{exc}\n\nO fluxo local da marca {UP_BABY_BRAND} continua disponivel.",
-            )
+            self.brands = []
+            self.collections_by_brand.clear()
+            self._set_brand_buttons([])
+            if self._handle_expired_session(exc):
+                return
+            self.brands_status.setText(f"Nao foi possivel carregar marcas e colecoes: {exc}")
+            QMessageBox.warning(self, "Marcas e colecoes", str(exc))
+            return
+
+        self.brands = brands
+        self.collections_by_brand = {}
+        for brand in brands:
+            self.collections_by_brand[self._normalized_brand_key(self._brand_key(brand))] = []
+        for collection in collections:
+            collection_brand = str(collection.get("brand_key") or collection.get("brand") or "").strip()
+            key = self._normalized_brand_key(collection_brand)
+            self.collections_by_brand.setdefault(key, []).append(collection)
+
+        try:
+            created_brands, created_collections = self._sync_all_brand_workspaces()
+        except OSError as exc:
+            self.brands_status.setText(f"Marcas carregadas, mas falhou ao criar as pastas: {exc}")
+            QMessageBox.warning(self, "Pastas locais", str(exc))
             return
 
         self._set_brand_buttons(brands)
         if brands:
-            self.brands_status.setText(f"{len(brands)} marca(s) carregada(s) do sistema.")
+            self.brands_status.setText(
+                f"{len(brands)} marca(s) e {len(collections)} colecao(oes) carregadas da API. "
+                f"{created_brands} pasta(s) de marca e {created_collections} pasta(s) de colecao criadas."
+            )
         else:
             self.brands_status.setText("Nenhuma marca cadastrada foi retornada pelo sistema.")
 
@@ -588,28 +699,150 @@ class MainWindow(QMainWindow):
             if widget:
                 widget.deleteLater()
 
-        labels: list[str] = []
+        brand_buttons: list[tuple[str, dict]] = []
+        seen_keys: set[str] = set()
         for brand in brands:
             label = self._brand_label(brand)
-            if label and label not in labels:
-                labels.append(label)
+            key = self._normalized_brand_key(self._brand_key(brand))
+            if not label or not key or key in seen_keys:
+                continue
+            seen_keys.add(key)
+            brand_buttons.append((label, dict(brand)))
 
-        for idx, label in enumerate(labels):
+        for idx, (label, brand) in enumerate(brand_buttons):
             button = QPushButton(label)
             button.setMinimumHeight(88)
             button.setObjectName("BrandButton")
-            if self._is_up_baby_brand(label):
-                button.clicked.connect(lambda _checked=False: self._open_up_baby_page())
-            else:
-                button.clicked.connect(lambda _checked=False, name=label: self._show_pending_brand(name))
+            button.clicked.connect(
+                lambda _checked=False, brand_data=brand: self._open_brand_page(brand_data)
+            )
             self.brands_grid.addWidget(button, idx // 2, idx % 2)
 
     def _brand_label(self, brand: dict) -> str:
         return str(brand.get("name") or brand.get("brand") or brand.get("brand_key") or "").strip()
 
+    def _brand_key(self, brand: dict) -> str:
+        return str(
+            brand.get("slug")
+            or brand.get("brand_key")
+            or brand.get("brand")
+            or brand.get("name")
+            or ""
+        ).strip()
+
+    def _brand_directory_name(self, brand_key: str) -> str:
+        ascii_key = (
+            unicodedata.normalize("NFKD", brand_key)
+            .encode("ascii", "ignore")
+            .decode("ascii")
+        )
+        return re.sub(r"[^A-Za-z0-9_-]+", "-", ascii_key).strip("-_").upper()
+
+    def _collection_directory_name(self, collection: dict) -> str:
+        year = self._brand_directory_name(str(collection.get("year") or "").strip())
+        collection_slug = str(
+            collection.get("slug")
+            or collection.get("collection")
+            or collection.get("name")
+            or ""
+        ).strip()
+        safe_slug = self._brand_directory_name(collection_slug)
+        if not safe_slug:
+            return ""
+        if year and safe_slug != year and not safe_slug.startswith(f"{year}-"):
+            return f"{year}-{safe_slug}"
+        return safe_slug
+
+    def _collection_label(self, collection: dict) -> str:
+        name = str(
+            collection.get("name")
+            or collection.get("collection")
+            or collection.get("slug")
+            or ""
+        ).strip()
+        year = str(collection.get("year") or "").strip()
+        if year and name and not name.upper().startswith(year.upper()):
+            return f"{year} - {name}"
+        return name or year or "Colecao sem nome"
+
     def _is_up_baby_brand(self, brand: str) -> bool:
         normalized = brand.upper().replace("_", "-").replace(" ", "-")
         return normalized == UP_BABY_BRAND
+
+    def _normalized_brand_key(self, brand: str) -> str:
+        return self._brand_directory_name(brand).replace("_", "-")
+
+    def _brand_directory(self, brand_key: str) -> Path:
+        if self._is_up_baby_brand(brand_key):
+            return UP_BABY_DIR
+        return DATA_DIR / self._brand_directory_name(brand_key)
+
+    def _collection_directory(self, brand_dir: Path, collection: dict) -> Path:
+        return brand_dir / self._collection_directory_name(collection)
+
+    def _ensure_brand_workspace(self, brand_dir: Path) -> bool:
+        brand_created = not brand_dir.is_dir()
+        pending_dir = brand_dir / "1_PRODUTOS_PARA_CADASTRA"
+        sent_dir = brand_dir / "1_PRODUTOS_ENVIADOS"
+        history_dir = brand_dir / "1_PRODUTOS_HISTORICO"
+        colors_dir = brand_dir / "CORES"
+        for directory in (
+            brand_dir,
+            pending_dir,
+            sent_dir,
+            history_dir,
+            colors_dir,
+            pending_dir / "IMAGEMS",
+            sent_dir / "IMAGEMS",
+        ):
+            directory.mkdir(parents=True, exist_ok=True)
+        return brand_created
+
+    def _sync_all_brand_workspaces(self) -> tuple[int, int]:
+        created_brands = 0
+        created_collections = 0
+        for brand in self.brands:
+            brand_key = self._brand_key(brand)
+            if not brand_key:
+                continue
+            brand_dir = self._brand_directory(brand_key)
+            if self._ensure_brand_workspace(brand_dir):
+                created_brands += 1
+            for collection in self.collections_by_brand.get(self._normalized_brand_key(brand_key), []):
+                directory_name = self._collection_directory_name(collection)
+                if not directory_name:
+                    continue
+                collection_dir = brand_dir / directory_name
+                if not collection_dir.is_dir():
+                    created_collections += 1
+                collection_dir.mkdir(parents=True, exist_ok=True)
+        return created_brands, created_collections
+
+    def _activate_brand(self, brand: dict) -> None:
+        self.active_brand = dict(brand)
+        self.active_brand_label = self._brand_label(brand)
+        self.active_brand_key = self._brand_key(brand)
+        self.active_brand_dir = self._brand_directory(self.active_brand_key)
+        self._ensure_brand_workspace(self.active_brand_dir)
+        self.active_pending_dir = self.active_brand_dir / "1_PRODUTOS_PARA_CADASTRA"
+        self.active_sent_dir = self.active_brand_dir / "1_PRODUTOS_ENVIADOS"
+        self.active_history_dir = self.active_brand_dir / "1_PRODUTOS_HISTORICO"
+        self.active_colors_dir = self.active_brand_dir / "CORES"
+        self.active_pending_images_dir = self.active_pending_dir / "IMAGEMS"
+        self.active_sent_images_dir = self.active_sent_dir / "IMAGEMS"
+
+    def _open_brand_page(self, brand: dict) -> None:
+        self._activate_brand(brand)
+        self.brand_page_title.setText(self.active_brand_label)
+        self.stack.setCurrentWidget(self.brand_page)
+        collections = self.collections_by_brand.get(self._normalized_brand_key(self.active_brand_key), [])
+        self.suppress_empty_collection_message = True
+        try:
+            self._populate_active_collections(collections)
+        finally:
+            self.suppress_empty_collection_message = False
+        self._show_brand_workspace_message(collections)
+        self._show_active_empty_collection_message()
 
     def _show_login(self) -> None:
         self.token = ""
@@ -618,13 +851,22 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentWidget(self.login_page)
         self.username_input.setFocus()
 
-    def _open_up_baby_page(self) -> None:
-        self._refresh_upload_files()
-        self.stack.setCurrentWidget(self.up_baby_page)
+    def _handle_expired_session(self, exc: Exception) -> bool:
+        if "401" not in str(exc) and "invalid token" not in str(exc).lower():
+            return False
+        self.token = ""
+        self.settings.remove("auth/token")
+        self.login_status.setText("A sessao expirou. Clique em Entrar para renovar o acesso.")
+        self.stack.setCurrentWidget(self.login_page)
+        self.username_input.setFocus()
+        return True
 
     def _refresh_upload_files(self) -> None:
-        pending_file = self._latest_products_file(UP_BABY_PENDING_DIR)
-        sent_file = self._latest_products_file(UP_BABY_SENT_DIR)
+        if not self.active_pending_dir or not self.active_sent_dir:
+            return
+        prefix = self._active_collection_prefix()
+        pending_file = self._latest_products_file(self.active_pending_dir, prefix)
+        sent_file = self._latest_products_file(self.active_sent_dir, prefix)
         if pending_file:
             self.pending_products_file_label.setText(f"Arquivo pronto para enviar dados: {pending_file.name}")
         else:
@@ -639,7 +881,12 @@ class MainWindow(QMainWindow):
             self._show_login()
             return
 
-        product_file = self._latest_products_file(UP_BABY_PENDING_DIR)
+        context = self._active_collection_context()
+        if not context or not self.active_pending_dir or not self.active_sent_dir:
+            QMessageBox.warning(self, "Colecao", "Selecione uma colecao cadastrada na API.")
+            return
+
+        product_file = self._latest_products_file(self.active_pending_dir, context["directory_name"])
         if not product_file:
             QMessageBox.warning(
                 self,
@@ -649,24 +896,28 @@ class MainWindow(QMainWindow):
             self._refresh_upload_files()
             return
 
-        metadata = self._product_file_collection_metadata(product_file)
-        if not metadata:
-            QMessageBox.warning(
-                self,
-                "Colecao",
-                f"O nome do arquivo precisa comecar com ano e colecao, por exemplo 2025-VERAO-A: {product_file.name}",
-            )
-            return
-        year, collection = metadata
+        collection_data = context["data"]
+        year = str(collection_data.get("year") or "").strip()
+        collection = str(collection_data.get("name") or collection_data.get("slug") or "").strip()
+        collection_slug = str(collection_data.get("slug") or collection).strip()
 
         self._set_upload_buttons_enabled(False)
         self._log(f"Enviando dados dos produtos: {product_file.name}.")
         QApplication.processEvents()
         try:
-            response = import_products_file_api(self.token, product_file, UP_BABY_BRAND, year, collection)
-            sent_file = self._move_file_to_dir(product_file, UP_BABY_SENT_DIR)
+            response = import_products_file_api(
+                self.token,
+                product_file,
+                self.active_brand_key,
+                year,
+                collection,
+                collection_slug,
+            )
+            sent_file = self._move_file_to_dir(product_file, self.active_sent_dir)
         except (ApiError, OSError) as exc:
             self._log(f"Falha ao enviar dados dos produtos: {exc}")
+            if isinstance(exc, ApiError) and self._handle_expired_session(exc):
+                return
             QMessageBox.critical(self, "Envio de produtos", str(exc))
             return
         finally:
@@ -676,6 +927,7 @@ class MainWindow(QMainWindow):
         self._log(f"Produtos enviados: {imported_count}.")
         self._log(f"Arquivo movido para enviados: {sent_file}")
         self._refresh_upload_files()
+        self.refresh_site_products()
         QMessageBox.information(self, "Envio de produtos", f"{imported_count} produto(s) enviado(s).")
 
     def send_product_images(self) -> None:
@@ -683,7 +935,17 @@ class MainWindow(QMainWindow):
             self._show_login()
             return
 
-        product_file = self._latest_products_file(UP_BABY_SENT_DIR)
+        context = self._active_collection_context()
+        if (
+            not context
+            or not self.active_sent_dir
+            or not self.active_pending_images_dir
+            or not self.active_sent_images_dir
+        ):
+            QMessageBox.warning(self, "Colecao", "Selecione uma colecao cadastrada na API.")
+            return
+
+        product_file = self._latest_products_file(self.active_sent_dir, context["directory_name"])
         if not product_file:
             QMessageBox.warning(
                 self,
@@ -716,8 +978,8 @@ class MainWindow(QMainWindow):
 
                 for image_name in image_names:
                     file_name = Path(str(image_name)).name
-                    source_image = UP_BABY_PENDING_IMAGES_DIR / file_name
-                    sent_image = UP_BABY_SENT_IMAGES_DIR / file_name
+                    source_image = self.active_pending_images_dir / file_name
+                    sent_image = self.active_sent_images_dir / file_name
                     if sent_image.exists():
                         skipped_count += 1
                         continue
@@ -729,10 +991,12 @@ class MainWindow(QMainWindow):
                     QApplication.processEvents()
                     try:
                         upload_product_image_api(self.token, product_id, source_image)
-                        moved_image = self._move_file_to_dir(source_image, UP_BABY_SENT_IMAGES_DIR)
+                        moved_image = self._move_file_to_dir(source_image, self.active_sent_images_dir)
                     except (ApiError, OSError) as exc:
                         failed_count += 1
                         self._log(f"Falha ao enviar {source_image.name} do produto {product_id}: {exc}")
+                        if isinstance(exc, ApiError) and self._handle_expired_session(exc):
+                            return
                         continue
 
                     sent_count += 1
@@ -741,26 +1005,25 @@ class MainWindow(QMainWindow):
             self._set_upload_buttons_enabled(True)
 
         self._refresh_upload_files()
+        self.refresh_site_products()
         summary = f"{sent_count} imagem(ns) enviada(s), {skipped_count} ja enviada(s), {failed_count} com falha."
         if failed_count:
             QMessageBox.warning(self, "Envio de imagens", summary)
         else:
             QMessageBox.information(self, "Envio de imagens", summary)
 
-    def _latest_products_file(self, directory: Path) -> Path | None:
+    def _latest_products_file(self, directory: Path, collection_prefix: str = "") -> Path | None:
+        pattern = (
+            f"{collection_prefix}_produtos_com_imagens_*.json"
+            if collection_prefix
+            else "*_produtos_com_imagens_*.json"
+        )
         files = sorted(
-            directory.glob("*_produtos_com_imagens_*.json"),
+            directory.glob(pattern),
             key=lambda path: path.stat().st_mtime,
             reverse=True,
         )
         return files[0] if files else None
-
-    def _product_file_collection_metadata(self, product_file: Path) -> tuple[str, str] | None:
-        collection_name = product_file.name.split("_produtos_com_imagens_", 1)[0]
-        match = re.fullmatch(r"(\d{4})-(.+)", collection_name)
-        if not match:
-            return None
-        return match.group(1), match.group(2)
 
     def _read_product_file(self, product_file: Path) -> list[dict]:
         payload = json.loads(product_file.read_text(encoding="utf-8"))
@@ -769,11 +1032,16 @@ class MainWindow(QMainWindow):
         return [product for product in payload if isinstance(product, dict)]
 
     def _archive_pending_root_files(self, keep_file: Path) -> int:
+        if not self.active_pending_dir or not self.active_history_dir:
+            return 0
+        collection_prefix = self._active_collection_prefix()
         archived_count = 0
-        for file_path in UP_BABY_PENDING_DIR.iterdir():
+        for file_path in self.active_pending_dir.iterdir():
             if not file_path.is_file() or file_path == keep_file:
                 continue
-            self._move_file_to_dir(file_path, UP_BABY_HISTORY_DIR)
+            if collection_prefix and not file_path.name.startswith(collection_prefix):
+                continue
+            self._move_file_to_dir(file_path, self.active_history_dir)
             archived_count += 1
         return archived_count
 
@@ -787,48 +1055,249 @@ class MainWindow(QMainWindow):
         return Path(shutil.move(str(source), str(destination)))
 
     def refresh_collections(self) -> None:
-        self.collections_list.clear()
-        if not UP_BABY_DIR.exists():
-            self._log(f"Pasta nao encontrada: {UP_BABY_DIR}")
+        if not self.token:
+            self._show_login()
             return
-        collections = [
-            path.name
-            for path in UP_BABY_DIR.iterdir()
-            if path.is_dir() and path.name not in SYSTEM_FOLDERS
-        ]
-        for name in sorted(collections):
-            self.collections_list.addItem(QListWidgetItem(name))
+        if not self.active_brand_key:
+            return
+        try:
+            collections = fetch_collections_api(self.token, self.active_brand_key)
+        except ApiError as exc:
+            if self._handle_expired_session(exc):
+                return
+            QMessageBox.warning(self, "Colecoes", str(exc))
+            return
+        self.collections_by_brand[self._normalized_brand_key(self.active_brand_key)] = collections
+        if self.active_brand_dir:
+            for collection in collections:
+                self._collection_directory(self.active_brand_dir, collection).mkdir(parents=True, exist_ok=True)
+        self.suppress_empty_collection_message = True
+        try:
+            self._populate_active_collections(collections)
+        finally:
+            self.suppress_empty_collection_message = False
+        self._show_brand_workspace_message(collections, "Colecoes atualizadas pela API.")
+        self._show_active_empty_collection_message()
+
+    def _populate_active_collections(self, collections: list[dict]) -> None:
+        previous_slug = ""
+        previous_context = self._active_collection_context()
+        if previous_context:
+            previous_slug = str(previous_context["data"].get("slug") or "")
+
+        self.collection_contexts.clear()
+        self.collections_list.clear()
+        self.active_collection = None
+        self.price_pdf_combo.clear()
+        self.catalog_pdf_combo.clear()
+        self.pdfs_list.clear()
+        self.site_products_list.clear()
+        if not self.active_brand_dir:
+            return
+
+        selected_row = 0
+        for collection in sorted(
+            collections,
+            key=lambda item: (
+                str(item.get("year") or ""),
+                str(item.get("name") or item.get("slug") or "").lower(),
+            ),
+        ):
+            directory_name = self._collection_directory_name(collection)
+            if not directory_name:
+                continue
+            collection_dir = self.active_brand_dir / directory_name
+            collection_dir.mkdir(parents=True, exist_ok=True)
+
+            label = self._collection_label(collection)
+            original_label = label
+            sequence = 2
+            while label in self.collection_contexts:
+                label = f"{original_label} ({sequence})"
+                sequence += 1
+            self.collection_contexts[label] = {
+                "data": dict(collection),
+                "path": collection_dir,
+                "directory_name": directory_name,
+            }
+            self.collections_list.addItem(QListWidgetItem(label))
+            if previous_slug and str(collection.get("slug") or "") == previous_slug:
+                selected_row = self.collections_list.count() - 1
+
         if self.collections_list.count():
-            self.collections_list.setCurrentRow(0)
+            self.collections_list.setCurrentRow(selected_row)
+        else:
+            self.collection_api_info_label.setText("Nenhuma colecao cadastrada na API para esta marca.")
+            self.site_products_status.setText("Nenhuma colecao selecionada.")
+            self._refresh_upload_files()
+
+    def _active_collection_context(self) -> dict | None:
+        current = self.collections_list.currentItem()
+        if not current:
+            return None
+        return self.collection_contexts.get(current.text())
+
+    def _active_collection_prefix(self) -> str:
+        context = self._active_collection_context()
+        return str(context.get("directory_name") or "") if context else ""
 
     def _collection_changed(self, current: QListWidgetItem | None, _previous: QListWidgetItem | None) -> None:
         self.price_pdf_combo.clear()
         self.catalog_pdf_combo.clear()
         self.pdfs_list.clear()
+        self.site_products_list.clear()
         if not current:
+            self.active_collection = None
+            self.collection_api_info_label.setText("")
+            self.site_products_status.setText("Selecione uma colecao.")
             return
-        collection_dir = UP_BABY_DIR / current.text()
-        pdfs = sorted(collection_dir.glob("*.pdf"))
+
+        context = self.collection_contexts.get(current.text())
+        if not context:
+            return
+        self.active_collection = context["data"]
+        collection_dir = context["path"]
+        entries = sorted(collection_dir.iterdir(), key=lambda path: (not path.is_dir(), path.name.lower()))
+        pdfs = [path for path in entries if path.is_file() and path.suffix.lower() == ".pdf"]
+        for entry in entries:
+            suffix = " [pasta]" if entry.is_dir() else ""
+            self.pdfs_list.addItem(f"{entry.name}{suffix}")
         for pdf in pdfs:
-            self.pdfs_list.addItem(pdf.name)
             self.price_pdf_combo.addItem(pdf.name, pdf)
             self.catalog_pdf_combo.addItem(pdf.name, pdf)
 
+        collection = context["data"]
+        spread = collection.get("spread_default_percent")
+        credit = collection.get("credit_colore_max_amount")
+        display_start = str(collection.get("display_start_at") or "-")
+        display_end = str(collection.get("display_end_at") or "-")
+        coupons = collection.get("coupons") or []
+        coupon_labels = [
+            f"{coupon.get('code')} (-{coupon.get('spread_reduction_percent')}%)"
+            for coupon in coupons
+            if isinstance(coupon, dict) and coupon.get("code")
+        ]
+        if not coupon_labels and collection.get("coupon_code"):
+            coupon_labels.append(
+                f"{collection.get('coupon_code')} "
+                f"(-{collection.get('coupon_spread_reduction_percent') or 0}%)"
+            )
+        coupon_summary = ", ".join(coupon_labels) if coupon_labels else "nenhum"
+        self.collection_api_info_label.setText(
+            "Dados atuais da API - "
+            f"slug: {collection.get('slug') or '-'} | ano: {collection.get('year') or '-'} | "
+            f"spread padrao: {spread if spread is not None else '-'}% | "
+            f"credito Colore maximo: {credit if credit is not None else '-'} | "
+            f"cupons: {coupon_summary} | exibicao: {display_start} ate {display_end}\n"
+            f"Pasta local: {collection_dir}"
+        )
         self._select_default_pdfs()
         self._refresh_page_counts()
+        self._refresh_upload_files()
+        self.refresh_site_products()
         self._log(f"Colecao selecionada: {current.text()} ({len(pdfs)} PDF(s)).")
+        if not entries and not self.suppress_empty_collection_message:
+            self._show_active_empty_collection_message()
 
     def _select_default_pdfs(self) -> None:
+        price_index = -1
         for idx in range(self.price_pdf_combo.count()):
             name = self.price_pdf_combo.itemText(idx).lower()
             if "tabela" in name or "preco" in name or "preço" in name:
+                price_index = idx
                 self.price_pdf_combo.setCurrentIndex(idx)
                 break
+
+        catalog_index = -1
         for idx in range(self.catalog_pdf_combo.count()):
             name = self.catalog_pdf_combo.itemText(idx).lower()
-            if "catalogo" in name or "catálogo" in name or "up baby" in name:
+            if "catalogo" in name or "catálogo" in name:
+                catalog_index = idx
                 self.catalog_pdf_combo.setCurrentIndex(idx)
                 break
+        if catalog_index < 0 and self.catalog_pdf_combo.count() > 1:
+            for idx in range(self.catalog_pdf_combo.count()):
+                if idx != price_index:
+                    self.catalog_pdf_combo.setCurrentIndex(idx)
+                    break
+
+    def refresh_site_products(self) -> None:
+        context = self._active_collection_context()
+        if not context or not self.token:
+            self.site_products_list.clear()
+            self.site_products_status.setText("Selecione uma colecao.")
+            return
+
+        collection = context["data"]
+        year = str(collection.get("year") or "").strip()
+        slug = str(collection.get("slug") or collection.get("name") or "").strip()
+        self.site_products_status.setText("Carregando produtos da API...")
+        QApplication.processEvents()
+        try:
+            products = fetch_products_api(self.token, self.active_brand_key, year, slug)
+        except ApiError as exc:
+            self.site_products_list.clear()
+            if self._handle_expired_session(exc):
+                return
+            self.site_products_status.setText(f"Nao foi possivel carregar os produtos: {exc}")
+            return
+
+        self.site_products_list.clear()
+        for product in sorted(
+            products,
+            key=lambda item: str(item.get("produto_id") or item.get("id") or ""),
+        ):
+            product_id = str(product.get("produto_id") or product.get("id") or "-")
+            description = str(product.get("description") or product.get("name") or "Sem descricao")
+            cost = float(product.get("cost_price") or 0)
+            final_price = float(product.get("price") or 0)
+            active = "ativo" if product.get("is_active", True) else "inativo"
+            self.site_products_list.addItem(
+                f"{product_id} | {description} | custo: R$ {cost:.2f} | "
+                f"venda: R$ {final_price:.2f} | {active}"
+            )
+        self.site_products_status.setText(
+            f"{len(products)} produto(s) retornado(s) pelo backend para esta marca e colecao."
+        )
+
+    def _show_brand_workspace_message(self, collections: list[dict], heading: str = "") -> None:
+        if not self.active_brand_dir:
+            return
+        if not heading:
+            heading = "Pastas da marca e das colecoes sincronizadas com sucesso."
+        lines = []
+        for collection in collections:
+            collection_dir = self._collection_directory(self.active_brand_dir, collection)
+            lines.append(f"- {self._collection_label(collection)}: {collection_dir}")
+        collection_summary = "\n".join(lines) if lines else "- nenhuma colecao cadastrada na API"
+        QMessageBox.information(
+            self,
+            self.active_brand_label,
+            (
+                f"{heading}\n\nPasta da marca:\n{self.active_brand_dir}\n\n"
+                f"Pastas das colecoes cadastradas no site:\n{collection_summary}\n\n"
+                "Em cada pasta de colecao, adicione:\n"
+                "- o PDF da tabela de valores;\n"
+                "- o PDF do catalogo de produtos com as imagens.\n\n"
+                "Marcas, colecoes, configuracoes de preco e produtos sao consultados no backend."
+            ),
+        )
+
+    def _show_active_empty_collection_message(self) -> None:
+        context = self._active_collection_context()
+        if not context:
+            return
+        collection_dir = context["path"]
+        if any(collection_dir.iterdir()):
+            return
+        QMessageBox.information(
+            self,
+            "Colecao vazia",
+            (
+                "Esta colecao esta vazia. Adicione nesta pasta o PDF da tabela de valores "
+                f"e o PDF do catalogo de produtos com as imagens:\n{collection_dir}"
+            ),
+        )
 
     def _refresh_page_counts(self) -> None:
         self._set_page_info(self.price_pdf_combo, self.price_pages_label, self.price_start, self.price_end)
@@ -854,6 +1323,9 @@ class MainWindow(QMainWindow):
         if not selection:
             return
         current, pdf_path, start_page, end_page = selection
+        context = self._active_collection_context()
+        if not context or not self.active_pending_dir:
+            return
 
         self._set_price_buttons_enabled(False)
         self._log(f"Processando tabela: {Path(pdf_path).name}, paginas {start_page}-{end_page}.")
@@ -861,8 +1333,8 @@ class MainWindow(QMainWindow):
         self.thread = QThread()
         self.worker = PriceProcessWorker(
             pdf_path=Path(pdf_path),
-            output_dir=UP_BABY_PENDING_DIR,
-            collection=current.text(),
+            output_dir=self.active_pending_dir,
+            collection=context["directory_name"],
             start_page=start_page,
             end_page=end_page,
         )
@@ -882,6 +1354,9 @@ class MainWindow(QMainWindow):
         if not selection:
             return
         current, pdf_path, start_page, end_page = selection
+        context = self._active_collection_context()
+        if not context or not self.active_pending_dir:
+            return
 
         self._set_price_buttons_enabled(False)
         self._log(f"Validando tabela: {Path(pdf_path).name}, paginas {start_page}-{end_page}.")
@@ -889,8 +1364,8 @@ class MainWindow(QMainWindow):
         self.thread = QThread()
         self.worker = PriceValidationWorker(
             pdf_path=Path(pdf_path),
-            output_dir=UP_BABY_PENDING_DIR,
-            collection=current.text(),
+            output_dir=self.active_pending_dir,
+            collection=context["directory_name"],
             start_page=start_page,
             end_page=end_page,
         )
@@ -908,7 +1383,14 @@ class MainWindow(QMainWindow):
     def search_catalog_images(self) -> None:
         current = self.collections_list.currentItem()
         catalog_pdf_path = self.catalog_pdf_combo.currentData()
-        if not current or not catalog_pdf_path:
+        context = self._active_collection_context()
+        if (
+            not current
+            or not context
+            or not catalog_pdf_path
+            or not self.active_pending_dir
+            or not self.active_colors_dir
+        ):
             QMessageBox.warning(self, "Dados incompletos", "Selecione a colecao e o PDF do catalogo de produtos.")
             return
 
@@ -918,7 +1400,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "Paginas invalidas", "A pagina final do catalogo deve ser maior ou igual a inicial.")
             return
 
-        price_json_path = find_latest_price_json(UP_BABY_PENDING_DIR, current.text())
+        price_json_path = find_latest_price_json(self.active_pending_dir, context["directory_name"])
         if not price_json_path:
             QMessageBox.warning(
                 self,
@@ -935,9 +1417,9 @@ class MainWindow(QMainWindow):
         self.worker = CatalogImageWorker(
             catalog_pdf_path=Path(catalog_pdf_path),
             price_json_path=price_json_path,
-            output_dir=UP_BABY_PENDING_DIR,
-            colors_dir=UP_BABY_COLORS_DIR,
-            collection=current.text(),
+            output_dir=self.active_pending_dir,
+            colors_dir=self.active_colors_dir,
+            collection=context["directory_name"],
             start_page=start_page,
             end_page=end_page,
         )
@@ -1042,13 +1524,11 @@ class MainWindow(QMainWindow):
         self.process_price_btn.setEnabled(enabled)
         self.validate_price_btn.setEnabled(enabled)
         self.catalog_btn.setEnabled(enabled)
+        self.collections_list.setEnabled(enabled)
 
     def _set_upload_buttons_enabled(self, enabled: bool) -> None:
         self.upload_products_btn.setEnabled(enabled)
         self.upload_images_btn.setEnabled(enabled)
-
-    def _show_pending_brand(self, brand: str) -> None:
-        QMessageBox.information(self, brand, f"O fluxo da marca {brand} ainda nao foi implementado.")
 
     def _log(self, message: str) -> None:
         self.log.append(message)

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -11,6 +12,32 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
 )
+
+func TestOrderTemplatesRenderItemsStatusAndInstallments(t *testing.T) {
+	variables := map[string]string{
+		"nome_do_cliente":    "Maria",
+		"numero_do_pedido":   "PEDIDO-1",
+		"valor_do_pedido":    "R$ 259,80",
+		"status_do_pedido":   "Pedido aprovado",
+		"itens_do_pedido":    "- 2 x Vestido Floral — R$ 259,80",
+		"parcelas_do_pedido": "Parcelas:\n- Parcela 1 de 2: R$ 129,90 — vencimento em 21/08/2026",
+		"data_atual":         "21/07/2026",
+		"hora_atual":         "12:00",
+	}
+	for _, templateName := range []string{"notificacao-pedido-em-analize", "notificacao-pedido-criado", "notificacao-status-pedido"} {
+		template := templates[templateName]
+		subject := renderTemplate(template.Subject, variables)
+		body := renderTemplate(template.Body, variables)
+		for _, expected := range []string{"Pedido aprovado", "Vestido Floral", "R$ 259,80", "vencimento em 21/08/2026"} {
+			if !strings.Contains(subject+body, expected) {
+				t.Errorf("template %s does not contain %q: %s\n%s", templateName, expected, subject, body)
+			}
+		}
+		if strings.Contains(subject+body, "{{") {
+			t.Errorf("template %s contains an unresolved variable: %s\n%s", templateName, subject, body)
+		}
+	}
+}
 
 type dynamoMock struct {
 	dynamodbiface.DynamoDBAPI
