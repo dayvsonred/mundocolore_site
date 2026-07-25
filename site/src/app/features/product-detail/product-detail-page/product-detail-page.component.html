@@ -1,32 +1,76 @@
-<div class="product-detail" *ngIf="product">
-  <div class="product-images">
-    <img [src]="productImage" [alt]="product.name">
-    <p class="product-code">Código do produto: {{ product.produto_id || product.id }}</p>
-  </div>
-  <div class="product-info">
-    <div class="detail-actions">
-      <button type="button" class="btn-back" (click)="goBackToCatalog()">Voltar ao catálogo</button>
+<main class="product-detail" *ngIf="product">
+  <section
+    class="product-gallery"
+    aria-label="Imagens do produto"
+    (mouseenter)="pauseImageRotation()"
+    (mouseleave)="resumeImageRotation()">
+    <div class="main-image-stage">
+      <img class="main-product-image" [src]="productImage" [alt]="product.name">
+      <span class="image-counter" *ngIf="productImages.length > 1">
+        {{ selectedImageIndex + 1 }} / {{ productImages.length }}
+      </span>
     </div>
+
+    <div class="thumbnail-strip" *ngIf="productImages.length > 1" role="list" aria-label="Outras imagens">
+      <button
+        type="button"
+        class="thumbnail-button"
+        *ngFor="let image of productImages; let imageIndex = index"
+        [class.selected]="selectedImageIndex === imageIndex"
+        [attr.aria-label]="'Exibir imagem ' + (imageIndex + 1) + ' de ' + productImages.length"
+        [attr.aria-current]="selectedImageIndex === imageIndex ? 'true' : null"
+        (mouseenter)="selectImage(imageIndex)"
+        (focus)="selectImage(imageIndex)"
+        (click)="selectImage(imageIndex)">
+        <img [src]="image" [alt]="product.name + ' - imagem ' + (imageIndex + 1)">
+      </button>
+    </div>
+
+    <p class="gallery-help" *ngIf="productImages.length > 1">
+      Passe o mouse ou use o teclado para escolher uma imagem.
+    </p>
+    <p class="product-code">Código do produto: {{ product.produto_id || product.id }}</p>
+  </section>
+
+  <section class="product-info">
+    <div class="detail-actions">
+      <button type="button" class="btn-back" (click)="goBackToCatalog()">
+        <span aria-hidden="true">←</span>
+        Voltar ao catálogo
+      </button>
+    </div>
+
+    <p class="product-eyebrow">Mundo Colorê</p>
     <h1>{{ product.name }}</h1>
+    <p class="product-description">{{ product.description }}</p>
+
     <div class="price-display" [class.has-promotion]="promotionalPrice !== null">
-      <span class="price-label">Preco original</span>
+      <span class="price-label">Preço original</span>
       <p class="original-price">R$ {{ product.price | number:'1.2-2' }}</p>
       <ng-container *ngIf="promotionalPrice !== null">
-        <span class="price-label promotional-label">Preco com o cupom {{ appliedCouponCode }}</span>
+        <span class="price-label promotional-label">Preço com o cupom {{ appliedCouponCode }}</span>
         <p class="promotional-price">R$ {{ promotionalPrice | number:'1.2-2' }}</p>
-        <small *ngIf="savingsAmount > 0">Voce economiza R$ {{ savingsAmount | number:'1.2-2' }}</small>
+        <small *ngIf="savingsAmount > 0">Você economiza R$ {{ savingsAmount | number:'1.2-2' }}</small>
       </ng-container>
     </div>
+
     <form class="coupon-box" (ngSubmit)="applyCoupon()">
       <label for="product-coupon">Tem um cupom?</label>
       <div>
-        <input id="product-coupon" name="productCoupon" [(ngModel)]="couponCode" (ngModelChange)="onCouponCodeChange()" [disabled]="applyingCoupon" autocomplete="off" placeholder="Digite o codigo">
+        <input
+          id="product-coupon"
+          name="productCoupon"
+          [(ngModel)]="couponCode"
+          (ngModelChange)="onCouponCodeChange()"
+          [disabled]="applyingCoupon"
+          autocomplete="off"
+          placeholder="Digite o código">
         <button type="submit" [disabled]="applyingCoupon">{{ applyingCoupon ? 'Aplicando...' : 'Aplicar' }}</button>
       </div>
       <p *ngIf="couponMessage" [class.error]="couponError">{{ couponMessage }}</p>
       <button *ngIf="appliedCouponCode" type="button" class="remove-coupon" (click)="clearCoupon()">Remover cupom</button>
     </form>
-    <p>{{ product.description }}</p>
+
     <div class="option-selection">
       <label>Tamanho</label>
       <div *ngIf="productSizes.length; else noSizes" class="option-buttons size-options">
@@ -61,12 +105,12 @@
     </div>
 
     <div class="quantity">
-      <label>Quantidade</label>
-      <input type="number" [(ngModel)]="quantity" min="1">
+      <label for="product-quantity">Quantidade</label>
+      <input id="product-quantity" type="number" [(ngModel)]="quantity" min="1">
     </div>
 
     <p *ngIf="validationMessage" class="validation-message">{{ validationMessage }}</p>
 
-    <button class="btn-add-cart" [disabled]="!canAddToCart" (click)="addToCart()">Adicionar ao Carrinho</button>
-  </div>
-</div>
+    <button class="btn-add-cart" [disabled]="!canAddToCart" (click)="addToCart()">Adicionar ao carrinho</button>
+  </section>
+</main>

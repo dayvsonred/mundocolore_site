@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Product, CartItem } from '../../../core/models/product.model';
 import { ProductService } from '../../../core/services/product.service';
@@ -13,7 +13,7 @@ import { CouponStorageService } from '../../../core/services/coupon-storage.serv
   templateUrl: './product-detail-page.component.html',
   styleUrls: ['./product-detail-page.component.scss']
 })
-export class ProductDetailPageComponent implements OnInit {
+export class ProductDetailPageComponent implements OnInit, OnDestroy {
   readonly defaultSize = 'UNICO';
   readonly defaultColor = '9999999';
   product: Product | undefined;
@@ -27,6 +27,8 @@ export class ProductDetailPageComponent implements OnInit {
   applyingCoupon = false;
   couponMessage = '';
   couponError = false;
+  selectedImageIndex = 0;
+  private imageRotationTimer: ReturnType<typeof setInterval> | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -43,6 +45,8 @@ export class ProductDetailPageComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id') ?? '';
     this.productService.getProductById(id).subscribe(product => {
       this.product = product;
+      this.selectedImageIndex = 0;
+      this.startImageRotation();
       this.selectedSize = this.productSizes.includes(this.defaultSize) ? this.defaultSize : '';
       this.selectedColor = this.productColors.includes(this.defaultColor) ? this.defaultColor : '';
       this.validationMessage = '';
@@ -55,6 +59,10 @@ export class ProductDetailPageComponent implements OnInit {
         }
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.stopImageRotation();
   }
 
   applyCoupon(fromSavedCoupon = false): void {
@@ -191,7 +199,34 @@ export class ProductDetailPageComponent implements OnInit {
   }
 
   get productImage(): string {
-    return this.product?.image_url || this.product?.image || this.product?.image_urls?.[0] || 'assets/images/logo-mundo-colore.jpg';
+    return this.productImages[this.selectedImageIndex] || this.productImages[0];
+  }
+
+  get productImages(): string[] {
+    if (!this.product) {
+      return ['assets/images/logo-mundo-colore.jpg'];
+    }
+    const images = this.uniqueOptions([
+      ...(this.product.image_urls || []),
+      this.product.image_url,
+      this.product.image
+    ]).filter(image => !image.startsWith('s3://'));
+    return images.length ? images : ['assets/images/logo-mundo-colore.jpg'];
+  }
+
+  selectImage(index: number): void {
+    if (index < 0 || index >= this.productImages.length) {
+      return;
+    }
+    this.selectedImageIndex = index;
+  }
+
+  pauseImageRotation(): void {
+    this.stopImageRotation();
+  }
+
+  resumeImageRotation(): void {
+    this.startImageRotation();
   }
 
   getColorSwatch(color: string): string {
@@ -228,5 +263,22 @@ export class ProductDetailPageComponent implements OnInit {
     });
 
     return [...unique.values()];
+  }
+
+  private startImageRotation(): void {
+    this.stopImageRotation();
+    if (this.productImages.length < 2) {
+      return;
+    }
+    this.imageRotationTimer = setInterval(() => {
+      this.selectedImageIndex = (this.selectedImageIndex + 1) % this.productImages.length;
+    }, 4500);
+  }
+
+  private stopImageRotation(): void {
+    if (this.imageRotationTimer) {
+      clearInterval(this.imageRotationTimer);
+      this.imageRotationTimer = null;
+    }
   }
 }

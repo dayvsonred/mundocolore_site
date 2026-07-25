@@ -8,6 +8,8 @@
 - `GET /products/collections?brand=UP-BABY&year=2026` lista colecoes.
 - `POST /products/import-file` cadastra os produtos de um JSON gerado pelo cadastrador.
 - `POST /products/{id}/images` envia uma imagem base64 para um produto ja cadastrado.
+- `PATCH /products/{id}/images` define a imagem principal e move essa imagem para a primeira posicao dos arrays.
+- `DELETE /products/{id}/images` exclui uma imagem do bucket e dos arrays, desde que o produto mantenha ao menos uma imagem.
 - `POST /products` cadastra um produto individual. Aceita imagem em base64 para upload na pasta S3 da colecao ou nomes/caminhos de imagens ja existentes.
 - `GET /products` lista produtos ativos com paginacao e filtros `brand`, `year`, `collection`, `type`, `category`, `produto_id`, `limit`, `last_key`.
 - `GET /products?include_inactive=true` lista tambem produtos inativos para administracao.
@@ -89,6 +91,19 @@ Quando a imagem e enviada em `image_base64`, a lambda salva o arquivo em `brand/
 O produto salvo retorna o caminho explicito em `s3_prefix`, `image_keys`, `image_urls`, `image` e `image_url`.
 Quando a imagem ja existe no S3, envie o nome/caminho em `imagem` ou `images`.
 Para ocultar um produto do catalogo publico sem apagar, envie `{"is_active": false}` em `PATCH /products/{id}`.
+
+Para definir a imagem principal ou excluir uma imagem, envie o nome cadastrado no corpo da requisicao:
+
+```json
+{
+  "image_name": "A_uuid_46584_1-2-3_2.jpg"
+}
+```
+
+Use esse corpo em `PATCH /products/{id}/images` para definir a principal ou em
+`DELETE /products/{id}/images` para excluir. A imagem principal sempre fica no
+indice zero de `images`, `image_keys` e `image_urls` e tambem atualiza `image` e
+`image_url`.
 
 ## Importacao do cadastrador
 

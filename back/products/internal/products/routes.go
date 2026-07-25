@@ -61,6 +61,9 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 			return HandleGetProduct(ctx, request)
 		}
 	case "PUT", "PATCH":
+		if strings.HasSuffix(request.Path, "/images") && strings.Contains(request.Path, "/products/") {
+			return HandleSetPrimaryProductImage(ctx, request)
+		}
 		if strings.Contains(request.Path, "/products/collections/") {
 			return HandleUpdateCollection(ctx, request)
 		}
@@ -68,6 +71,9 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 			return HandleUpdateProduct(ctx, request)
 		}
 	case "DELETE":
+		if strings.HasSuffix(request.Path, "/images") && strings.Contains(request.Path, "/products/") {
+			return HandleDeleteProductImage(ctx, request)
+		}
 		if strings.Contains(request.Path, "/products/") {
 			return HandleDeleteProduct(ctx, request)
 		}

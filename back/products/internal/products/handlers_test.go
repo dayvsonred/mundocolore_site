@@ -162,6 +162,103 @@ func TestNormalizeProductColorsKeepsRegisteredColors(t *testing.T) {
 	}
 }
 
+func TestImageFileNameIncludesSizesAndSequence(t *testing.T) {
+	fileName := imageFileName(
+		"product-uuid",
+		"62504",
+		[]string{"4", "5", "6", "7", "8"},
+		"4 a 8",
+		3,
+		"image/jpeg",
+	)
+	if fileName != "A_product-uuid_62504_4-5-6-7-8_3.jpg" {
+		t.Fatalf("unexpected image file name %q", fileName)
+	}
+}
+
+func TestImageFileNameKeepsOriginalRuleForFirstImage(t *testing.T) {
+	fileName := imageFileName(
+		"product-uuid",
+		"62504",
+		[]string{"4", "5", "6", "7", "8"},
+		"4 a 8",
+		1,
+		"image/jpeg",
+	)
+	if fileName != "A_product-uuid_62504_4-5-6-7-8.jpg" {
+		t.Fatalf("unexpected first image file name %q", fileName)
+	}
+}
+
+func TestNextImageSequenceUsesExistingHighestNumber(t *testing.T) {
+	imageNames := []string{
+		"A_uuid_62504_4-5-6-7-8.jpg",
+		"A_uuid_62504_4-5-6-7-8_2.jpg",
+		"A_uuid_62504_4-5-6-7-8_7.jpg",
+	}
+	if got := nextImageSequence(imageNames); got != 8 {
+		t.Fatalf("expected next image sequence 8, got %d", got)
+	}
+}
+
+func TestSetPrimaryProductImageReordersEveryImageArray(t *testing.T) {
+	product := Product{
+		Images:      []string{"first.jpg", "second.jpg", "third.jpg"},
+		ImageKeys:   []string{"brand/first.jpg", "brand/second.jpg", "brand/third.jpg"},
+		ImageURLs:   []string{"https://cdn.example/first.jpg", "https://cdn.example/second.jpg", "https://cdn.example/third.jpg"},
+		Image:       "https://cdn.example/first.jpg",
+		ImageURL:    "https://cdn.example/first.jpg",
+		ImageBucket: "images",
+	}
+
+	updated, err := setPrimaryProductImage(product, "https://cdn.example/third.jpg")
+	if err != nil {
+		t.Fatalf("set primary image: %v", err)
+	}
+	if updated.Images[0] != "third.jpg" || updated.ImageKeys[0] != "brand/third.jpg" {
+		t.Fatalf("expected third image first, got %#v and %#v", updated.Images, updated.ImageKeys)
+	}
+	if updated.ImageURL != "https://cdn.example/third.jpg" || updated.Image != updated.ImageURL {
+		t.Fatalf("unexpected main image %q / %q", updated.Image, updated.ImageURL)
+	}
+}
+
+func TestRemoveProductImageKeepsAtLeastOneAndUpdatesMainImage(t *testing.T) {
+	product := Product{
+		S3Prefix:  "brand/2026/collection/",
+		Images:    []string{"first.jpg", "second.jpg"},
+		ImageKeys: []string{"brand/2026/collection/first.jpg", "brand/2026/collection/second.jpg"},
+		ImageURLs: []string{"https://cdn.example/first.jpg", "https://cdn.example/second.jpg"},
+		Image:     "https://cdn.example/first.jpg",
+		ImageURL:  "https://cdn.example/first.jpg",
+	}
+
+	updated, imageKey, err := removeProductImage(product, "first.jpg")
+	if err != nil {
+		t.Fatalf("remove product image: %v", err)
+	}
+	if imageKey != "brand/2026/collection/first.jpg" {
+		t.Fatalf("unexpected image key %q", imageKey)
+	}
+	if len(updated.Images) != 1 || updated.Images[0] != "second.jpg" {
+		t.Fatalf("unexpected remaining images %#v", updated.Images)
+	}
+	if updated.ImageURL != "https://cdn.example/second.jpg" {
+		t.Fatalf("unexpected main image %q", updated.ImageURL)
+	}
+
+	if _, _, err := removeProductImage(updated, "second.jpg"); err == nil {
+		t.Fatal("expected deleting the last image to fail")
+	}
+}
+
+func TestProductImageIdentifierSupportsEncodedURL(t *testing.T) {
+	got := productImageIdentifier("https://cdn.example/brand/image%20two.jpg?version=2")
+	if got != "image two.jpg" {
+		t.Fatalf("unexpected image identifier %q", got)
+	}
+}
+
 func TestMoneyValueRoundsAndRejectsNegativeValues(t *testing.T) {
 	value := 123.456
 	if got := moneyValue(&value); got != 123.46 {

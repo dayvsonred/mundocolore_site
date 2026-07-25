@@ -118,6 +118,15 @@ export interface CreateProductPayload {
   isPromotion?: boolean;
 }
 
+export interface UploadProductImagePayload {
+  content_base64: string;
+  content_type: string;
+}
+
+export interface ManageProductImagePayload {
+  image_name: string;
+}
+
 export interface ProductListQuery {
   category?: string;
   type?: string;
@@ -263,6 +272,32 @@ export class ProductService {
     return this.http.patch<Product>(`${this.apiUrl}/products/${encodeURIComponent(id)}`, product, { headers: this.getAdminHeaders() }).pipe(
       catchError((error) => throwError(() => error))
     );
+  }
+
+  uploadProductImage(id: string, image: UploadProductImagePayload): Observable<Product> {
+    return this.http.post<Product>(
+      `${this.apiUrl}/products/${encodeURIComponent(id)}/images`,
+      image,
+      { headers: this.getAdminHeaders() }
+    ).pipe(catchError((error) => throwError(() => error)));
+  }
+
+  setPrimaryProductImage(id: string, imageName: string): Observable<Product> {
+    const payload: ManageProductImagePayload = { image_name: imageName };
+    return this.http.patch<Product>(
+      `${this.apiUrl}/products/${encodeURIComponent(id)}/images`,
+      payload,
+      { headers: this.getAdminHeaders() }
+    ).pipe(catchError((error) => throwError(() => error)));
+  }
+
+  deleteProductImage(id: string, imageName: string): Observable<Product> {
+    const payload: ManageProductImagePayload = { image_name: imageName };
+    return this.http.request<Product>(
+      'DELETE',
+      `${this.apiUrl}/products/${encodeURIComponent(id)}/images`,
+      { headers: this.getAdminHeaders(), body: payload }
+    ).pipe(catchError((error) => throwError(() => error)));
   }
 
   deleteProduct(id: string): Observable<{ deleted: boolean; id: string }> {

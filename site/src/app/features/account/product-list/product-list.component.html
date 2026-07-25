@@ -67,7 +67,7 @@
           [class.selected]="selectedProduct?.id === product.id"
           [class.inactive]="product.is_active === false"
           (click)="selectProduct(product)">
-          <img *ngIf="product.image || product.image_url" [src]="product.image_url || product.image" alt="">
+          <img *ngIf="getProductImageUrls(product)[0] as productThumbnail" [src]="productThumbnail" alt="">
           <div>
             <h3>{{ product.name || product.description }}</h3>
             <p>{{ product.produto_id || product.id }} / {{ product.brand }} / {{ product.collection }}</p>
@@ -91,6 +91,112 @@
           <mat-icon>close</mat-icon>
         </button>
       </header>
+
+      <section class="image-manager">
+        <div class="image-manager-header">
+          <div>
+            <h3>Imagens do produto</h3>
+            <p>
+              {{ getProductImageUrls().length }}
+              imagem(ns) cadastrada(s). A primeira imagem e a principal em todas as listagens.
+            </p>
+          </div>
+
+          <input
+            #productImageInput
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            (change)="onProductImagesSelected($event)">
+          <button
+            type="button"
+            mat-stroked-button
+            color="primary"
+            [disabled]="uploadingImages || saving || deleting || !!managingImageName"
+            (click)="productImageInput.click()">
+            <mat-icon>add_photo_alternate</mat-icon>
+            Selecionar imagens
+          </button>
+        </div>
+
+        <div *ngIf="getRegisteredProductImages().length; else noRegisteredImages" class="registered-images">
+          <figure
+            *ngFor="let image of getRegisteredProductImages(); let imageIndex = index"
+            [class.primary-image]="image.isPrimary">
+            <div class="registered-image-preview">
+              <img [src]="image.url" [alt]="'Imagem cadastrada ' + (imageIndex + 1)">
+              <span *ngIf="image.isPrimary" class="primary-badge">
+                <mat-icon>star</mat-icon>
+                Principal
+              </span>
+            </div>
+            <figcaption [title]="image.name">{{ image.name }}</figcaption>
+            <div class="registered-image-actions">
+              <button
+                type="button"
+                mat-stroked-button
+                color="primary"
+                [disabled]="image.isPrimary || !!managingImageName || uploadingImages"
+                (click)="setPrimaryProductImage(image)">
+                <mat-icon>{{ image.isPrimary ? 'check_circle' : 'star_outline' }}</mat-icon>
+                {{ image.isPrimary ? 'Principal' : 'Tornar principal' }}
+              </button>
+              <button
+                *ngIf="getRegisteredProductImages().length > 1"
+                type="button"
+                mat-icon-button
+                color="warn"
+                [disabled]="!!managingImageName || uploadingImages"
+                aria-label="Excluir imagem"
+                (click)="deleteProductImage(image)">
+                <mat-icon>{{ managingImageName === image.name ? 'hourglass_top' : 'delete' }}</mat-icon>
+              </button>
+            </div>
+          </figure>
+        </div>
+        <ng-template #noRegisteredImages>
+          <p class="image-empty">Este produto ainda nao possui uma imagem acessivel.</p>
+        </ng-template>
+
+        <div *ngIf="pendingImages.length" class="pending-upload">
+          <div class="pending-upload-header">
+            <div>
+              <strong>{{ pendingImages.length }} nova(s) imagem(ns) pronta(s)</strong>
+              <span>O backend aplicara o codigo, os tamanhos e o proximo numero no nome.</span>
+            </div>
+            <button type="button" mat-button [disabled]="uploadingImages || !!managingImageName" (click)="clearPendingImages()">
+              Limpar selecao
+            </button>
+          </div>
+
+          <div class="pending-images">
+            <figure *ngFor="let image of pendingImages; let imageIndex = index">
+              <img [src]="image.contentBase64" [alt]="image.fileName">
+              <figcaption>{{ image.fileName }}</figcaption>
+              <button
+                type="button"
+                mat-icon-button
+                color="warn"
+                [disabled]="uploadingImages || !!managingImageName"
+                aria-label="Remover imagem da selecao"
+                (click)="removePendingImage(imageIndex)">
+                <mat-icon>close</mat-icon>
+              </button>
+            </figure>
+          </div>
+
+          <button
+            type="button"
+            mat-raised-button
+            color="primary"
+            [disabled]="uploadingImages || !!managingImageName"
+            (click)="uploadSelectedImages()">
+            <mat-icon>cloud_upload</mat-icon>
+            {{ uploadingImages ? 'Enviando imagens...' : 'Fazer upload das imagens' }}
+          </button>
+        </div>
+      </section>
 
       <form [formGroup]="editForm" (ngSubmit)="saveSelectedProduct()">
         <div class="form-grid">
@@ -191,7 +297,7 @@
         </div>
 
         <div class="form-actions">
-          <button type="submit" mat-raised-button color="primary" [disabled]="saving || deleting">
+          <button type="submit" mat-raised-button color="primary" [disabled]="saving || deleting || uploadingImages || !!managingImageName">
             <mat-icon>save</mat-icon>
             {{ saving ? 'Salvando...' : 'Salvar alteracoes' }}
           </button>
@@ -200,13 +306,13 @@
             type="button"
             mat-stroked-button
             color="primary"
-            [disabled]="saving || deleting"
+            [disabled]="saving || deleting || uploadingImages || !!managingImageName"
             (click)="setSelectedProductActive(selectedProduct.is_active === false)">
             <mat-icon>{{ selectedProduct.is_active === false ? 'visibility' : 'visibility_off' }}</mat-icon>
             {{ selectedProduct.is_active === false ? 'Ativar' : 'Inativar' }}
           </button>
 
-          <button type="button" mat-stroked-button color="warn" [disabled]="saving || deleting" (click)="deleteSelectedProduct()">
+          <button type="button" mat-stroked-button color="warn" [disabled]="saving || deleting || uploadingImages || !!managingImageName" (click)="deleteSelectedProduct()">
             <mat-icon>delete</mat-icon>
             {{ deleting ? 'Deletando...' : 'Deletar' }}
           </button>

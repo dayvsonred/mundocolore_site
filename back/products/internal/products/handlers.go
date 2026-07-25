@@ -222,6 +222,12 @@ type UploadProductImageRequest struct {
 	ImageContentType string `json:"image_content_type"`
 }
 
+type ManageProductImageRequest struct {
+	ImageName string `json:"image_name"`
+	ImageKey  string `json:"image_key"`
+	ImageURL  string `json:"image_url"`
+}
+
 type ProductsListResponse struct {
 	Products         []Product `json:"products"`
 	LastEvaluatedKey string    `json:"last_evaluated_key,omitempty"`
@@ -516,6 +522,61 @@ func HandleUploadProductImage(_ context.Context, request events.APIGatewayProxyR
 
 	body, _ := json.Marshal(product)
 	return successJSONResponse(201, string(body)), nil
+}
+
+func HandleSetPrimaryProductImage(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	id := extractProductImageIDFromPath(request.Path)
+	if id == "" {
+		return badRequestResponse("invalid product id"), nil
+	}
+
+	req, err := parseManageProductImageRequest(request)
+	if err != nil {
+		return badRequestResponse(err.Error()), nil
+	}
+	product, err := getProduct(id)
+	if err != nil {
+		return notFoundWithMessage(err.Error()), nil
+	}
+	product, err = setPrimaryProductImage(product, manageProductImageTarget(req))
+	if err != nil {
+		return badRequestResponse(err.Error()), nil
+	}
+	if err := putEntity(product); err != nil {
+		return serverErrorResponse(err), nil
+	}
+
+	body, _ := json.Marshal(product)
+	return successJSONResponse(200, string(body)), nil
+}
+
+func HandleDeleteProductImage(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	id := extractProductImageIDFromPath(request.Path)
+	if id == "" {
+		return badRequestResponse("invalid product id"), nil
+	}
+
+	req, err := parseManageProductImageRequest(request)
+	if err != nil {
+		return badRequestResponse(err.Error()), nil
+	}
+	product, err := getProduct(id)
+	if err != nil {
+		return notFoundWithMessage(err.Error()), nil
+	}
+	product, imageKey, err := removeProductImage(product, manageProductImageTarget(req))
+	if err != nil {
+		return badRequestResponse(err.Error()), nil
+	}
+	if err := deleteImage(imageKey); err != nil {
+		return serverErrorResponse(err), nil
+	}
+	if err := putEntity(product); err != nil {
+		return serverErrorResponse(err), nil
+	}
+
+	body, _ := json.Marshal(product)
+	return successJSONResponse(200, string(body)), nil
 }
 
 func HandleGetProduct(_ context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -1008,7 +1069,10 @@ func buildProduct(req CreateProductRequest) (Product, error) {
 	}
 
 	if req.ImageBase64 != "" {
-		fileName := firstNonEmpty(req.ImageFileName, imageFileName(req.UUID, productID, len(imageNames)+1, req.ImageContentType))
+		fileName := firstNonEmpty(
+			req.ImageFileName,
+			imageFileName(req.UUID, productID, size, sizeOriginal, nextImageSequence(imageNames), req.ImageContentType),
+		)
 		if err := uploadImage(s3Prefix+fileName, req.ImageBase64, req.ImageContentType); err != nil {
 			return Product{}, err
 		}
@@ -1018,7 +1082,14 @@ func buildProduct(req CreateProductRequest) (Product, error) {
 	for _, image := range req.UploadImages {
 		fileName := strings.TrimSpace(image.FileName)
 		if fileName == "" {
-			fileName = imageFileName(req.UUID, productID, len(imageNames)+1, image.ContentType)
+			fileName = imageFileName(
+				req.UUID,
+				productID,
+				size,
+				sizeOriginal,
+				nextImageSequence(imageNames),
+				image.ContentType,
+			)
 		}
 		if image.ContentBase64 != "" {
 			if err := uploadImage(s3Prefix+fileName, image.ContentBase64, image.ContentType); err != nil {
@@ -1247,7 +1318,17 @@ func updateProduct(id string, req CreateProductRequest) (Product, error) {
 		imageNames = appendIfMissing(imageNames, req.ImageFileName)
 	}
 	if req.ImageBase64 != "" {
-		fileName := firstNonEmpty(req.ImageFileName, imageFileName(product.UUID, product.ProductID, len(imageNames)+1, req.ImageContentType))
+		fileName := firstNonEmpty(
+			req.ImageFileName,
+			imageFileName(
+				product.UUID,
+				product.ProductID,
+				product.Size,
+				product.SizeOriginal,
+				nextImageSequence(imageNames),
+				req.ImageContentType,
+			),
+		)
 		if err := uploadImage(product.S3Prefix+fileName, req.ImageBase64, req.ImageContentType); err != nil {
 			return Product{}, err
 		}
@@ -1256,7 +1337,14 @@ func updateProduct(id string, req CreateProductRequest) (Product, error) {
 	for _, image := range req.UploadImages {
 		fileName := strings.TrimSpace(image.FileName)
 		if fileName == "" {
-			fileName = imageFileName(product.UUID, product.ProductID, len(imageNames)+1, image.ContentType)
+			fileName = imageFileName(
+				product.UUID,
+				product.ProductID,
+				product.Size,
+				product.SizeOriginal,
+				nextImageSequence(imageNames),
+				image.ContentType,
+			)
 		}
 		if image.ContentBase64 != "" {
 			if err := uploadImage(product.S3Prefix+fileName, image.ContentBase64, image.ContentType); err != nil {
@@ -1304,6 +1392,175 @@ func deleteProduct(id string) error {
 		},
 	})
 	return err
+}
+
+func parseManageProductImageRequest(request events.APIGatewayProxyRequest) (ManageProductImageRequest, error) {
+	var req ManageProductImageRequest
+	if strings.TrimSpace(request.Body) != "" {
+		if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
+			return ManageProductImageRequest{}, fmt.Errorf("invalid request")
+		}
+	}
+	req.ImageName = firstNonEmpty(req.ImageName, request.QueryStringParameters["image_name"])
+	req.ImageKey = firstNonEmpty(req.ImageKey, request.QueryStringParameters["image_key"])
+	req.ImageURL = firstNonEmpty(req.ImageURL, request.QueryStringParameters["image_url"])
+	if manageProductImageTarget(req) == "" {
+		return ManageProductImageRequest{}, fmt.Errorf("image_name is required")
+	}
+	return req, nil
+}
+
+func manageProductImageTarget(req ManageProductImageRequest) string {
+	return firstNonEmpty(req.ImageName, req.ImageKey, req.ImageURL)
+}
+
+func setPrimaryProductImage(product Product, target string) (Product, error) {
+	identifier := productImageIdentifier(target)
+	if identifier == "" {
+		return Product{}, fmt.Errorf("image_name is required")
+	}
+
+	var found bool
+	product.Images, found = moveProductImageToFront(product.Images, identifier)
+	var moved bool
+	product.ImageKeys, moved = moveProductImageToFront(product.ImageKeys, identifier)
+	found = found || moved
+	product.ImageURLs, moved = moveProductImageToFront(product.ImageURLs, identifier)
+	found = found || moved
+	if !found && productImageIdentifier(product.Image) != identifier && productImageIdentifier(product.ImageURL) != identifier {
+		return Product{}, fmt.Errorf("product image not found")
+	}
+
+	refreshProductMainImage(&product)
+	product.UpdatedAt = time.Now().Format(time.RFC3339)
+	return product, nil
+}
+
+func removeProductImage(product Product, target string) (Product, string, error) {
+	identifier := productImageIdentifier(target)
+	if identifier == "" {
+		return Product{}, "", fmt.Errorf("image_name is required")
+	}
+	if !productContainsImage(product, identifier) {
+		return Product{}, "", fmt.Errorf("product image not found")
+	}
+	if productImageCount(product) <= 1 {
+		return Product{}, "", fmt.Errorf("a product must keep at least one image")
+	}
+
+	imageKey := matchingProductImageValue(product.ImageKeys, identifier)
+	if imageKey == "" {
+		imageKey = product.S3Prefix + identifier
+	}
+
+	product.Images, _ = removeProductImageValue(product.Images, identifier)
+	product.ImageKeys, _ = removeProductImageValue(product.ImageKeys, identifier)
+	product.ImageURLs, _ = removeProductImageValue(product.ImageURLs, identifier)
+	refreshProductMainImage(&product)
+	product.UpdatedAt = time.Now().Format(time.RFC3339)
+	return product, imageKey, nil
+}
+
+func productImageCount(product Product) int {
+	identifiers := map[string]struct{}{}
+	for _, value := range mergeStrings(
+		product.Images,
+		product.ImageKeys,
+		product.ImageURLs,
+		[]string{product.Image, product.ImageURL},
+	) {
+		if identifier := productImageIdentifier(value); identifier != "" {
+			identifiers[identifier] = struct{}{}
+		}
+	}
+	return len(identifiers)
+}
+
+func productContainsImage(product Product, identifier string) bool {
+	return matchingProductImageValue(
+		mergeStrings(
+			product.Images,
+			product.ImageKeys,
+			product.ImageURLs,
+			[]string{product.Image, product.ImageURL},
+		),
+		identifier,
+	) != ""
+}
+
+func productImageIdentifier(value string) string {
+	value = strings.TrimSpace(value)
+	if value == "" {
+		return ""
+	}
+	if parsedURL, err := url.Parse(value); err == nil && parsedURL.Path != "" {
+		value = parsedURL.Path
+	}
+	if decodedValue, err := url.PathUnescape(value); err == nil {
+		value = decodedValue
+	}
+	identifier := path.Base(strings.TrimSpace(value))
+	if identifier == "." || identifier == "/" {
+		return ""
+	}
+	return identifier
+}
+
+func matchingProductImageValue(values []string, identifier string) string {
+	for _, value := range values {
+		if productImageIdentifier(value) == identifier {
+			return value
+		}
+	}
+	return ""
+}
+
+func moveProductImageToFront(values []string, identifier string) ([]string, bool) {
+	matchIndex := -1
+	for index, value := range values {
+		if productImageIdentifier(value) == identifier {
+			matchIndex = index
+			break
+		}
+	}
+	if matchIndex < 0 {
+		return values, false
+	}
+	if matchIndex == 0 {
+		return values, true
+	}
+	reordered := make([]string, 0, len(values))
+	reordered = append(reordered, values[matchIndex])
+	reordered = append(reordered, values[:matchIndex]...)
+	reordered = append(reordered, values[matchIndex+1:]...)
+	return reordered, true
+}
+
+func removeProductImageValue(values []string, identifier string) ([]string, bool) {
+	filtered := make([]string, 0, len(values))
+	removed := false
+	for _, value := range values {
+		if productImageIdentifier(value) == identifier {
+			removed = true
+			continue
+		}
+		filtered = append(filtered, value)
+	}
+	return filtered, removed
+}
+
+func refreshProductMainImage(product *Product) {
+	if len(product.ImageURLs) == 0 && len(product.ImageKeys) > 0 {
+		product.ImageURLs = make([]string, 0, len(product.ImageKeys))
+		for _, imageKey := range product.ImageKeys {
+			product.ImageURLs = append(product.ImageURLs, imageURL(imageKey))
+		}
+	}
+	product.ImageURL = firstString(product.ImageURLs)
+	product.Image = product.ImageURL
+	if product.Image == "" {
+		product.Image = firstString(product.Images)
+	}
 }
 
 func applyProductDefaultsFromQuery(req *CreateProductRequest, query map[string]string) {
@@ -1735,6 +1992,18 @@ func uploadImage(key string, contentBase64 string, contentType string) error {
 	return err
 }
 
+func deleteImage(key string) error {
+	key = strings.TrimLeft(strings.TrimSpace(key), "/")
+	if key == "" {
+		return fmt.Errorf("image key is required")
+	}
+	_, err := s3Client.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: aws.String(imageBucket),
+		Key:    aws.String(key),
+	})
+	return err
+}
+
 func decodeBase64Payload(contentBase64 string) ([]byte, error) {
 	data := strings.TrimSpace(contentBase64)
 	if comma := strings.Index(data, ","); comma >= 0 {
@@ -1992,14 +2261,94 @@ func sizeValueToInt(value interface{}) int {
 	}
 }
 
-func imageFileName(uuid string, productID string, index int, contentType string) string {
-	extension := ".jpg"
-	if contentType != "" {
-		if extensions, err := mime.ExtensionsByType(contentType); err == nil && len(extensions) > 0 {
-			extension = extensions[0]
+func imageFileName(
+	uuid string,
+	productID string,
+	sizes []string,
+	sizeOriginal string,
+	index int,
+	contentType string,
+) string {
+	extension := imageExtension(contentType)
+	sizeToken := imageNameToken(strings.Join(sizes, "-"))
+	if sizeToken == "" {
+		sizeToken = imageNameToken(sizeOriginal)
+	}
+	if sizeToken == "" {
+		sizeToken = defaultSize
+	}
+	sequenceSuffix := ""
+	if index > 1 {
+		sequenceSuffix = "_" + strconv.Itoa(index)
+	}
+	return fmt.Sprintf(
+		"A_%s_%s_%s%s%s",
+		imageNameToken(firstNonEmpty(uuid, generateID())),
+		imageNameToken(productID),
+		sizeToken,
+		sequenceSuffix,
+		extension,
+	)
+}
+
+func imageExtension(contentType string) string {
+	normalizedType := strings.ToLower(strings.TrimSpace(strings.Split(contentType, ";")[0]))
+	switch normalizedType {
+	case "image/jpeg", "image/jpg", "image/pjpeg":
+		return ".jpg"
+	case "image/png":
+		return ".png"
+	case "image/webp":
+		return ".webp"
+	case "image/gif":
+		return ".gif"
+	case "image/avif":
+		return ".avif"
+	}
+	if normalizedType != "" {
+		if extensions, err := mime.ExtensionsByType(normalizedType); err == nil && len(extensions) > 0 {
+			return extensions[0]
 		}
 	}
-	return fmt.Sprintf("A_%s_%s_%d%s", firstNonEmpty(uuid, generateID()), productID, index, extension)
+	return ".jpg"
+}
+
+func imageNameToken(value string) string {
+	value = strings.TrimSpace(value)
+	var builder strings.Builder
+	lastDash := false
+	for _, character := range value {
+		isAlphaNumeric := (character >= 'a' && character <= 'z') ||
+			(character >= 'A' && character <= 'Z') ||
+			(character >= '0' && character <= '9')
+		if isAlphaNumeric || character == '_' {
+			builder.WriteRune(character)
+			lastDash = false
+			continue
+		}
+		if !lastDash {
+			builder.WriteRune('-')
+			lastDash = true
+		}
+	}
+	return strings.Trim(builder.String(), "-_")
+}
+
+func nextImageSequence(imageNames []string) int {
+	maximum := len(imageNames)
+	for _, imageName := range imageNames {
+		baseName := path.Base(strings.TrimSpace(imageName))
+		stem := strings.TrimSuffix(baseName, path.Ext(baseName))
+		lastSeparator := strings.LastIndex(stem, "_")
+		if lastSeparator < 0 || lastSeparator == len(stem)-1 {
+			continue
+		}
+		sequence, err := strconv.Atoi(stem[lastSeparator+1:])
+		if err == nil && sequence > maximum {
+			maximum = sequence
+		}
+	}
+	return maximum + 1
 }
 
 func s3URI(key string) string {
