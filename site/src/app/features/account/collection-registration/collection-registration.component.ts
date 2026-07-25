@@ -54,6 +54,7 @@ export class CollectionRegistrationComponent implements OnInit {
     display_end_at: [''],
     spread_default_percent: [0, [Validators.required, Validators.min(0)]],
     credit_colore_max_amount: [0, [Validators.required, Validators.min(0)]],
+    hidden_from_catalog: [false],
     coupons: this.formBuilder.array([this.createCouponGroup()])
   });
 
@@ -213,7 +214,8 @@ export class CollectionRegistrationComponent implements OnInit {
       display_start_at: collection.display_start_at || '',
       display_end_at: collection.display_end_at || '',
       spread_default_percent: collection.spread_default_percent || 0,
-      credit_colore_max_amount: collection.credit_colore_max_amount || 0
+      credit_colore_max_amount: collection.credit_colore_max_amount || 0,
+      hidden_from_catalog: !!collection.hidden_from_catalog
     });
     this.resetCoupons(this.editCoupons, this.collectionCoupons(collection));
   }
@@ -237,7 +239,8 @@ export class CollectionRegistrationComponent implements OnInit {
       credit_colore_max_amount: Number(value.credit_colore_max_amount || 0),
       coupon_code: '',
       coupon_spread_reduction_percent: 0,
-      coupons: this.couponPayload(this.editCoupons)
+      coupons: this.couponPayload(this.editCoupons),
+      hidden_from_catalog: !!value.hidden_from_catalog
     }).pipe(finalize(() => this.updating = false))
       .subscribe({
         next: (response) => {

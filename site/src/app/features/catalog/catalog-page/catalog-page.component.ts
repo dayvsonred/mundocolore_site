@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { Product } from '../../../core/models/product.model';
 import { CatalogPageSnapshot, ProductService } from '../../../core/services/product.service';
@@ -77,6 +77,24 @@ export class CatalogPageComponent implements OnInit, OnDestroy {
   private lastFilterAnalyticsSignature = '';
   private lastProductCodeSearch = '';
   private lastBrandSearch = '';
+  private infiniteScrollObserver?: IntersectionObserver;
+
+  @ViewChild('loadMoreSentinel')
+  set loadMoreSentinel(sentinel: ElementRef<HTMLElement> | undefined) {
+    this.infiniteScrollObserver?.disconnect();
+
+    if (!sentinel || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    this.infiniteScrollObserver = new IntersectionObserver((entries) => {
+      if (entries.some(entry => entry.isIntersecting)) {
+        void this.loadProducts(false);
+      }
+    }, { rootMargin: '300px 0px' });
+
+    this.infiniteScrollObserver.observe(sentinel.nativeElement);
+  }
 
   constructor(
     private productService: ProductService,
@@ -88,6 +106,7 @@ export class CatalogPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.infiniteScrollObserver?.disconnect();
     if (this.filterTrackingTimer) {
       clearTimeout(this.filterTrackingTimer);
     }
@@ -155,6 +174,9 @@ export class CatalogPageComponent implements OnInit, OnDestroy {
     try {
       if (reset) {
         await this.loadProductPage(undefined, true);
+        if (!this.filteredProducts.length && this.nextPageKey) {
+          await this.loadUntilFilteredCount(1);
+        }
         return;
       }
 
@@ -342,6 +364,7 @@ export class CatalogPageComponent implements OnInit, OnDestroy {
 
   private async loadProductPage(lastKey: string | undefined, reset: boolean): Promise<void> {
     const page = await firstValueFrom(this.productService.getProductsByQuery({
+      catalog: true,
       limit: this.pageSize,
       last_key: lastKey
     }));

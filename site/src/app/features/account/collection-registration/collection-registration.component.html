@@ -133,6 +133,9 @@
             <div>
               <h3>{{ collection.name }}</h3>
               <p>{{ collection.year }} / Spread: {{ collection.spread_default_percent || 0 }}% / Credito Colore: R$ {{ (collection.credit_colore_max_amount || 0) | number:'1.2-2' }} / Cupons: {{ couponSummary(collection) }}</p>
+              <p class="catalog-status" [class.catalog-status--hidden]="collection.hidden_from_catalog">
+                {{ collection.hidden_from_catalog ? 'Oculta no catalogo' : 'Visivel no catalogo' }}
+              </p>
             </div>
             <span>{{ collection.s3_prefix || collection.collection_key || '-' }}</span>
           </button>
@@ -171,6 +174,12 @@
           <input matInput type="number" min="0" step="0.01" formControlName="credit_colore_max_amount">
           <mat-hint>Zero desabilita o Credito Colore nesta colecao.</mat-hint>
         </mat-form-field>
+        <div class="catalog-visibility-option">
+          <mat-checkbox formControlName="hidden_from_catalog">
+            Desativar exibicao dos produtos desta colecao no catalogo
+          </mat-checkbox>
+          <p>Quando marcado, os produtos continuam disponiveis nas telas administrativas, mas nao aparecem nas buscas e filtros de compra do catalogo.</p>
+        </div>
       </div>
       <section class="coupon-section" formArrayName="coupons">
         <header class="coupon-header">

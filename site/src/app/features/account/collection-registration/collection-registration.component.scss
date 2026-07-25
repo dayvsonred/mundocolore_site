@@ -154,6 +154,28 @@
   }
 }
 
+.catalog-visibility-option {
+  align-self: center;
+  padding: 4px 0 20px;
+
+  p {
+    margin: 6px 0 0 28px;
+    color: #666;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+}
+
+.catalog-status {
+  margin-top: 4px !important;
+  color: #2e7d32 !important;
+  font-weight: 600;
+
+  &--hidden {
+    color: #c62828 !important;
+  }
+}
+
 @media (max-width: 720px) {
   .admin-registration-page {
     .form-grid {

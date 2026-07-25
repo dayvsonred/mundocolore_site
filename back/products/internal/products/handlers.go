@@ -52,6 +52,7 @@ type Collection struct {
 	CreditColoreMaxAmount        float64            `json:"credit_colore_max_amount" dynamodbav:"credit_colore_max_amount"`
 	DisplayStartAt               string             `json:"display_start_at" dynamodbav:"display_start_at"`
 	DisplayEndAt                 string             `json:"display_end_at" dynamodbav:"display_end_at"`
+	HideFromCatalog              bool               `json:"hidden_from_catalog" dynamodbav:"hidden_from_catalog"`
 	S3Prefix                     string             `json:"s3_prefix" dynamodbav:"s3_prefix"`
 	CreatedAt                    string             `json:"created_at" dynamodbav:"created_at"`
 	UpdatedAt                    string             `json:"updated_at" dynamodbav:"updated_at"`
@@ -88,6 +89,7 @@ type Product struct {
 	FinalizationDate string   `json:"finalization_date,omitempty" dynamodbav:"finalization_date,omitempty"`
 	DisplayStartAt   string   `json:"display_start_at,omitempty" dynamodbav:"display_start_at,omitempty"`
 	DisplayEndAt     string   `json:"display_end_at,omitempty" dynamodbav:"display_end_at,omitempty"`
+	HideFromCatalog  bool     `json:"hidden_from_catalog" dynamodbav:"hidden_from_catalog"`
 	Size             []string `json:"size" dynamodbav:"size"`
 	AgeGroup         string   `json:"ageGroup,omitempty" dynamodbav:"age_group,omitempty"`
 	SizeOriginal     string   `json:"tamanho_original,omitempty" dynamodbav:"size_original,omitempty"`
@@ -130,6 +132,7 @@ type CreateCollectionRequest struct {
 	DisplayEndAt                 string             `json:"display_end_at"`
 	ReleaseDate                  string             `json:"release_date"`
 	FinalizationDate             string             `json:"finalization_date"`
+	HideFromCatalog              bool               `json:"hidden_from_catalog"`
 }
 
 type UpdateCollectionRequest struct {
@@ -141,6 +144,7 @@ type UpdateCollectionRequest struct {
 	CreditColoreMaxAmount        *float64            `json:"credit_colore_max_amount"`
 	DisplayStartAt               *string             `json:"display_start_at"`
 	DisplayEndAt                 *string             `json:"display_end_at"`
+	HideFromCatalog              *bool               `json:"hidden_from_catalog"`
 }
 
 type UploadImage struct {
@@ -648,6 +652,7 @@ func HandleGetProducts(_ context.Context, request events.APIGatewayProxyRequest)
 		IsPromotion:     parseOptionalBool(request.QueryStringParameters["is_promotion"]),
 		IncludeInactive: strings.EqualFold(request.QueryStringParameters["include_inactive"], "true"),
 		IncludeCost:     strings.EqualFold(request.QueryStringParameters["include_cost"], "true"),
+		CatalogOnly:     strings.EqualFold(request.QueryStringParameters["catalog"], "true"),
 		Limit:           limit,
 		LastKey:         lastKey,
 	})
@@ -805,6 +810,7 @@ func createCollection(req CreateCollectionRequest) (Collection, error) {
 		CreditColoreMaxAmount:        moneyValue(req.CreditColoreMaxAmount),
 		DisplayStartAt:               displayStart,
 		DisplayEndAt:                 displayEnd,
+		HideFromCatalog:              req.HideFromCatalog,
 		S3Prefix:                     buildS3Prefix(brandKey, year, slug),
 		CreatedAt:                    now,
 		UpdatedAt:                    now,
@@ -899,6 +905,9 @@ func updateCollection(id string, req UpdateCollectionRequest) (Collection, int, 
 	if req.DisplayEndAt != nil {
 		collection.DisplayEndAt = strings.TrimSpace(*req.DisplayEndAt)
 	}
+	if req.HideFromCatalog != nil {
+		collection.HideFromCatalog = *req.HideFromCatalog
+	}
 	collection.UpdatedAt = time.Now().Format(time.RFC3339)
 	if err := putEntity(collection); err != nil {
 		return Collection{}, 0, err
@@ -936,6 +945,7 @@ func applyCollectionToProducts(products []Product, collection Collection, now st
 		products[index].DisplayStartAt = collection.DisplayStartAt
 		products[index].FinalizationDate = collection.DisplayEndAt
 		products[index].DisplayEndAt = collection.DisplayEndAt
+		products[index].HideFromCatalog = collection.HideFromCatalog
 		products[index].UpdatedAt = now
 	}
 }
@@ -1142,6 +1152,7 @@ func buildProduct(req CreateProductRequest) (Product, error) {
 		FinalizationDate: req.FinalizationDate,
 		DisplayStartAt:   req.DisplayStartAt,
 		DisplayEndAt:     req.DisplayEndAt,
+		HideFromCatalog:  collection.HideFromCatalog,
 		Size:             size,
 		AgeGroup:         req.AgeGroup,
 		SizeOriginal:     sizeOriginal,
@@ -1247,8 +1258,10 @@ func updateProduct(id string, req CreateProductRequest) (Product, error) {
 	if req.SpreadPercent != nil {
 		product.SpreadPercent = percentageValue(req.SpreadPercent)
 		product.SpreadIsDefault = false
-	} else if product.SpreadPercent == 0 {
-		if collection, err := getCollectionByKey(product.CollectionKey); err == nil {
+	}
+	if collection, err := getCollectionByKey(product.CollectionKey); err == nil {
+		product.HideFromCatalog = collection.HideFromCatalog
+		if req.SpreadPercent == nil && product.SpreadPercent == 0 {
 			product.SpreadPercent = collection.SpreadDefaultPercent
 			product.SpreadIsDefault = true
 		}
@@ -1693,6 +1706,7 @@ type ProductQuery struct {
 	IsPromotion     *bool
 	IncludeInactive bool
 	IncludeCost     bool
+	CatalogOnly     bool
 	Limit           int
 	LastKey         string
 }
@@ -1709,6 +1723,10 @@ func getProducts(query ProductQuery) (ProductsListResponse, error) {
 	if !query.IncludeInactive {
 		filterExpressions = append(filterExpressions, "(attribute_not_exists(is_active) OR is_active = :is_active)")
 		expressionValues[":is_active"] = &dynamodb.AttributeValue{BOOL: aws.Bool(true)}
+	}
+	if query.CatalogOnly {
+		filterExpressions = append(filterExpressions, "(attribute_not_exists(hidden_from_catalog) OR hidden_from_catalog = :hidden_from_catalog)")
+		expressionValues[":hidden_from_catalog"] = &dynamodb.AttributeValue{BOOL: aws.Bool(false)}
 	}
 
 	if query.ProductID != "" {
@@ -1737,6 +1755,9 @@ func getProducts(query ProductQuery) (ProductsListResponse, error) {
 		filterExpressions = []string{}
 		if !query.IncludeInactive {
 			filterExpressions = append(filterExpressions, "(attribute_not_exists(is_active) OR is_active = :is_active)")
+		}
+		if query.CatalogOnly {
+			filterExpressions = append(filterExpressions, "(attribute_not_exists(hidden_from_catalog) OR hidden_from_catalog = :hidden_from_catalog)")
 		}
 	}
 

@@ -259,6 +259,13 @@
         </div>
       </section>
 
+      <div
+        *ngIf="!isLoadingProducts && filteredProducts.length && hasMoreProducts"
+        #loadMoreSentinel
+        class="load-more-sentinel"
+        aria-hidden="true">
+      </div>
+
       <div *ngIf="!isLoadingProducts && filteredProducts.length" class="pagination-actions">
         <button
           type="button"

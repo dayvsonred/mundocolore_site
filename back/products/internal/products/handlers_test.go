@@ -78,6 +78,7 @@ func TestApplyCollectionToProductsUpdatesAssociatedFields(t *testing.T) {
 		SpreadDefaultPercent: 25,
 		DisplayStartAt:       "2026-03-01",
 		DisplayEndAt:         "2026-04-01",
+		HideFromCatalog:      true,
 	}
 
 	applyCollectionToProducts(products, collection, "2026-06-07T12:00:00Z")
@@ -94,6 +95,9 @@ func TestApplyCollectionToProductsUpdatesAssociatedFields(t *testing.T) {
 	}
 	if product.FinalizationDate != collection.DisplayEndAt || product.DisplayEndAt != collection.DisplayEndAt {
 		t.Fatalf("expected collection end date to be applied to product")
+	}
+	if !product.HideFromCatalog {
+		t.Fatalf("expected catalog visibility flag to be applied to product")
 	}
 }
 

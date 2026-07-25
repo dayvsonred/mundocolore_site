@@ -25,6 +25,7 @@ export interface Product {
   tamanhos_array?: number[];
   cores?: string[];
   is_active?: boolean;
+  hidden_from_catalog?: boolean;
   release_date?: string;
   finalization_date?: string;
   type: string;

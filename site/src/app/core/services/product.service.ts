@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable, catchError, map, throwError } from 'rxjs';
+import { Observable, catchError, map, tap, throwError } from 'rxjs';
 import { Product } from '../models/product.model';
 import { environment } from '../../../environments/environment';
 import { AuthenticationService } from './auth.service';
@@ -30,6 +30,7 @@ export interface ProductCollectionRecord {
   credit_colore_max_amount: number;
   display_start_at?: string;
   display_end_at?: string;
+  hidden_from_catalog: boolean;
   s3_prefix?: string;
   created_at?: string;
   updated_at?: string;
@@ -60,6 +61,7 @@ export interface CreateProductCollectionPayload {
   coupon_spread_reduction_percent?: number;
   coupons?: ProductCollectionCoupon[];
   credit_colore_max_amount?: number;
+  hidden_from_catalog?: boolean;
 }
 
 export interface UpdateProductCollectionPayload {
@@ -71,6 +73,7 @@ export interface UpdateProductCollectionPayload {
   coupon_spread_reduction_percent: number;
   coupons: ProductCollectionCoupon[];
   credit_colore_max_amount: number;
+  hidden_from_catalog: boolean;
 }
 
 export interface UpdateProductCollectionResponse {
@@ -138,6 +141,7 @@ export interface ProductListQuery {
   is_promotion?: boolean;
   include_inactive?: boolean;
   include_cost?: boolean;
+  catalog?: boolean;
   limit?: number;
   last_key?: string;
 }
@@ -194,6 +198,7 @@ export class ProductService {
     if (query.is_promotion !== undefined) params = params.set('is_promotion', String(query.is_promotion));
     if (query.include_inactive) params = params.set('include_inactive', 'true');
     if (query.include_cost) params = params.set('include_cost', 'true');
+    if (query.catalog) params = params.set('catalog', 'true');
     if (query.limit) params = params.set('limit', query.limit.toString());
     if (query.last_key) params = params.set('last_key', query.last_key);
 
@@ -349,7 +354,10 @@ export class ProductService {
       `${this.apiUrl}/products/collections/${encodeURIComponent(id)}`,
       payload,
       { headers: this.getAdminHeaders() }
-    ).pipe(catchError((error) => throwError(() => error)));
+    ).pipe(
+      tap(() => this.catalogPageState = null),
+      catchError((error) => throwError(() => error))
+    );
   }
 
   recalculateCollectionSpread(id: string): Observable<{ collection: ProductCollectionRecord; updated_count: number }> {
