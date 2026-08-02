@@ -369,6 +369,10 @@
 }
 
 .btn-load-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
   min-width: min(260px, 100%);
   padding: 0 18px;
 
@@ -379,6 +383,34 @@
     box-shadow: none;
     cursor: default;
     transform: none;
+  }
+
+  &.btn-load-more--loading:disabled {
+    border-color: var(--catalog-action);
+    background: var(--catalog-action);
+    color: #fff;
+  }
+}
+
+.loading-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+
+  span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: catalog-loading-dot 1.2s infinite ease-in-out;
+
+    &:nth-child(2) {
+      animation-delay: 0.15s;
+    }
+
+    &:nth-child(3) {
+      animation-delay: 0.3s;
+    }
   }
 }
 
@@ -451,6 +483,20 @@
 @keyframes catalog-spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes catalog-loading-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
   }
 }
 

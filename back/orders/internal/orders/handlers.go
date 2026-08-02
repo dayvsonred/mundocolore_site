@@ -481,6 +481,9 @@ func createOrder(userID string, req CreateOrderRequest, request events.APIGatewa
 	if customer.ID == "" {
 		customer.ID = userID
 	}
+	if len(customer.CPF) != 11 {
+		return OrderResponse{}, fmt.Errorf("customer cpf must have 11 digits")
+	}
 	billing := sanitizePerson(req.Billing)
 	if billing.ID == "" {
 		billing.ID = customer.ID

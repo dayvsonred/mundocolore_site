@@ -23,6 +23,19 @@ terraform plan
 terraform apply
 ```
 
+O Terraform le automaticamente `web.client_id` do arquivo:
+
+```text
+back/.google_key
+```
+
+Nao e mais necessario definir `TF_VAR_google_client_id` manualmente. O
+`client_secret` presente no JSON nao e enviado para a Lambda. Somente o
+`client_id` publico e configurado em `GOOGLE_CLIENT_ID`.
+
+O mesmo valor deve ser colocado em `site/src/environments/environment.prod.ts`
+na propriedade `googleClientId`.
+
 ## Redeploy API Gateway
 
 Depois do apply, publicar o stage:

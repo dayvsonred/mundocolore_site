@@ -270,9 +270,23 @@
         <button
           type="button"
           class="btn-load-more"
+          [class.btn-load-more--loading]="isLoadingMoreProducts"
           [disabled]="!hasMoreProducts || isLoadingMoreProducts"
+          [attr.aria-busy]="isLoadingMoreProducts"
           (click)="loadProducts(false)">
-          {{ isSearchingFilteredProducts ? 'Buscando produtos do filtro...' : (isLoadingMoreProducts ? 'Carregando...' : (hasMoreProducts ? 'Carregar mais produtos' : 'Todos os produtos foram carregados')) }}
+          <ng-container *ngIf="isLoadingMoreProducts; else loadMoreButtonLabel">
+            <span>
+              {{ isSearchingFilteredProducts ? 'Buscando produtos do filtro' : 'Carregando mais produtos' }}
+            </span>
+            <span class="loading-dots" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </ng-container>
+          <ng-template #loadMoreButtonLabel>
+            {{ hasMoreProducts ? 'Carregar mais produtos' : 'Todos os produtos foram carregados' }}
+          </ng-template>
         </button>
       </div>
 

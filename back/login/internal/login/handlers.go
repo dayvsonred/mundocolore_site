@@ -20,11 +20,22 @@ import (
 )
 
 type User struct {
-	ID        string `json:"id" dynamodbav:"id"`
-	Email     string `json:"email" dynamodbav:"email"`
-	Name      string `json:"name,omitempty" dynamodbav:"name"`
-	Password  string `json:"-" dynamodbav:"password"`
-	CreatedAt string `json:"created_at" dynamodbav:"created_at"`
+	ID               string `json:"id" dynamodbav:"id"`
+	Email            string `json:"email" dynamodbav:"email"`
+	Name             string `json:"name,omitempty" dynamodbav:"name"`
+	CPF              string `json:"cpf,omitempty" dynamodbav:"cpf,omitempty"`
+	Phone            string `json:"phone,omitempty" dynamodbav:"phone,omitempty"`
+	BirthDate        string `json:"birth_date,omitempty" dynamodbav:"birth_date,omitempty"`
+	Gender           string `json:"gender,omitempty" dynamodbav:"gender,omitempty"`
+	Password         string `json:"-" dynamodbav:"password,omitempty"`
+	CreatedAt        string `json:"created_at" dynamodbav:"created_at"`
+	EmailConfirmed   bool   `json:"email_confirmed" dynamodbav:"email_confirmed"`
+	EmailConfirmedAt string `json:"email_confirmed_at,omitempty" dynamodbav:"email_confirmed_at,omitempty"`
+	GoogleSub        string `json:"-" dynamodbav:"google_sub,omitempty"`
+	AuthProvider     string `json:"auth_provider,omitempty" dynamodbav:"auth_provider,omitempty"`
+	PictureURL       string `json:"picture_url,omitempty" dynamodbav:"picture_url,omitempty"`
+	TermsAcceptedAt  string `json:"terms_accepted_at,omitempty" dynamodbav:"terms_accepted_at,omitempty"`
+	TermsVersion     string `json:"terms_version,omitempty" dynamodbav:"terms_version,omitempty"`
 }
 
 type LoginRequest struct {
@@ -33,17 +44,29 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	Token       string       `json:"token"`
-	AccessToken string       `json:"access_token"`
-	TokenType   string       `json:"token_type"`
-	ExpiresIn   int          `json:"expires_in"`
-	User        UserResponse `json:"user"`
+	Token           string       `json:"token"`
+	AccessToken     string       `json:"access_token"`
+	TokenType       string       `json:"token_type"`
+	ExpiresIn       int          `json:"expires_in"`
+	ProfileComplete bool         `json:"profile_complete"`
+	NextAction      string       `json:"next_action,omitempty"`
+	User            UserResponse `json:"user"`
 }
 
 type UserResponse struct {
-	ID    string `json:"id"`
-	Email string `json:"email"`
-	Name  string `json:"name"`
+	ID               string `json:"id"`
+	Email            string `json:"email"`
+	Name             string `json:"name"`
+	CPF              string `json:"cpf,omitempty"`
+	Phone            string `json:"phone,omitempty"`
+	BirthDate        string `json:"birth_date,omitempty"`
+	Gender           string `json:"gender,omitempty"`
+	AuthProvider     string `json:"auth_provider,omitempty"`
+	PictureURL       string `json:"picture_url,omitempty"`
+	HasPassword      bool   `json:"has_password"`
+	EmailConfirmed   bool   `json:"email_confirmed"`
+	EmailConfirmedAt string `json:"email_confirmed_at,omitempty"`
+	ProfileComplete  bool   `json:"profile_complete"`
 }
 
 var (
@@ -51,6 +74,7 @@ var (
 	tableName          = "mundocolore-users"
 	jwtSecret          = []byte("your-secret-key")
 	expectedAuthHeader = "Basic QVBJX05BTUVfQUNDRVNTOkFQSV9TRUNSRVRfQUNDRVNT"
+	googleClientID     = ""
 )
 
 const (
@@ -73,6 +97,9 @@ func init() {
 	}
 	if value := os.Getenv("LOGIN_BASIC_AUTH"); value != "" {
 		expectedAuthHeader = value
+	}
+	if value := os.Getenv(googleClientIDEnvKey); value != "" {
+		googleClientID = value
 	}
 
 	sess := session.Must(session.NewSession(&aws.Config{
@@ -105,17 +132,7 @@ func HandleLogin(_ context.Context, request events.APIGatewayProxyRequest) (even
 		return serverErrorResponse(err), nil
 	}
 
-	response := LoginResponse{
-		Token:       token,
-		AccessToken: token,
-		TokenType:   "Bearer",
-		ExpiresIn:   tokenTTLSeconds,
-		User: UserResponse{
-			ID:    user.ID,
-			Email: user.Email,
-			Name:  user.Name,
-		},
-	}
+	response := newLoginResponse(user, token)
 
 	body, _ := json.Marshal(response)
 	return events.APIGatewayProxyResponse{
@@ -324,15 +341,69 @@ func findUserByEmail(email string) (User, error) {
 func generateJWT(user User) (string, error) {
 	now := time.Now()
 	claims := jwt.MapClaims{
-		"user_id": user.ID,
-		"sub":     user.ID,
-		"email":   user.Email,
-		"iat":     now.Unix(),
-		"exp":     now.Add(tokenTTLSeconds * time.Second).Unix(),
+		"user_id":          user.ID,
+		"sub":              user.ID,
+		"email":            user.Email,
+		"profile_complete": isProfileComplete(user),
+		"iat":              now.Unix(),
+		"exp":              now.Add(tokenTTLSeconds * time.Second).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString(jwtSecret)
+}
+
+func newLoginResponse(user User, token string) LoginResponse {
+	profileComplete := isProfileComplete(user)
+	nextAction := ""
+	if !profileComplete {
+		nextAction = "complete_profile"
+	}
+
+	authProvider := strings.TrimSpace(user.AuthProvider)
+	if authProvider == "" {
+		authProvider = "password"
+	}
+
+	return LoginResponse{
+		Token:           token,
+		AccessToken:     token,
+		TokenType:       "Bearer",
+		ExpiresIn:       tokenTTLSeconds,
+		ProfileComplete: profileComplete,
+		NextAction:      nextAction,
+		User: UserResponse{
+			ID:               user.ID,
+			Email:            user.Email,
+			Name:             user.Name,
+			CPF:              user.CPF,
+			Phone:            user.Phone,
+			BirthDate:        user.BirthDate,
+			Gender:           user.Gender,
+			AuthProvider:     authProvider,
+			PictureURL:       user.PictureURL,
+			HasPassword:      strings.TrimSpace(user.Password) != "",
+			EmailConfirmed:   user.EmailConfirmed,
+			EmailConfirmedAt: user.EmailConfirmedAt,
+			ProfileComplete:  profileComplete,
+		},
+	}
+}
+
+func isProfileComplete(user User) bool {
+	return strings.TrimSpace(user.Name) != "" &&
+		strings.TrimSpace(user.Email) != "" &&
+		len(onlyDigits(user.CPF)) == 11
+}
+
+func onlyDigits(value string) string {
+	var builder strings.Builder
+	for _, char := range value {
+		if char >= '0' && char <= '9' {
+			builder.WriteRune(char)
+		}
+	}
+	return builder.String()
 }
 
 func getHeaderValue(headers map[string]string, target string) string {

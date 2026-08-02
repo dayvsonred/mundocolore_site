@@ -38,6 +38,44 @@ export class AuthenticationService {
     );
   }
 
+  loginWithGoogle(credential: string, termsAccepted: boolean): Observable<any> {
+    const headers = new HttpHeaders().set('Content-Type', 'application/json');
+    const body = {
+      credential,
+      terms_accepted: termsAccepted,
+      terms_version: environment.termsVersion
+    };
+
+    return this.http.post<any>(`${environment.urlBase}/login/google`, body, { headers }).pipe(
+      map((response) => {
+        const email = response?.user?.email || response?.email || '';
+        this.persistAuthenticatedUser(response, email);
+        return response;
+      }),
+      switchMap((response) =>
+        this.getProfile().pipe(
+          catchError(() => of(response?.user || null))
+        )
+      ),
+      switchMap(() => this.refreshAdminStatus()),
+      map(() => this.getCurrentUser()),
+      catchError((error) => {
+        const backendMessage =
+          error?.error?.message ||
+          error?.error?.error ||
+          (typeof error?.error === 'string' ? error.error : '');
+
+        return throwError(
+          () =>
+            backendMessage ||
+            (error?.status === 428
+              ? 'Aceite os termos da plataforma para criar sua conta com Google.'
+              : 'Nao foi possivel entrar com Google. Tente novamente.')
+        );
+      })
+    );
+  }
+
   sign(payload: { email: string; password: string }): Observable<boolean> {
     const params = new URLSearchParams();
     params.set('grant_type', 'password');
@@ -435,6 +473,19 @@ export class AuthenticationService {
     }
   }
 
+  isProfileComplete(): boolean {
+    const user = this.getCurrentUser();
+    if (!user) {
+      return false;
+    }
+    if (typeof user.profile_complete === 'boolean') {
+      return user.profile_complete;
+    }
+
+    const cpf = String(user.cpf || '').replace(/\D/g, '');
+    return !!(user.email && (user.fullName || user.name) && cpf.length === 11);
+  }
+
   private persistAuthenticatedUser(response: any, fallbackEmail: string): void {
     const token = response?.token || response?.access_token;
     if (!token) {
@@ -453,6 +504,13 @@ export class AuthenticationService {
     const emailConfirmedAt = response?.user?.email_confirmed_at || response?.email_confirmed_at || '';
     const contaNivel = response?.conta_nivel ?? {};
     const isAdmin = !!(response?.user?.is_admin ?? response?.is_admin ?? false);
+    const authProvider = response?.user?.auth_provider || response?.auth_provider || 'password';
+    const pictureUrl = response?.user?.picture_url || response?.picture_url || '';
+    const hasPassword = response?.user?.has_password ?? response?.has_password ?? authProvider !== 'google';
+    const profileComplete =
+      response?.user?.profile_complete ??
+      response?.profile_complete ??
+      false;
 
     this.localStorage.removeItem('access_token');
     this.localStorage.removeItem('token');
@@ -478,6 +536,10 @@ export class AuthenticationService {
         role: userRole,
         email_confirmed: emailConfirmed,
         email_confirmed_at: emailConfirmedAt,
+        auth_provider: authProvider,
+        picture_url: pictureUrl,
+        has_password: hasPassword,
+        profile_complete: profileComplete,
         conta_nivel_ativo: contaNivel.ativo ?? null,
         conta_nivel_data_update: contaNivel.data_update ?? null,
         conta_nivel_data_nivel: contaNivel.nivel ?? null,
@@ -538,6 +600,10 @@ export class AuthenticationService {
       role: profile?.role ?? currentUser.role ?? false,
       email_confirmed: profile?.email_confirmed ?? currentUser.email_confirmed ?? false,
       email_confirmed_at: profile?.email_confirmed_at || currentUser.email_confirmed_at || '',
+      auth_provider: profile?.auth_provider || currentUser.auth_provider || 'password',
+      picture_url: profile?.picture_url || currentUser.picture_url || '',
+      has_password: profile?.has_password ?? currentUser.has_password ?? true,
+      profile_complete: profile?.profile_complete ?? currentUser.profile_complete ?? false,
       isAdmin: profile?.is_admin ?? currentUser.isAdmin ?? false
     };
 

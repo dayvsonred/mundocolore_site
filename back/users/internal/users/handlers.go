@@ -40,6 +40,11 @@ type User struct {
 	PasswordResetToken           string `json:"-" dynamodbav:"password_reset_token,omitempty"`
 	PasswordResetRequestedAt     string `json:"password_reset_requested_at,omitempty" dynamodbav:"password_reset_requested_at,omitempty"`
 	PasswordResetExpiresAt       string `json:"password_reset_expires_at,omitempty" dynamodbav:"password_reset_expires_at,omitempty"`
+	GoogleSub                    string `json:"-" dynamodbav:"google_sub,omitempty"`
+	AuthProvider                 string `json:"auth_provider,omitempty" dynamodbav:"auth_provider,omitempty"`
+	PictureURL                   string `json:"picture_url,omitempty" dynamodbav:"picture_url,omitempty"`
+	TermsAcceptedAt              string `json:"terms_accepted_at,omitempty" dynamodbav:"terms_accepted_at,omitempty"`
+	TermsVersion                 string `json:"terms_version,omitempty" dynamodbav:"terms_version,omitempty"`
 }
 
 type UserRole struct {
@@ -112,6 +117,10 @@ type UserResponse struct {
 	Token            string `json:"token,omitempty"`
 	EmailConfirmed   bool   `json:"email_confirmed"`
 	EmailConfirmedAt string `json:"email_confirmed_at,omitempty"`
+	AuthProvider     string `json:"auth_provider,omitempty"`
+	PictureURL       string `json:"picture_url,omitempty"`
+	HasPassword      bool   `json:"has_password"`
+	ProfileComplete  bool   `json:"profile_complete"`
 }
 
 type EmailQueuePayload struct {
@@ -703,6 +712,9 @@ func updateUserProfile(userID string, req UpdateProfileRequest) (UserResponse, e
 		user.Name = name
 	}
 	if cpf := onlyDigits(req.CPF); cpf != "" {
+		if len(cpf) != 11 {
+			return UserResponse{}, fmt.Errorf("cpf must have 11 digits")
+		}
 		user.CPF = cpf
 	}
 	if phone := strings.TrimSpace(req.Phone); phone != "" {
@@ -899,6 +911,10 @@ func isUserAdmin(user User) bool {
 
 func toUserResponse(user User, token string) UserResponse {
 	isAdmin := isUserAdmin(user)
+	authProvider := strings.TrimSpace(user.AuthProvider)
+	if authProvider == "" {
+		authProvider = "password"
+	}
 	return UserResponse{
 		ID:               user.ID,
 		Email:            user.Email,
@@ -912,7 +928,17 @@ func toUserResponse(user User, token string) UserResponse {
 		Token:            token,
 		EmailConfirmed:   user.EmailConfirmed,
 		EmailConfirmedAt: user.EmailConfirmedAt,
+		AuthProvider:     authProvider,
+		PictureURL:       user.PictureURL,
+		HasPassword:      strings.TrimSpace(user.Password) != "",
+		ProfileComplete:  isProfileComplete(user),
 	}
+}
+
+func isProfileComplete(user User) bool {
+	return strings.TrimSpace(user.Name) != "" &&
+		strings.TrimSpace(user.Email) != "" &&
+		len(onlyDigits(user.CPF)) == 11
 }
 
 func enqueueEmailConfirmation(user User) error {

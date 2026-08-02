@@ -1,4 +1,16 @@
-# Build e deploy das Lambdas Go
+# Deploy integrado: DynamoDB, Lambdas Go e frontend
+
+O script `deploy_lambdas.py` executa os componentes pendentes nesta ordem:
+
+1. Terraform do DynamoDB.
+2. Build e Terraform das Lambdas Go.
+3. `npm ci` e build Angular de producao.
+4. Terraform PRD do site, com upload para S3.
+5. Invalidacao do cache CloudFront.
+
+Cada componente somente e publicado quando `version_local` e superior a
+`version_update`. O arquivo `version_update` so e alterado depois que todas as
+etapas daquele componente terminam com sucesso.
 
 Este backend possui Lambdas Go publicaveis descobertas automaticamente pelo script, incluindo:
 
@@ -29,6 +41,20 @@ O deploy automatico somente processa uma Lambda quando `version_local` e
 superior a `version_update`. Depois de um `terraform apply` bem-sucedido, o
 script copia o valor de `version_local` para `version_update`.
 
+O DynamoDB usa:
+
+```text
+back/dynamoDB/version_local
+back/dynamoDB/version_update
+```
+
+O frontend usa:
+
+```text
+site/version_local
+site/version_update
+```
+
 Para publicar uma alteracao, aumente a versao local da Lambda:
 
 ```powershell
@@ -41,7 +67,9 @@ Pre-requisitos:
 
 - Python 3.10 ou superior.
 - Go 1.21 ou superior.
+- Node.js e npm.
 - Terraform instalado e disponivel no `PATH`.
+- AWS CLI instalado e disponivel no `PATH`.
 - Perfil AWS `mundocolore` configurado.
 
 O script carrega automaticamente o segredo JWT do arquivo local:
@@ -54,6 +82,16 @@ Esse arquivo deve conter somente o segredo JWT, possui no minimo 32 caracteres
 e esta ignorado pelo Git. O script disponibiliza o valor como
 `TF_VAR_jwt_secret` para o Terraform de todas as Lambdas.
 
+Para a Lambda `login`, o script carrega automaticamente `web.client_id` de:
+
+```text
+C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\back\.google_key
+```
+
+O arquivo deve ser o JSON de credenciais de um cliente OAuth do tipo Web e
+tambem esta ignorado pelo Git. Apenas o `client_id` e repassado ao Terraform
+como `TF_VAR_google_client_id`; o `client_secret` nao e enviado para a Lambda.
+
 As Lambdas `send_email` e `email_inbound` compartilham as credenciais Mailjet
 do arquivo local:
 
@@ -65,24 +103,28 @@ O arquivo deve conter `api_key` e `secret_key` em JSON, e tambem esta ignorado
 pelo Git. A Lambda `email_mailbox` nao recebe essas credenciais: ela publica a
 mensagem na SQS, e somente `send_email` realiza o envio pelo Mailjet.
 
-Na raiz da pasta `back`, confira primeiro quais Lambdas seriam publicadas:
+Na raiz da pasta `back`, confira primeiro todos os componentes que seriam
+publicados:
 
 ```powershell
 cd "C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\back"
 python .\deploy_lambdas.py --dry-run
 ```
 
-Para compilar e publicar todas as Lambdas com versao pendente:
+Para publicar DynamoDB, Lambdas e frontend com versao pendente:
 
 ```powershell
 python .\deploy_lambdas.py
 ```
 
-Para processar somente uma Lambda:
+Para limitar quais Lambdas entram na etapa de Lambdas:
 
 ```powershell
 python .\deploy_lambdas.py --lambda products
 ```
+
+Mesmo usando `--lambda`, DynamoDB e frontend continuam sendo avaliados por
+suas proprias versoes. Isso preserva a ordem global do deploy.
 
 Para usar outro perfil AWS:
 
@@ -107,6 +149,17 @@ Para cada Lambda pendente, o script executa:
 5. `terraform plan -input=false -out=.deploy.tfplan`
 6. `terraform apply -input=false .deploy.tfplan`
 7. Atualizacao de `version_update`
+
+Para o DynamoDB pendente, o script executa `terraform init`, `plan` e `apply`
+em `back/dynamoDB`, antes das Lambdas.
+
+Para o frontend pendente, o script executa por ultimo:
+
+1. `npm ci`
+2. `npm run build -- --configuration production`
+3. `terraform init`, `plan` e `apply` em `infra/terraform`
+4. Invalidacao `/*` da distribuicao CloudFront
+5. Atualizacao de `site/version_update`
 
 A Lambda `contact` recebe automaticamente as variaveis Terraform definidas no
 deploy manual existente:

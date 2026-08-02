@@ -2,6 +2,21 @@
 
 Esta estrutura publica o site com `S3 privado + CloudFront` e permite ativar dominio depois sem mudar arquitetura.
 
+## Deploy integrado e versionado
+
+O frontend usa `site/version_local` e `site/version_update`. Depois de alterar
+o site, incremente `site/version_local` e execute:
+
+```powershell
+cd "C:\Users\niore\Documents\projeto mundocolore\mundocolore_site\back"
+python .\deploy_lambdas.py --dry-run
+python .\deploy_lambdas.py
+```
+
+Quando o front estiver pendente, ele sempre sera a ultima etapa. O script faz
+o build Angular PRD, aplica este Terraform, invalida o CloudFront e so entao
+atualiza `site/version_update`.
+
 ## Requisitos
 - Terraform >= 1.5
 - AWS CLI configurada

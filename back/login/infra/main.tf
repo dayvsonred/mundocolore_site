@@ -20,6 +20,15 @@ locals {
   cors_allow_headers = "Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token"
   cors_allow_methods = "GET,POST,PUT,PATCH,DELETE,OPTIONS"
   cors_allow_origin  = "*"
+
+  google_credentials_path = abspath("${path.module}/${var.google_credentials_file}")
+  google_credentials = fileexists(local.google_credentials_path) ? jsondecode(
+    file(local.google_credentials_path)
+  ) : null
+  google_client_id_from_file = try(trimspace(local.google_credentials.web.client_id), "")
+  google_client_id = local.google_client_id_from_file != "" ? (
+    local.google_client_id_from_file
+  ) : trimspace(var.google_client_id)
 }
 
 resource "aws_iam_role" "lambda_role" {
@@ -50,8 +59,10 @@ resource "aws_iam_role_policy" "dynamodb_policy" {
         Effect = "Allow"
         Action = [
           "dynamodb:GetItem",
+          "dynamodb:PutItem",
           "dynamodb:Scan",
-          "dynamodb:Query"
+          "dynamodb:Query",
+          "dynamodb:UpdateItem"
         ]
         Resource = [
           "arn:aws:dynamodb:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:table/mundocolore-users",
@@ -79,6 +90,7 @@ resource "aws_lambda_function" "login_lambda" {
       TABLE_NAME       = "mundocolore-users"
       JWT_SECRET       = var.jwt_secret
       LOGIN_BASIC_AUTH = var.login_basic_auth
+      GOOGLE_CLIENT_ID = local.google_client_id
     }
   }
 }
@@ -109,6 +121,28 @@ resource "aws_api_gateway_integration" "login_post_integration" {
   rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
   resource_id             = aws_api_gateway_resource.login_resource.id
   http_method             = aws_api_gateway_method.login_post.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.login_lambda.invoke_arn
+}
+
+resource "aws_api_gateway_resource" "login_google_resource" {
+  rest_api_id = data.aws_api_gateway_rest_api.gateway.id
+  parent_id   = aws_api_gateway_resource.login_resource.id
+  path_part   = "google"
+}
+
+resource "aws_api_gateway_method" "login_google_post" {
+  rest_api_id   = data.aws_api_gateway_rest_api.gateway.id
+  resource_id   = aws_api_gateway_resource.login_google_resource.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "login_google_post_integration" {
+  rest_api_id             = data.aws_api_gateway_rest_api.gateway.id
+  resource_id             = aws_api_gateway_resource.login_google_resource.id
+  http_method             = aws_api_gateway_method.login_google_post.http_method
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.login_lambda.invoke_arn
@@ -175,6 +209,7 @@ resource "aws_lambda_permission" "api_gateway" {
 locals {
   login_cors_resources = {
     login               = aws_api_gateway_resource.login_resource.id
+    login_google        = aws_api_gateway_resource.login_google_resource.id
     login_health_online = aws_api_gateway_resource.health_online_resource.id
     login_health_data   = aws_api_gateway_resource.health_data_resource.id
   }

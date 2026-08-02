@@ -335,6 +335,23 @@ p {
   max-width: 640px;
 }
 
+.institutional-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin-top: 16px;
+}
+
+.institutional-links a {
+  color: var(--accent-blue);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.institutional-links a:hover {
+  text-decoration: underline;
+}
+
 .products {
   background: #fff;
 }
@@ -663,6 +680,10 @@ p {
   .about-copy p {
     margin-left: auto;
     margin-right: auto;
+  }
+
+  .institutional-links {
+    justify-content: center;
   }
 
   .featured-grid,

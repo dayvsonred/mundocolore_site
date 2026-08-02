@@ -20,6 +20,9 @@ func HandleRequest(ctx context.Context, request events.APIGatewayProxyRequest) (
 	if request.HTTPMethod == "POST" && strings.HasSuffix(request.Path, "/login") {
 		return HandleLogin(ctx, request)
 	}
+	if request.HTTPMethod == "POST" && strings.HasSuffix(request.Path, "/login/google") {
+		return HandleGoogleLogin(ctx, request)
+	}
 
 	return notFoundResponse(), nil
 }

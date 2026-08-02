@@ -22,6 +22,7 @@ export class CatalogPageComponent implements OnInit, OnDestroy {
   filteredProducts: Product[] = [];
 
   readonly pageSize = 24;
+  readonly initialMinimumProductCount = 12;
   readonly minimumFilteredPageSize = 4;
   readonly preferredSizeOptions = ['P', 'M', 'G', 'GG', 'XGG', 'G1', 'G2', 'G3'];
   readonly promotionFilters: Array<{ value: PromotionFilter; label: string }> = [
@@ -174,8 +175,8 @@ export class CatalogPageComponent implements OnInit, OnDestroy {
     try {
       if (reset) {
         await this.loadProductPage(undefined, true);
-        if (!this.filteredProducts.length && this.nextPageKey) {
-          await this.loadUntilFilteredCount(1);
+        if (this.filteredProducts.length < this.initialMinimumProductCount && this.nextPageKey) {
+          await this.loadUntilFilteredCount(this.initialMinimumProductCount);
         }
         return;
       }

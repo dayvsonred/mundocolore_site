@@ -1,1 +1,1 @@
-export const APP_NAME = 'mundocolorestore';
+export const APP_NAME = 'Mundo Colore Store';

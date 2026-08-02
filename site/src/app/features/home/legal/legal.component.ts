@@ -66,9 +66,12 @@ export class LegalComponent implements OnInit {
       id: 'privacidade',
       title: 'Aviso de Privacidade',
       content: [
-        'Coletamos apenas os dados necessários para processar doações e melhorar sua experiência.',
-        'Seus dados são protegidos com práticas de segurança e não são vendidos a terceiros.',
-        'Você pode solicitar acesso, correção ou exclusão de dados a qualquer momento.'
+        'A Mundo Colore Store coleta e utiliza apenas os dados necessários para criar contas, autenticar clientes, processar compras, acompanhar pedidos, prevenir fraudes, prestar atendimento e cumprir obrigações legais.',
+        'Quando o cliente escolhe entrar com Google, recebemos nome, endereço de e-mail, foto de perfil e um identificador único da Conta Google. Esses dados são utilizados exclusivamente para criar, localizar, vincular e autenticar a conta do cliente na Mundo Colore Store.',
+        'O login com Google não concede à Mundo Colore Store acesso ao Gmail, Google Drive, contatos, calendário, senha da Conta Google ou outros conteúdos privados dos serviços Google.',
+        'Os dados de autenticação e cadastro são armazenados com medidas técnicas e administrativas de segurança enquanto forem necessários para fornecer os serviços da loja, proteger a conta e atender às obrigações legais aplicáveis.',
+        'A Mundo Colore Store não vende dados pessoais. O compartilhamento ocorre somente com prestadores necessários à operação, segurança, pagamento, entrega ou atendimento, ou quando exigido por lei, sempre limitado à finalidade aplicável.',
+        'O cliente pode solicitar acesso, correção, atualização ou exclusão de seus dados pelo e-mail contato@mundocolorestore.com, observados os prazos e as obrigações legais de retenção.'
       ]
     },
     {

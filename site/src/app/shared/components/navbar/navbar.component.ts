@@ -2,6 +2,7 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { CartService } from '../../../core/services/cart.service';
 import { AuthenticationService } from '../../../core/services/auth.service';
+import { APP_NAME } from '../../../core/constants/branding';
 
 @Component({
   selector: 'app-navbar',
@@ -10,7 +11,7 @@ import { AuthenticationService } from '../../../core/services/auth.service';
 })
 export class NavbarComponent implements OnInit {
   readonly logoPath = 'assets/images/logo-mundo-colore.jpg';
-  readonly brandName = 'Mundo Colore';
+  readonly brandName = APP_NAME;
 
   mobileMenuOpen = false;
   isNavbarSolid = false;

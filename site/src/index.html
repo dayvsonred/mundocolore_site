@@ -3,10 +3,14 @@
 
 <head>
   <meta charset="utf-8">
-  <title>mundocolorestore</title>
+  <title>Mundo Colore Store | Moda infantil colorida</title>
   <base href="/">
 
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta
+    name="description"
+    content="A Mundo Colore Store é uma loja online de roupas e acessórios infantis, com catálogo, conta de cliente, compras e acompanhamento de pedidos."
+  >
 
   <link rel="apple-touch-icon" sizes="57x57" href="assets/favicon/apple-icon-57x57.png">
   <link rel="apple-touch-icon" sizes="60x60" href="assets/favicon/apple-icon-60x60.png">
@@ -32,11 +36,29 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 
 </head>
 
 <body class="mat-app-background">
-  <app-root></app-root>
+  <app-root>
+    <main>
+      <h1>Mundo Colore Store</h1>
+      <p>
+        Loja online de roupas e acessórios infantis. Consulte produtos, crie sua conta,
+        faça compras e acompanhe seus pedidos.
+      </p>
+      <p>
+        O login com Google usa somente nome, endereço de e-mail, foto de perfil e
+        identificador da Conta Google para criar ou autenticar sua conta na loja.
+        A Mundo Colore Store não acessa Gmail, Google Drive ou contatos.
+      </p>
+      <nav aria-label="Informações legais">
+        <a href="/home/termos?item=privacidade">Aviso de Privacidade</a>
+        <a href="/home/termos?item=termo-de-uso">Termos de Uso</a>
+      </nav>
+    </main>
+  </app-root>
 </body>
 
 </html>

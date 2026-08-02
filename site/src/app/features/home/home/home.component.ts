@@ -112,14 +112,14 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.newsletterForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]]
     });
-    this.titleService.setTitle('mundocolorestore - Moda infantil colorida');
+    this.titleService.setTitle('Mundo Colore Store | Moda infantil colorida');
     this.meta.updateTag({
       name: 'description',
-      content: 'Mundo Colore Store: ecommerce infantil com colecoes coloridas, confortaveis e modernas.'
+      content: 'A Mundo Colore Store é uma loja online de roupas e acessórios infantis, com catálogo, conta de cliente, compras e acompanhamento de pedidos.'
     });
     this.meta.updateTag({
       name: 'keywords',
-      content: 'mundocolorestore, roupas infantis, moda infantil, colecao colorida, ecommerce'
+      content: 'Mundo Colore Store, roupas infantis, moda infantil, coleção colorida, ecommerce'
     });
   }
 

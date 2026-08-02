@@ -7,12 +7,14 @@ import { PasswordResetComponent } from './password-reset/password-reset.componen
 import { NewUserComponent } from './new-user/new-user.component';
 import { AvValidEmailComponent } from './av-valid-email/av-valid-email.component';
 import { EmailConfirmationComponent } from './email-confirmation/email-confirmation.component';
+import { CompleteProfileComponent } from './complete-profile/complete-profile.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'password-reset-request', component: PasswordResetRequestComponent },
   { path: 'password-reset', component: PasswordResetComponent },
   { path: 'new-user', component: NewUserComponent },
+  { path: 'completar-cadastro', component: CompleteProfileComponent },
   { path: 'confirmar-email', component: EmailConfirmationComponent },
   { path: 'email-confirmation', component: EmailConfirmationComponent },
   { path: 'valid-email', component: AvValidEmailComponent },

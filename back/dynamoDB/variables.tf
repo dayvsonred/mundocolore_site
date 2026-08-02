@@ -55,12 +55,21 @@ variable "dynamodb_tables" {
         {
           name = "email"
           type = "S"
+        },
+        {
+          name = "google_sub"
+          type = "S"
         }
       ]
       global_secondary_indexes = [
         {
           name            = "email-index"
           hash_key        = "email"
+          projection_type = "ALL"
+        },
+        {
+          name            = "google-sub-index"
+          hash_key        = "google_sub"
           projection_type = "ALL"
         }
       ]

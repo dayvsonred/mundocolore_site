@@ -51,6 +51,15 @@
                 <button mat-button id="resetPassword" (click)="resetPassword()" type="button">Resetar Senha</button>
             </mat-card-actions>
 
+            <div class="social-login" *ngIf="googleConfigured">
+                <div class="login-divider"><span>ou</span></div>
+                <div #googleButton class="google-button" aria-label="Continuar com Google"></div>
+                <p class="google-terms-hint" *ngIf="!loginForm.get('acceptTerms')?.value">
+                    Para criar uma nova conta com Google, aceite os termos acima.
+                    Contas Google ja vinculadas podem entrar normalmente.
+                </p>
+            </div>
+
         </mat-card>
 
         <mat-progress-bar *ngIf="loading" mode="indeterminate"></mat-progress-bar>

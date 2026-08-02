@@ -110,3 +110,23 @@ terraform output
 - Criptografia server-side habilitada
 - Streams habilitados com `NEW_AND_OLD_IMAGES`
 - IAM policy para acesso as tabelas
+
+# Deploy versionado
+
+O deploy integrado usa os arquivos:
+
+```text
+version_local
+version_update
+```
+
+Depois de alterar esta infraestrutura, incremente `version_local`. O script
+`../deploy_lambdas.py` executara este Terraform antes das Lambdas e somente
+atualizara `version_update` apos um `terraform apply` bem-sucedido.
+
+Simulacao:
+
+```powershell
+cd ..
+python .\deploy_lambdas.py --dry-run
+```

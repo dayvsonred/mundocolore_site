@@ -1,0 +1,40 @@
+.login-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.social-login {
+  padding: 0 16px 20px;
+}
+
+.login-divider {
+  align-items: center;
+  color: #777;
+  display: flex;
+  gap: 12px;
+  margin: 4px 0 16px;
+}
+
+.login-divider::before,
+.login-divider::after {
+  background: #ddd;
+  content: '';
+  flex: 1;
+  height: 1px;
+}
+
+.google-button {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+
+.google-terms-hint {
+  color: #6b625c;
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 10px auto 0;
+  max-width: 320px;
+  text-align: center;
+}
