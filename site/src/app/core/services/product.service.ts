@@ -39,6 +39,7 @@ export interface ProductCollectionRecord {
 export interface ProductCollectionCoupon {
   code: string;
   spread_reduction_percent: number;
+  payment_methods: string[];
 }
 
 export interface CreateProductBrandPayload {

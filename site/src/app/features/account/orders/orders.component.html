@@ -61,6 +61,18 @@
           <span>{{ order.products.length }} item(ns)</span>
         </div>
 
+        <div class="payment-details" *ngIf="order.raw.payment">
+          <strong>Pagamento: {{ order.raw.payment.label }}</strong>
+          <span>{{ order.raw.payment.installments || 1 }}x | {{ order.raw.payment.status || order.status }}</span>
+          <a
+            *ngIf="order.raw.payment.receipt_url"
+            [href]="order.raw.payment.receipt_url"
+            target="_blank"
+            rel="noopener noreferrer">
+            Ver comprovante InfinitePay
+          </a>
+        </div>
+
         <div class="items-table">
           <div class="items-row items-head">
             <span>Produto</span>
@@ -85,6 +97,13 @@
       </section>
 
       <div class="order-actions">
+        <button
+          *ngIf="order.raw.status === 'pending_payment' && (order.raw.payment?.method === 'pix' || order.raw.payment?.method === 'credit_card')"
+          mat-raised-button
+          color="primary"
+          (click)="payOrder(order)">
+          Pagar agora
+        </button>
         <button
           mat-stroked-button
           (click)="viewOrderDetails(order)"

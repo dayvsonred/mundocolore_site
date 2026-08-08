@@ -15,17 +15,32 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
+	"github.com/aws/aws-sdk-go/service/sqs"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type Payment struct {
-	ID        string  `json:"id" dynamodbav:"id"`
-	OrderID   string  `json:"order_id" dynamodbav:"order_id"`
-	UserID    string  `json:"user_id" dynamodbav:"user_id"`
-	Amount    float64 `json:"amount" dynamodbav:"amount"`
-	Method    string  `json:"method" dynamodbav:"method"`
-	Status    string  `json:"status" dynamodbav:"status"`
-	CreatedAt string  `json:"created_at" dynamodbav:"created_at"`
+	ID               string  `json:"id" dynamodbav:"id"`
+	OrderID          string  `json:"order_id" dynamodbav:"order_id"`
+	OrderNSU         string  `json:"order_nsu,omitempty" dynamodbav:"order_nsu,omitempty"`
+	UserID           string  `json:"user_id" dynamodbav:"user_id"`
+	Amount           float64 `json:"amount" dynamodbav:"amount"`
+	AmountCents      int64   `json:"amount_cents,omitempty" dynamodbav:"amount_cents,omitempty"`
+	PaidAmountCents  int64   `json:"paid_amount_cents,omitempty" dynamodbav:"paid_amount_cents,omitempty"`
+	Method           string  `json:"method" dynamodbav:"method"`
+	ActualMethod     string  `json:"actual_method,omitempty" dynamodbav:"actual_method,omitempty"`
+	Provider         string  `json:"provider,omitempty" dynamodbav:"provider,omitempty"`
+	Status           string  `json:"status" dynamodbav:"status"`
+	CheckoutURL      string  `json:"checkout_url,omitempty" dynamodbav:"checkout_url,omitempty"`
+	InvoiceSlug      string  `json:"invoice_slug,omitempty" dynamodbav:"invoice_slug,omitempty"`
+	TransactionNSU   string  `json:"transaction_nsu,omitempty" dynamodbav:"transaction_nsu,omitempty"`
+	ReceiptURL       string  `json:"receipt_url,omitempty" dynamodbav:"receipt_url,omitempty"`
+	Installments     int     `json:"installments,omitempty" dynamodbav:"installments,omitempty"`
+	ProviderResponse string  `json:"-" dynamodbav:"provider_response,omitempty"`
+	LastError        string  `json:"last_error,omitempty" dynamodbav:"last_error,omitempty"`
+	CreatedAt        string  `json:"created_at" dynamodbav:"created_at"`
+	UpdatedAt        string  `json:"updated_at,omitempty" dynamodbav:"updated_at,omitempty"`
+	PaidAt           string  `json:"paid_at,omitempty" dynamodbav:"paid_at,omitempty"`
 }
 
 type CreatePaymentRequest struct {
@@ -44,9 +59,16 @@ type PaymentResponse struct {
 }
 
 var (
-	dynamoClient *dynamodb.DynamoDB
-	tableName    = "mundocolore-payments"
-	jwtSecret    = []byte("your-secret-key")
+	dynamoClient           *dynamodb.DynamoDB
+	tableName              = "mundocolore-payments"
+	ordersTableName        = "mundocolore-orders"
+	infinitePayHandle      = ""
+	infinitePayAPIURL      = "https://api.checkout.infinitepay.io"
+	infinitePayRedirectURL = "https://mundocolorestore.com/checkout/infinitepay/payment"
+	infinitePayWebhookURL  = "https://mundocolorestore.com/webhook/infinitepay"
+	emailQueueURL          = ""
+	paymentSQSClient       *sqs.SQS
+	jwtSecret              = []byte("your-secret-key")
 )
 
 const (
@@ -60,6 +82,24 @@ func init() {
 		Region: aws.String("sa-east-1"),
 	}))
 	dynamoClient = dynamodb.New(sess)
+	paymentSQSClient = sqs.New(sess)
+	if value := strings.TrimSpace(os.Getenv("TABLE_NAME")); value != "" {
+		tableName = value
+	}
+	if value := strings.TrimSpace(os.Getenv("ORDERS_TABLE_NAME")); value != "" {
+		ordersTableName = value
+	}
+	infinitePayHandle = strings.TrimSpace(os.Getenv("INFINITEPAY_HANDLE"))
+	if value := strings.TrimRight(strings.TrimSpace(os.Getenv("INFINITEPAY_API_URL")), "/"); value != "" {
+		infinitePayAPIURL = value
+	}
+	if value := strings.TrimSpace(os.Getenv("INFINITEPAY_REDIRECT_URL")); value != "" {
+		infinitePayRedirectURL = value
+	}
+	if value := strings.TrimSpace(os.Getenv("INFINITEPAY_WEBHOOK_URL")); value != "" {
+		infinitePayWebhookURL = value
+	}
+	emailQueueURL = strings.TrimSpace(os.Getenv("EMAIL_QUEUE_URL"))
 	if secret := os.Getenv("JWT_SECRET"); secret != "" {
 		jwtSecret = []byte(secret)
 	}
@@ -79,6 +119,7 @@ func HandleCreatePayment(_ context.Context, request events.APIGatewayProxyReques
 	body, _ := json.Marshal(payment)
 	return events.APIGatewayProxyResponse{
 		StatusCode: 201,
+		Headers:    responseHeaders(),
 		Body:       string(body),
 	}, nil
 }
@@ -92,6 +133,7 @@ func HandleHealthOnline(_ context.Context, _ events.APIGatewayProxyRequest) (eve
 
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
+		Headers:    responseHeaders(),
 		Body:       string(body),
 	}, nil
 }
@@ -127,6 +169,7 @@ func HandleHealthData(_ context.Context, _ events.APIGatewayProxyRequest) (event
 
 		return events.APIGatewayProxyResponse{
 			StatusCode: 200,
+			Headers:    responseHeaders(),
 			Body:       string(body),
 		}, nil
 	}
@@ -164,6 +207,7 @@ func HandleHealthData(_ context.Context, _ events.APIGatewayProxyRequest) (event
 
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
+		Headers:    responseHeaders(),
 		Body:       string(body),
 	}, nil
 }
@@ -179,8 +223,11 @@ func validateJWT(tokenString string) (string, error) {
 		return "", err
 	}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		if userID, ok := claims["user_id"].(string); ok {
+		if userID, ok := claims["user_id"].(string); ok && userID != "" {
 			return userID, nil
+		}
+		if subject, ok := claims["sub"].(string); ok && subject != "" {
+			return subject, nil
 		}
 	}
 	return "", fmt.Errorf("invalid token")
@@ -227,19 +274,28 @@ func generateID() string {
 }
 
 func unauthorizedResponse(message string) events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse{StatusCode: 401, Body: fmt.Sprintf(`{"error": "%s"}`, message)}
+	return events.APIGatewayProxyResponse{StatusCode: 401, Headers: responseHeaders(), Body: fmt.Sprintf(`{"error": "%s"}`, message)}
 }
 
 func badRequestResponse(message string) events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse{StatusCode: 400, Body: fmt.Sprintf(`{"error": "%s"}`, message)}
+	return events.APIGatewayProxyResponse{StatusCode: 400, Headers: responseHeaders(), Body: fmt.Sprintf(`{"error": "%s"}`, message)}
 }
 
 func serverErrorResponse(err error) events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse{StatusCode: 500, Body: fmt.Sprintf(`{"error": "%s"}`, err.Error())}
+	return events.APIGatewayProxyResponse{StatusCode: 500, Headers: responseHeaders(), Body: fmt.Sprintf(`{"error": "%s"}`, err.Error())}
 }
 
 func notFoundResponse() events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse{StatusCode: 404, Body: `{"error": "not found"}`}
+	return events.APIGatewayProxyResponse{StatusCode: 404, Headers: responseHeaders(), Body: `{"error": "not found"}`}
+}
+
+func responseHeaders() map[string]string {
+	return map[string]string{
+		"Content-Type":                 "application/json",
+		"Access-Control-Allow-Origin":  "https://mundocolorestore.com",
+		"Access-Control-Allow-Headers": "Authorization,Content-Type",
+		"Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+	}
 }
 
 func getAuthorizationHeader(headers map[string]string) string {

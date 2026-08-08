@@ -167,7 +167,10 @@ export class CollectionRegistrationComponent implements OnInit {
   createCouponGroup(coupon?: ProductCollectionCoupon): AbstractControl {
     return this.formBuilder.group({
       code: [coupon?.code || '', Validators.maxLength(40)],
-      spread_reduction_percent: [coupon?.spread_reduction_percent || 0, Validators.min(0)]
+      spread_reduction_percent: [coupon?.spread_reduction_percent || 0, Validators.min(0)],
+      pix: [coupon?.payment_methods?.includes('pix') || false],
+      credit_card: [coupon?.payment_methods?.includes('credit_card') || false],
+      credit_colore: [coupon?.payment_methods?.includes('credit_colore') || false]
     }, { validators: couponFieldsValidator });
   }
 
@@ -261,15 +264,24 @@ export class CollectionRegistrationComponent implements OnInit {
       return collection.coupons;
     }
     return collection.coupon_code && collection.coupon_spread_reduction_percent > 0
-      ? [{ code: collection.coupon_code, spread_reduction_percent: collection.coupon_spread_reduction_percent }]
+      ? [{
+          code: collection.coupon_code,
+          spread_reduction_percent: collection.coupon_spread_reduction_percent,
+          payment_methods: []
+        }]
       : [];
   }
 
   private couponPayload(coupons: FormArray): ProductCollectionCoupon[] {
     return coupons.getRawValue()
-      .map((coupon: ProductCollectionCoupon) => ({
+      .map((coupon: ProductCollectionCoupon & Record<string, any>) => ({
         code: String(coupon.code || '').trim(),
-        spread_reduction_percent: Number(coupon.spread_reduction_percent || 0)
+        spread_reduction_percent: Number(coupon.spread_reduction_percent || 0),
+        payment_methods: [
+          coupon['pix'] ? 'pix' : '',
+          coupon['credit_card'] ? 'credit_card' : '',
+          coupon['credit_colore'] ? 'credit_colore' : ''
+        ].filter(Boolean)
       }))
       .filter((coupon: ProductCollectionCoupon) => coupon.code || coupon.spread_reduction_percent > 0);
   }

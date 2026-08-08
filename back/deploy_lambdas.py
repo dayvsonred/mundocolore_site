@@ -295,6 +295,29 @@ def mark_as_deployed(module: LambdaModule, *, dry_run: bool) -> None:
 def deploy_module(module: LambdaModule, *, env: dict[str, str], dry_run: bool) -> None:
     build_lambda(module, env=env, dry_run=dry_run)
     deploy_terraform(module, env=env, dry_run=dry_run)
+    if module.name == "payments":
+        gateway_id = terraform_output(
+            "api_gateway_id",
+            module.infra,
+            env=env,
+            dry_run=dry_run,
+        )
+        run_command(
+            [
+                "aws",
+                "apigateway",
+                "create-deployment",
+                "--rest-api-id",
+                gateway_id,
+                "--stage-name",
+                "prod",
+                "--region",
+                "sa-east-1",
+            ],
+            module.infra,
+            env=env,
+            dry_run=dry_run,
+        )
     mark_as_deployed(module, dry_run=dry_run)
 
 
@@ -500,6 +523,8 @@ def main() -> int:
         required_tools = {"terraform"}
         if pending_lambdas:
             required_tools.add("go")
+        if any(module.name == "payments" for module in pending_lambdas):
+            required_tools.add("aws")
         if frontend_pending:
             required_tools.update({"npm", "aws"})
         if not args.dry_run:

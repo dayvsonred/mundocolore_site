@@ -91,3 +91,15 @@ variable "create_acm_certificate" {
   type        = bool
   default     = true
 }
+
+variable "api_gateway_origin_domain" {
+  description = "Dominio regional do API Gateway usado pelo CloudFront para encaminhar webhooks."
+  type        = string
+  default     = "b8i4etrh23.execute-api.sa-east-1.amazonaws.com"
+}
+
+variable "api_gateway_origin_path" {
+  description = "Stage do API Gateway usado como origin path."
+  type        = string
+  default     = "/prod"
+}

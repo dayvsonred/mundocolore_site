@@ -8,6 +8,7 @@ import { CreateOrderPayload, Order, OrderPayment, OrderService } from '../../../
 import { CartItem } from '../../../core/models/product.model';
 import { CreditColore, CreditColoreService } from '../../../core/services/credit-colore.service';
 import { CouponStorageService } from '../../../core/services/coupon-storage.service';
+import { PaymentService } from '../../../core/services/payment.service';
 
 type CheckoutStep = 'address' | 'payment' | 'review' | 'order-payment';
 
@@ -39,6 +40,7 @@ export class CheckoutPageComponent implements OnInit {
   appliedCouponCode = '';
   applyingCoupon = false;
   private couponUnitPrices: Record<string, number> = {};
+  private couponValidationRequest = 0;
   creditColore: CreditColore | null = null;
   creditColoreInstallments = 1;
 
@@ -61,7 +63,7 @@ export class CheckoutPageComponent implements OnInit {
       amount: 0,
       status: 'pending',
       icon: 'qr_code_2',
-      description: 'Os dados para pagamento serao exibidos apos a confirmacao.'
+      description: 'Voce sera direcionado a InfinitePay para gerar e pagar o PIX.'
     },
     {
       method: 'credit_card',
@@ -69,15 +71,7 @@ export class CheckoutPageComponent implements OnInit {
       amount: 0,
       status: 'pending',
       icon: 'credit_card',
-      description: 'Os dados do cartao serao solicitados na tela de pagamento.'
-    },
-    {
-      method: 'boleto',
-      label: 'Boleto',
-      amount: 0,
-      status: 'pending',
-      icon: 'receipt_long',
-      description: 'O boleto sera gerado apos a confirmacao da compra.'
+      description: 'Voce sera direcionado a InfinitePay para pagar com seguranca.'
     },
     {
       method: 'credit_colore',
@@ -85,7 +79,7 @@ export class CheckoutPageComponent implements OnInit {
       amount: 0,
       status: 'pending_approval',
       icon: 'account_balance_wallet',
-      description: 'Use seu credito pre-aprovado e parcele em ate 5 vezes.'
+      description: 'Use seu credito pre-aprovado e parcele em ate 3 vezes.'
     }
   ];
 
@@ -96,6 +90,7 @@ export class CheckoutPageComponent implements OnInit {
     private orderService: OrderService,
     private creditColoreService: CreditColoreService,
     private couponStorage: CouponStorageService,
+    private paymentService: PaymentService,
     private router: Router
   ) {}
 
@@ -182,6 +177,9 @@ export class CheckoutPageComponent implements OnInit {
       ...payment,
       amount: this.total
     };
+    if (this.appliedCouponCode || this.couponCode.trim()) {
+      this.applyCoupon(true);
+    }
   }
 
   continueFromPayment(): void {
@@ -221,6 +219,12 @@ export class CheckoutPageComponent implements OnInit {
       this.errorMessage = 'Revise endereco, pagamento e produtos antes de confirmar.';
       return;
     }
+    if (this.createdOrder && this.selectedPayment.method !== 'credit_colore') {
+      this.loading = true;
+      this.errorMessage = '';
+      this.redirectToInfinitePay(this.createdOrder);
+      return;
+    }
 
     this.loading = true;
     this.errorMessage = '';
@@ -228,12 +232,34 @@ export class CheckoutPageComponent implements OnInit {
     this.orderService.createOrder(this.buildOrderPayload()).subscribe({
       next: (order) => {
         this.createdOrder = order;
-        this.currentStep = 'order-payment';
-        this.loading = false;
+        if (this.selectedPayment?.method === 'credit_colore') {
+          this.currentStep = 'order-payment';
+          this.loading = false;
+          return;
+        }
+        this.redirectToInfinitePay(order);
       },
       error: () => {
         this.loading = false;
         this.errorMessage = 'Nao foi possivel confirmar o pedido.';
+      }
+    });
+  }
+
+  private redirectToInfinitePay(order: Order): void {
+    this.paymentService.createInfinitePayCheckout(order.id).subscribe({
+      next: (checkout) => {
+        if (!checkout.checkout_url) {
+          this.loading = false;
+          this.errorMessage = 'A InfinitePay nao retornou o endereco de pagamento.';
+          return;
+        }
+        window.location.assign(checkout.checkout_url);
+      },
+      error: () => {
+        this.loading = false;
+        this.currentStep = 'review';
+        this.errorMessage = 'O pedido foi salvo, mas nao foi possivel abrir o pagamento da InfinitePay. Tente confirmar novamente.';
       }
     });
   }
@@ -245,13 +271,15 @@ export class CheckoutPageComponent implements OnInit {
       return;
     }
     this.applyingCoupon = true;
+    const requestId = ++this.couponValidationRequest;
     this.errorMessage = '';
     this.orderService.validateCoupon(code, this.cartItems.map((item) => ({
       product_id: item.product.id,
       quantity: item.quantity,
       price: Number(item.product.price || 0)
-    }))).subscribe({
+    })), this.selectedPayment?.method || '').subscribe({
       next: (response) => {
+        if (requestId !== this.couponValidationRequest) return;
         this.appliedCouponCode = response.coupon_code;
         this.couponCode = response.coupon_code;
         this.couponUnitPrices = response.items.reduce((prices, item) => {
@@ -266,15 +294,20 @@ export class CheckoutPageComponent implements OnInit {
         this.applyingCoupon = false;
       },
       error: () => {
+        if (requestId !== this.couponValidationRequest) return;
         this.clearCoupon(false);
         if (!fromSavedCoupon) this.couponStorage.clearCouponCode();
         this.applyingCoupon = false;
-        this.errorMessage = 'Cupom invalido para os produtos selecionados.';
+        this.errorMessage = this.selectedPayment
+          ? `Cupom invalido para pagamento com ${this.selectedPayment.label}.`
+          : 'Cupom invalido para os produtos selecionados.';
       }
     });
   }
 
   clearCoupon(clearInput = true): void {
+    this.couponValidationRequest++;
+    this.applyingCoupon = false;
     this.appliedCouponCode = '';
     this.couponUnitPrices = {};
     this.discountAmount = 0;

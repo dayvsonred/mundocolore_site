@@ -51,6 +51,7 @@ func TestOrderStatusLabelUsesPortuguese(t *testing.T) {
 	tests := map[string]string{
 		"pending_payment":  "Aguardando pagamento",
 		"pending_approval": "Aguardando aprovação",
+		"payment_review":   "Pagamento em análise",
 		"approved":         "Pedido aprovado",
 		"packed":           "Pedido embalado",
 		"shipped":          "Pedido enviado",
@@ -140,23 +141,45 @@ func TestEnqueueOrderEmailIncludesLocalizedDetails(t *testing.T) {
 	}
 }
 
-func TestFindCouponReductionSupportsCouponListAndLegacyCoupon(t *testing.T) {
+func TestFindCouponReductionRequiresAnEnabledPaymentMethod(t *testing.T) {
 	collection := CollectionPricing{
 		Coupons: []CollectionCoupon{
 			{Code: "PRIMEIRO", SpreadReductionPercent: 5},
-			{Code: "SEGUNDO", SpreadReductionPercent: 12.5},
+			{Code: "SEGUNDO", SpreadReductionPercent: 12.5, PaymentMethods: []string{"pix", "credit_colore"}},
 		},
 		CouponCode:                   "LEGADO",
 		CouponSpreadReductionPercent: 8,
 	}
-	if got := findCouponReduction(collection, " segundo "); got != 12.5 {
+	if got := findCouponReduction(collection, " segundo ", "pix"); got != 12.5 {
 		t.Fatalf("expected list coupon reduction 12.5, got %.2f", got)
 	}
-	if got := findCouponReduction(collection, "legado"); got != 8 {
-		t.Fatalf("expected legacy coupon reduction 8, got %.2f", got)
+	if got := findCouponReduction(collection, "segundo", "credit_card"); got != 0 {
+		t.Fatalf("expected coupon to be invalid for credit card, got %.2f", got)
 	}
-	if got := findCouponReduction(collection, "INVALIDO"); got != 0 {
+	if got := findCouponReduction(collection, "primeiro", "pix"); got != 0 {
+		t.Fatalf("expected coupon without checked methods to be invalid, got %.2f", got)
+	}
+	if got := findCouponReduction(collection, "segundo", ""); got != 12.5 {
+		t.Fatalf("expected pre-checkout validation to accept a coupon with enabled methods, got %.2f", got)
+	}
+	if got := findCouponReduction(collection, "legado", "pix"); got != 0 {
+		t.Fatalf("expected legacy coupon without enabled methods to be invalid, got %.2f", got)
+	}
+	if got := findCouponReduction(collection, "INVALIDO", "pix"); got != 0 {
 		t.Fatalf("expected invalid coupon reduction 0, got %.2f", got)
+	}
+}
+
+func TestValidatePaymentMethodOnlyAcceptsCheckoutOptions(t *testing.T) {
+	for _, method := range []string{"pix", "credit_card", "credit_colore"} {
+		if err := validatePaymentMethod(method); err != nil {
+			t.Fatalf("expected %s to be valid: %v", method, err)
+		}
+	}
+	for _, method := range []string{"", "boleto", "bitcoin"} {
+		if err := validatePaymentMethod(method); err == nil {
+			t.Fatalf("expected %q to be invalid", method)
+		}
 	}
 }
 

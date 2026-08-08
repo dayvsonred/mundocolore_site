@@ -21,7 +21,7 @@
         </mat-option>
       </mat-select>
     </mat-form-field>
-    <mat-form-field appearance="outline"><mat-label>Status</mat-label><mat-select name="status" [(ngModel)]="filters['status']"><mat-option value="">Todos</mat-option><mat-option value="pending_payment">Aguardando pagamento</mat-option><mat-option value="pending_approval">Aguardando aprovacao</mat-option><mat-option *ngFor="let status of statuses" [value]="status[0]">{{ status[1] }}</mat-option></mat-select></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Status</mat-label><mat-select name="status" [(ngModel)]="filters['status']"><mat-option value="">Todos</mat-option><mat-option value="pending_payment">Aguardando pagamento</mat-option><mat-option value="pending_approval">Aguardando aprovacao</mat-option><mat-option value="payment_review">Pagamento em analise</mat-option><mat-option *ngFor="let status of statuses" [value]="status[0]">{{ status[1] }}</mat-option></mat-select></mat-form-field>
     <mat-form-field appearance="outline"><mat-label>Data inicial</mat-label><input matInput type="date" name="created_from" [(ngModel)]="filters['created_from']"></mat-form-field>
     <mat-form-field appearance="outline"><mat-label>Data final</mat-label><input matInput type="date" name="created_to" [(ngModel)]="filters['created_to']"></mat-form-field>
     <mat-form-field appearance="outline"><mat-label>Valor minimo</mat-label><input matInput type="number" name="min_value" [(ngModel)]="filters['min_value']"></mat-form-field>
@@ -89,6 +89,9 @@
           <p>{{ order.payment?.label || '-' }}</p>
           <span>{{ order.payment?.installments || 1 }}x | {{ order.payment?.status || '-' }}</span>
           <span>Total R$ {{ order.total | number:'1.2-2' }}</span>
+          <span *ngIf="order.payment?.provider">Provedor: {{ order.payment?.provider }}</span>
+          <span *ngIf="order.payment?.transaction_nsu">Transacao: {{ order.payment?.transaction_nsu }}</span>
+          <a *ngIf="order.payment?.receipt_url" [href]="order.payment?.receipt_url" target="_blank" rel="noopener noreferrer">Ver comprovante</a>
         </div>
         <mat-form-field appearance="outline">
           <mat-label>Alterar status</mat-label>

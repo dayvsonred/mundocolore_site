@@ -95,6 +95,14 @@ export interface OrderPayment {
   amount: number;
   status?: string;
   installments?: number;
+  provider?: string;
+  order_nsu?: string;
+  invoice_slug?: string;
+  transaction_nsu?: string;
+  receipt_url?: string;
+  checkout_url?: string;
+  paid_amount?: number;
+  actual_method?: string;
 }
 
 export interface CreateOrderPayload {
@@ -145,10 +153,10 @@ export class OrderService {
     );
   }
 
-  validateCoupon(couponCode: string, items: OrderItem[]): Observable<CouponResponse> {
+  validateCoupon(couponCode: string, items: OrderItem[], paymentMethod = ''): Observable<CouponResponse> {
     return this.http.post<CouponResponse>(
       `${this.apiUrl}/orders/coupon`,
-      { coupon_code: couponCode, items },
+      { coupon_code: couponCode, items, payment_method: paymentMethod },
       { headers: this.getHeaders() }
     ).pipe(catchError(error => throwError(error)));
   }

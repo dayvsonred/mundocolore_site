@@ -103,7 +103,7 @@ func TestApplyCollectionToProductsUpdatesAssociatedFields(t *testing.T) {
 
 func TestNormalizeCollectionCouponsSupportsUpToFive(t *testing.T) {
 	coupons, err := normalizeCollectionCoupons([]CollectionCoupon{
-		{Code: " cupom1 ", SpreadReductionPercent: 5},
+		{Code: " cupom1 ", SpreadReductionPercent: 5, PaymentMethods: []string{" PIX ", "credit_card", "pix", "boleto"}},
 		{Code: "cupom2", SpreadReductionPercent: 10},
 		{Code: "cupom3", SpreadReductionPercent: 15},
 		{Code: "cupom4", SpreadReductionPercent: 20},
@@ -114,6 +114,9 @@ func TestNormalizeCollectionCouponsSupportsUpToFive(t *testing.T) {
 	}
 	if len(coupons) != 5 || coupons[0].Code != "CUPOM1" {
 		t.Fatalf("expected five normalized coupons, got %#v", coupons)
+	}
+	if got := fmt.Sprint(coupons[0].PaymentMethods); got != "[pix credit_card]" {
+		t.Fatalf("expected only supported, unique payment methods, got %s", got)
 	}
 }
 

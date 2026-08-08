@@ -88,6 +88,13 @@
           <input matInput type="number" min="0" step="0.01" formControlName="spread_reduction_percent">
           <mat-error *ngIf="coupon.hasError('incompleteCoupon')">Informe codigo e reducao maior que zero</mat-error>
         </mat-form-field>
+        <div class="coupon-payment-methods">
+          <span>Valido para:</span>
+          <mat-checkbox formControlName="pix">PIX</mat-checkbox>
+          <mat-checkbox formControlName="credit_card">Cartao de credito</mat-checkbox>
+          <mat-checkbox formControlName="credit_colore">Credito Colore</mat-checkbox>
+          <small>Sem nenhuma opcao marcada, o cupom nao sera valido.</small>
+        </div>
         <button type="button" mat-icon-button color="warn" aria-label="Remover cupom" (click)="removeCoupon(formCoupons, index)">
           <mat-icon>delete</mat-icon>
         </button>
@@ -201,6 +208,13 @@
             <input matInput type="number" min="0" step="0.01" formControlName="spread_reduction_percent">
             <mat-error *ngIf="coupon.hasError('incompleteCoupon')">Informe codigo e reducao maior que zero</mat-error>
           </mat-form-field>
+          <div class="coupon-payment-methods">
+            <span>Valido para:</span>
+            <mat-checkbox formControlName="pix">PIX</mat-checkbox>
+            <mat-checkbox formControlName="credit_card">Cartao de credito</mat-checkbox>
+            <mat-checkbox formControlName="credit_colore">Credito Colore</mat-checkbox>
+            <small>Sem nenhuma opcao marcada, o cupom nao sera valido.</small>
+          </div>
           <button type="button" mat-icon-button color="warn" aria-label="Remover cupom" (click)="removeCoupon(editCoupons, index)">
             <mat-icon>delete</mat-icon>
           </button>

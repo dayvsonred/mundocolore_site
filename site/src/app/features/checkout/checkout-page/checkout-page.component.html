@@ -21,6 +21,7 @@
 
   <section *ngIf="loading" class="loading-state">
     <mat-spinner diameter="34"></mat-spinner>
+    <p *ngIf="createdOrder && selectedPayment?.method !== 'credit_colore'">Preparando o pagamento seguro na InfinitePay...</p>
   </section>
 
   <section *ngIf="!loading && currentStep === 'address'" class="checkout-section">
@@ -114,7 +115,7 @@
       <label>
         Parcelas
         <select [(ngModel)]="creditColoreInstallments">
-          <option *ngFor="let installment of [1,2,3,4,5]" [ngValue]="installment">
+          <option *ngFor="let installment of [1,2,3]" [ngValue]="installment">
             {{ installment }}x de R$ {{ total / installment | number:'1.2-2' }}
           </option>
         </select>

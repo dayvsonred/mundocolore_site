@@ -107,11 +107,19 @@ type OrderAddress struct {
 }
 
 type OrderPayment struct {
-	Method       string  `json:"method" dynamodbav:"method"`
-	Label        string  `json:"label" dynamodbav:"label"`
-	Amount       float64 `json:"amount" dynamodbav:"amount"`
-	Status       string  `json:"status" dynamodbav:"status"`
-	Installments int     `json:"installments,omitempty" dynamodbav:"installments,omitempty"`
+	Method         string  `json:"method" dynamodbav:"method"`
+	Label          string  `json:"label" dynamodbav:"label"`
+	Amount         float64 `json:"amount" dynamodbav:"amount"`
+	Status         string  `json:"status" dynamodbav:"status"`
+	Installments   int     `json:"installments,omitempty" dynamodbav:"installments,omitempty"`
+	Provider       string  `json:"provider,omitempty" dynamodbav:"provider,omitempty"`
+	OrderNSU       string  `json:"order_nsu,omitempty" dynamodbav:"order_nsu,omitempty"`
+	InvoiceSlug    string  `json:"invoice_slug,omitempty" dynamodbav:"invoice_slug,omitempty"`
+	TransactionNSU string  `json:"transaction_nsu,omitempty" dynamodbav:"transaction_nsu,omitempty"`
+	ReceiptURL     string  `json:"receipt_url,omitempty" dynamodbav:"receipt_url,omitempty"`
+	CheckoutURL    string  `json:"checkout_url,omitempty" dynamodbav:"checkout_url,omitempty"`
+	PaidAmount     float64 `json:"paid_amount,omitempty" dynamodbav:"paid_amount,omitempty"`
+	ActualMethod   string  `json:"actual_method,omitempty" dynamodbav:"actual_method,omitempty"`
 }
 
 type UpdateOrderStatusRequest struct {
@@ -198,13 +206,15 @@ type UserRole struct {
 }
 
 type CollectionCoupon struct {
-	Code                   string  `dynamodbav:"code"`
-	SpreadReductionPercent float64 `dynamodbav:"spread_reduction_percent"`
+	Code                   string   `dynamodbav:"code"`
+	SpreadReductionPercent float64  `dynamodbav:"spread_reduction_percent"`
+	PaymentMethods         []string `dynamodbav:"payment_methods"`
 }
 
 type CouponRequest struct {
-	CouponCode string      `json:"coupon_code"`
-	Items      []OrderItem `json:"items"`
+	CouponCode    string      `json:"coupon_code"`
+	PaymentMethod string      `json:"payment_method"`
+	Items         []OrderItem `json:"items"`
 }
 
 type CouponResponse struct {
@@ -325,7 +335,13 @@ func HandleValidateCoupon(_ context.Context, request events.APIGatewayProxyReque
 	if err := json.Unmarshal([]byte(request.Body), &req); err != nil {
 		return badRequestResponse("invalid request"), nil
 	}
-	items, subtotal, discount, err := priceItems(req.Items, req.CouponCode)
+	paymentMethod := normalizePaymentMethod(req.PaymentMethod)
+	if paymentMethod != "" {
+		if err := validatePaymentMethod(paymentMethod); err != nil {
+			return badRequestResponse(err.Error()), nil
+		}
+	}
+	items, subtotal, discount, err := priceItems(req.Items, req.CouponCode, paymentMethod)
 	if err != nil {
 		return badRequestResponse(err.Error()), nil
 	}
@@ -447,7 +463,13 @@ func createOrder(userID string, req CreateOrderRequest, request events.APIGatewa
 		return OrderResponse{}, fmt.Errorf("items are required")
 	}
 
-	items, subtotal, discountAmount, err := priceItems(req.Items, req.CouponCode)
+	paymentMethod := normalizePaymentMethod(req.Payment.Method)
+	if err := validatePaymentMethod(paymentMethod); err != nil {
+		return OrderResponse{}, err
+	}
+	req.Payment.Method = paymentMethod
+
+	items, subtotal, discountAmount, err := priceItems(req.Items, req.CouponCode, paymentMethod)
 	if err != nil {
 		return OrderResponse{}, err
 	}
@@ -455,10 +477,6 @@ func createOrder(userID string, req CreateOrderRequest, request events.APIGatewa
 	if err := validateDeliveryAddress(req.DeliveryAddress); err != nil {
 		return OrderResponse{}, err
 	}
-	if strings.TrimSpace(req.Payment.Method) == "" {
-		return OrderResponse{}, fmt.Errorf("payment method is required")
-	}
-
 	shippingAmount := roundMoney(req.ShippingAmount)
 	costSubtotal := orderItemsCostSubtotal(items)
 	soldSubtotal := roundMoney(subtotal - discountAmount)
@@ -497,15 +515,15 @@ func createOrder(userID string, req CreateOrderRequest, request events.APIGatewa
 
 	payment := req.Payment
 	payment.Label = strings.TrimSpace(payment.Label)
-	payment.Method = strings.TrimSpace(payment.Method)
+	payment.Method = normalizePaymentMethod(payment.Method)
 	payment.Amount = total
 	if strings.TrimSpace(payment.Status) == "" {
 		payment.Status = "pending"
 	}
 	status := "pending_payment"
 	if payment.Method == "credit_colore" {
-		if payment.Installments < 1 || payment.Installments > 5 {
-			return OrderResponse{}, fmt.Errorf("credit colore installments must be between 1 and 5")
+		if payment.Installments < 1 || payment.Installments > 3 {
+			return OrderResponse{}, fmt.Errorf("credit colore installments must be between 1 and 3")
 		}
 		if err := validateCreditColoreCollections(items, total); err != nil {
 			return OrderResponse{}, err
@@ -1018,7 +1036,7 @@ func getOrders(userID string) ([]OrderResponse, error) {
 	return orders, nil
 }
 
-func priceItems(items []OrderItem, couponCode string) ([]OrderItem, float64, float64, error) {
+func priceItems(items []OrderItem, couponCode string, paymentMethod string) ([]OrderItem, float64, float64, error) {
 	normalized := make([]OrderItem, 0, len(items))
 	subtotal := 0.0
 	discountAmount := 0.0
@@ -1054,7 +1072,7 @@ func priceItems(items []OrderItem, couponCode string) ([]OrderItem, float64, flo
 			if err != nil {
 				return nil, 0, 0, err
 			}
-			couponReductionPercent := findCouponReduction(collection, couponCode)
+			couponReductionPercent := findCouponReduction(collection, couponCode, paymentMethod)
 			if couponReductionPercent > 0 {
 				reducedSpread := product.SpreadPercent - couponReductionPercent
 				if reducedSpread < 0 {
@@ -1291,6 +1309,7 @@ func orderStatusLabel(status string) string {
 	labels := map[string]string{
 		"pending_payment":  "Aguardando pagamento",
 		"pending_approval": "Aguardando aprovação",
+		"payment_review":   "Pagamento em análise",
 		"approved":         "Pedido aprovado",
 		"packed":           "Pedido embalado",
 		"shipped":          "Pedido enviado",
@@ -1360,17 +1379,46 @@ func formatOrderInstallments(order Order) string {
 	return strings.Join(lines, "\n")
 }
 
-func findCouponReduction(collection CollectionPricing, couponCode string) float64 {
+func findCouponReduction(collection CollectionPricing, couponCode string, paymentMethod string) float64 {
 	couponCode = normalizeCouponCode(couponCode)
 	for _, coupon := range collection.Coupons {
-		if normalizeCouponCode(coupon.Code) == couponCode && coupon.SpreadReductionPercent > 0 {
+		if normalizeCouponCode(coupon.Code) != couponCode {
+			continue
+		}
+		if coupon.SpreadReductionPercent > 0 && couponAllowsPaymentMethod(coupon, paymentMethod) {
 			return coupon.SpreadReductionPercent
 		}
-	}
-	if normalizeCouponCode(collection.CouponCode) == couponCode && collection.CouponSpreadReductionPercent > 0 {
-		return collection.CouponSpreadReductionPercent
+		return 0
 	}
 	return 0
+}
+
+func couponAllowsPaymentMethod(coupon CollectionCoupon, paymentMethod string) bool {
+	paymentMethod = normalizePaymentMethod(paymentMethod)
+	if paymentMethod == "" {
+		return len(coupon.PaymentMethods) > 0
+	}
+	for _, method := range coupon.PaymentMethods {
+		if normalizePaymentMethod(method) == paymentMethod {
+			return true
+		}
+	}
+	return false
+}
+
+func normalizePaymentMethod(value string) string {
+	return strings.ToLower(strings.TrimSpace(value))
+}
+
+func validatePaymentMethod(method string) error {
+	switch normalizePaymentMethod(method) {
+	case "pix", "credit_card", "credit_colore":
+		return nil
+	case "":
+		return fmt.Errorf("payment method is required")
+	default:
+		return fmt.Errorf("payment method is invalid")
+	}
 }
 
 func generateID() string {

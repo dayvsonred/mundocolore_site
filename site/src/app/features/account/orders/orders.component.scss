@@ -166,6 +166,24 @@
           }
         }
 
+        .payment-details {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 8px 16px;
+          margin-bottom: 12px;
+          padding: 12px 14px;
+          border-radius: 8px;
+          background: #f7f9fc;
+          color: #555;
+          font-size: 13px;
+
+          a {
+            color: #1f6feb;
+            font-weight: 600;
+          }
+        }
+
         .items-table {
           border: 1px solid #eeeeee;
           border-radius: 8px;

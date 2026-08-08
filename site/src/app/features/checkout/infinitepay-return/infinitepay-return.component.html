@@ -1,0 +1,43 @@
+<main class="payment-return">
+  <section class="return-card">
+    <ng-container *ngIf="loading">
+      <mat-spinner diameter="44"></mat-spinner>
+      <h1>Confirmando pagamento</h1>
+      <p>Aguarde enquanto consultamos a InfinitePay.</p>
+    </ng-container>
+
+    <ng-container *ngIf="!loading && approved">
+      <mat-icon class="success-icon">check_circle</mat-icon>
+      <h1>Pagamento confirmado</h1>
+      <p>Seu pedido foi pago com {{ paymentMethodLabel }} e ja esta aprovado.</p>
+      <strong>Pedido {{ payment?.order_id }}</strong>
+      <p *ngIf="payment?.installments && (payment?.installments || 0) > 1">
+        Pagamento em {{ payment?.installments }} parcelas.
+      </p>
+      <a
+        *ngIf="payment?.receipt_url"
+        class="secondary-action"
+        [href]="payment?.receipt_url"
+        target="_blank"
+        rel="noopener noreferrer">
+        Ver comprovante
+      </a>
+    </ng-container>
+
+    <ng-container *ngIf="!loading && underReview">
+      <mat-icon class="warning-icon">error_outline</mat-icon>
+      <h1>Pagamento recebido em analise</h1>
+      <p>O pagamento foi localizado, mas os dados recebidos precisam de conferencia antes da aprovacao do pedido.</p>
+      <strong>Pedido {{ payment?.order_id }}</strong>
+    </ng-container>
+
+    <ng-container *ngIf="!loading && !approved && !underReview">
+      <mat-icon class="warning-icon">schedule</mat-icon>
+      <h1>Pagamento em processamento</h1>
+      <p>{{ errorMessage || 'A confirmacao sera atualizada automaticamente.' }}</p>
+      <strong *ngIf="payment?.order_id">Pedido {{ payment?.order_id }}</strong>
+    </ng-container>
+
+    <a class="primary-action" routerLink="/minha-conta/meus-pedidos">Acompanhar meus pedidos</a>
+  </section>
+</main>

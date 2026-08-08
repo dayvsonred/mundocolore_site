@@ -59,8 +59,9 @@ type Collection struct {
 }
 
 type CollectionCoupon struct {
-	Code                   string  `json:"code" dynamodbav:"code"`
-	SpreadReductionPercent float64 `json:"spread_reduction_percent" dynamodbav:"spread_reduction_percent"`
+	Code                   string   `json:"code" dynamodbav:"code"`
+	SpreadReductionPercent float64  `json:"spread_reduction_percent" dynamodbav:"spread_reduction_percent"`
+	PaymentMethods         []string `json:"payment_methods" dynamodbav:"payment_methods"`
 }
 
 type Product struct {
@@ -2134,9 +2135,29 @@ func normalizeCollectionCoupons(coupons []CollectionCoupon, legacyCode string, l
 		normalized = append(normalized, CollectionCoupon{
 			Code:                   code,
 			SpreadReductionPercent: reduction,
+			PaymentMethods:         normalizeCouponPaymentMethods(coupon.PaymentMethods),
 		})
 	}
 	return normalized, nil
+}
+
+func normalizeCouponPaymentMethods(values []string) []string {
+	allowed := map[string]bool{
+		"pix":           true,
+		"credit_card":   true,
+		"credit_colore": true,
+	}
+	normalized := make([]string, 0, len(values))
+	seen := map[string]bool{}
+	for _, value := range values {
+		method := strings.ToLower(strings.TrimSpace(value))
+		if !allowed[method] || seen[method] {
+			continue
+		}
+		seen[method] = true
+		normalized = append(normalized, method)
+	}
+	return normalized
 }
 
 func buildCollectionKey(brand string, year string, collection string) string {

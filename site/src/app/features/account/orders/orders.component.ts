@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { Order, OrderService } from '../../../core/services/order.service';
+import { PaymentService } from '../../../core/services/payment.service';
 
 interface OrderView {
   id: string;
@@ -42,7 +43,10 @@ export class OrdersComponent implements OnInit {
     { key: 'cancelados', label: 'Cancelados' }
   ];
 
-  constructor(private orderService: OrderService) {}
+  constructor(
+    private orderService: OrderService,
+    private paymentService: PaymentService
+  ) {}
 
   ngOnInit(): void {
     this.loadOrders();
@@ -85,6 +89,18 @@ export class OrdersComponent implements OnInit {
 
   reorder(order: OrderView): void {
     console.log('Reorder products from:', order.raw);
+  }
+
+  payOrder(order: OrderView): void {
+    const checkoutUrl = order.raw.payment?.checkout_url;
+    if (checkoutUrl) {
+      window.location.assign(checkoutUrl);
+      return;
+    }
+    this.paymentService.createInfinitePayCheckout(order.id).subscribe({
+      next: checkout => window.location.assign(checkout.checkout_url),
+      error: () => this.errorMessage = 'Nao foi possivel abrir o pagamento deste pedido.'
+    });
   }
 
   private toOrderView(order: Order): OrderView {

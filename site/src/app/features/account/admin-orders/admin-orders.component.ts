@@ -254,7 +254,8 @@ export class AdminOrdersComponent implements OnInit {
     if (status) return status[1];
     const labels: Record<string, string> = {
       pending_payment: 'Aguardando pagamento',
-      pending_approval: 'Aguardando aprovacao'
+      pending_approval: 'Aguardando aprovacao',
+      payment_review: 'Pagamento em analise'
     };
     return labels[value] || value;
   }

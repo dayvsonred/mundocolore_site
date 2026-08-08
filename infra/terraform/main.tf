@@ -12,6 +12,7 @@ locals {
   resolved_certificate_arn    = trimspace(var.acm_certificate_arn) != "" ? var.acm_certificate_arn : (local.should_create_acm ? aws_acm_certificate.site[0].arn : "")
   use_custom_certificate      = local.custom_domain_enabled && trimspace(local.resolved_certificate_arn) != ""
   cloudfront_origin_id        = "s3-${aws_s3_bucket.site.id}"
+  api_gateway_origin_id       = "api-gateway-webhooks"
   default_cache_policy_name   = "Managed-CachingOptimized"
   default_primary_site_domain = local.custom_domain_enabled ? var.domain_names[0] : aws_cloudfront_distribution.site.domain_name
 }
@@ -70,6 +71,14 @@ data "aws_cloudfront_cache_policy" "caching_optimized" {
   name = local.default_cache_policy_name
 }
 
+data "aws_cloudfront_cache_policy" "caching_disabled" {
+  name = "Managed-CachingDisabled"
+}
+
+data "aws_cloudfront_origin_request_policy" "all_viewer_except_host" {
+  name = "Managed-AllViewerExceptHostHeader"
+}
+
 resource "aws_acm_certificate" "site" {
   count    = local.should_create_acm ? 1 : 0
   provider = aws.us_east_1
@@ -125,6 +134,19 @@ resource "aws_cloudfront_distribution" "site" {
     origin_access_control_id = aws_cloudfront_origin_access_control.site.id
   }
 
+  origin {
+    domain_name = var.api_gateway_origin_domain
+    origin_id   = local.api_gateway_origin_id
+    origin_path = var.api_gateway_origin_path
+
+    custom_origin_config {
+      http_port              = 80
+      https_port             = 443
+      origin_protocol_policy = "https-only"
+      origin_ssl_protocols   = ["TLSv1.2"]
+    }
+  }
+
   default_cache_behavior {
     target_origin_id       = local.cloudfront_origin_id
     viewer_protocol_policy = "redirect-to-https"
@@ -132,6 +154,17 @@ resource "aws_cloudfront_distribution" "site" {
     cached_methods         = ["GET", "HEAD", "OPTIONS"]
     compress               = true
     cache_policy_id        = data.aws_cloudfront_cache_policy.caching_optimized.id
+  }
+
+  ordered_cache_behavior {
+    path_pattern             = "/webhook/*"
+    target_origin_id         = local.api_gateway_origin_id
+    viewer_protocol_policy   = "https-only"
+    allowed_methods          = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+    cached_methods           = ["GET", "HEAD", "OPTIONS"]
+    compress                 = true
+    cache_policy_id          = data.aws_cloudfront_cache_policy.caching_disabled.id
+    origin_request_policy_id = data.aws_cloudfront_origin_request_policy.all_viewer_except_host.id
   }
 
   restrictions {
@@ -228,4 +261,3 @@ resource "aws_route53_record" "site_ipv6" {
     evaluate_target_health = false
   }
 }
-
